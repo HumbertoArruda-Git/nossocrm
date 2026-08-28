@@ -25,6 +25,7 @@ import { FocusTrap, useFocusReturn } from '@/lib/a11y';
 import { Activity, DealView } from '@/types';
 import { usePersistedState } from '@/hooks/usePersistedState';
 import { useResponsiveMode } from '@/hooks/useResponsiveMode';
+import { useCustomFieldDefinitions } from '@/lib/query/hooks/useCustomFieldDefinitionsQuery';
 import { DealSheet } from '../DealSheet';
 import {
   analyzeLead,
@@ -108,7 +109,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
   const updateActivity = (id: string, updates: Partial<import('@/types').Activity>) => updateActivityMutation.mutateAsync({ id, updates });
   const deleteActivity = (id: string) => deleteActivityMutation.mutateAsync(id);
   const { data: products = [] } = useActiveProducts();
-  const customFieldDefinitions: import('@/types').CustomFieldDefinition[] = [];
+  const { data: customFieldDefinitions = [] } = useCustomFieldDefinitions();
   const { profile } = useAuth();
   const { addToast } = useToast();
   const router = useRouter();

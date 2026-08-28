@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useToast } from '@/context/ToastContext';
 import { CustomFieldDefinition, CustomFieldType } from '@/types';
 import { usePersistedState } from '@/hooks/usePersistedState';
+import { useCustomFieldDefinitions, useCreateCustomFieldDefinition, useUpdateCustomFieldDefinition, useDeleteCustomFieldDefinition } from '@/lib/query/hooks/useCustomFieldDefinitionsQuery';
 
 // TODO: Migrate customFieldDefinitions and tags to Supabase
 // For now, using local state as placeholder
@@ -16,9 +17,10 @@ export const useSettingsController = () => {
   const [defaultRoute, setDefaultRoute] = usePersistedState<string>('crm_default_route', '/boards');
 
   // Custom Fields State (local - TODO: migrate to Supabase)
-  const [customFieldDefinitions, setCustomFieldDefinitions] = usePersistedState<
-    CustomFieldDefinition[]
-  >('crm_custom_fields', []);
+  const { data: customFieldDefinitions = [], isLoading: customFieldsLoading, isError: customFieldsError } = useCustomFieldDefinitions();
+  const createCustomField = useCreateCustomFieldDefinition();
+  const updateCustomField = useUpdateCustomFieldDefinition();
+  const deleteCustomField = useDeleteCustomFieldDefinition();
   const [newFieldLabel, setNewFieldLabel] = useState('');
   const [newFieldType, setNewFieldType] = useState<CustomFieldType>('text');
   const [newFieldOptions, setNewFieldOptions] = useState('');
@@ -43,7 +45,7 @@ export const useSettingsController = () => {
     setNewFieldOptions('');
   };
 
-  const handleSaveField = () => {
+  const handleSaveField = async () => {
     if (!newFieldLabel.trim()) return;
 
     const optionsArray =
@@ -56,13 +58,8 @@ export const useSettingsController = () => {
 
     if (editingId) {
       // UPDATE EXISTING
-      setCustomFieldDefinitions(prev =>
-        prev.map(f =>
-          f.id === editingId
-            ? { ...f, label: newFieldLabel, type: newFieldType, options: optionsArray }
-            : f
-        )
-      );
+      const result = await updateCustomField.mutateAsync({ id: editingId, input: { label: newFieldLabel, options: optionsArray } });
+      if (result.error) { addToast(result.error.message, 'error'); return; }
       addToast('Campo personalizado atualizado com sucesso!', 'success');
       cancelEditingField();
     } else {
@@ -74,23 +71,17 @@ export const useSettingsController = () => {
         )
         .replace(/\s+/g, '');
 
-      const newField: CustomFieldDefinition = {
-        id: crypto.randomUUID(),
-        key,
-        label: newFieldLabel,
-        type: newFieldType,
-        options: optionsArray,
-      };
-
-      setCustomFieldDefinitions(prev => [...prev, newField]);
+      const result = await createCustomField.mutateAsync({ key, label: newFieldLabel, type: newFieldType, options: optionsArray });
+      if (result.error) { addToast(result.error.message, 'error'); return; }
       addToast('Campo personalizado criado com sucesso!', 'success');
       setNewFieldLabel('');
       setNewFieldOptions('');
     }
   };
 
-  const handleRemoveField = (id: string) => {
-    setCustomFieldDefinitions(prev => prev.filter(f => f.id !== id));
+  const handleRemoveField = async (id: string) => {
+    const result = await deleteCustomField.mutateAsync(id);
+    if (result.error) { addToast(result.error.message, 'error'); return; }
     addToast('Campo personalizado removido.', 'info');
   };
 
@@ -115,6 +106,8 @@ export const useSettingsController = () => {
 
     // Custom Fields
     customFieldDefinitions,
+    customFieldsLoading,
+    customFieldsError,
     newFieldLabel,
     setNewFieldLabel,
     newFieldType,

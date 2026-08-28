@@ -226,6 +226,10 @@ export const queryKeys = {
      * Org-level + user settings query keys.
      */
     orgSettings: createQueryKeys('orgSettings'),
+    customFieldDefinitions: {
+        all: ['customFieldDefinitions'] as const,
+        byOrg: (orgId: string) => ['customFieldDefinitions', orgId] as const,
+    },
 };
 
 /**

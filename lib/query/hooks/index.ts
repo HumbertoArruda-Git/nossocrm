@@ -75,6 +75,14 @@ export {
   useInvalidateBoards,
 } from './useBoardsQuery';
 
+// Custom field definitions
+export {
+  useCustomFieldDefinitions,
+  useCreateCustomFieldDefinition,
+  useUpdateCustomFieldDefinition,
+  useDeleteCustomFieldDefinition,
+} from './useCustomFieldDefinitionsQuery';
+
 // Unified Deal Movement
 export {
   useMoveDeal,

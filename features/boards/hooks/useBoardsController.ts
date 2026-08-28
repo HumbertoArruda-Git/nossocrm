@@ -21,6 +21,7 @@ import { useToast } from '@/context/ToastContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLifecycleStages } from '@/lib/query/hooks/useLifecycleStagesQuery';
 import { useAI } from '@/context/AIContext';
+import { useCustomFieldDefinitions } from '@/lib/query/hooks/useCustomFieldDefinitionsQuery';
 
 /**
  * Função pública `isDealRotting` do projeto.
@@ -266,7 +267,7 @@ export const useBoardsController = () => {
   useRealtimeSyncKanban();
 
   // Custom field definitions (TODO: migrate to query)
-  const customFieldDefinitions: CustomFieldDefinition[] = [];
+  const { data: customFieldDefinitions = [] } = useCustomFieldDefinitions();
 
   //View State
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
