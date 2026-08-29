@@ -98,6 +98,15 @@ const getNumericCustomField = (value: unknown): number | undefined => {
   return undefined;
 };
 
+const COMMERCIAL_SUMMARY_STAGES = [
+  'Novo Lead',
+  'Em Revisão',
+  'Aprovado para contato',
+  'Contatado',
+  'Respondeu',
+  'Reunião Agendada',
+] as const;
+
 /**
  * Componente React `PipelineView`.
  *
@@ -301,6 +310,27 @@ export const PipelineView: React.FC<PipelineViewProps> = ({
     });
   }, [filteredDeals, isProspectingBoard, prospectingFilters]);
 
+  const commercialSummary = React.useMemo(() => {
+    if (!isProspectingBoard) return null;
+
+    const stageIdByLabel = new Map(
+      (activeBoard?.stages ?? []).map(stage => [normalizeFilterValue(stage.label), stage.id])
+    );
+
+    return [
+      { label: 'Total de Leads', count: prospectingFilteredDeals.length },
+      ...COMMERCIAL_SUMMARY_STAGES.flatMap(label => {
+        const stageId = stageIdByLabel.get(normalizeFilterValue(label));
+        if (!stageId) return [];
+
+        return [{
+          label,
+          count: prospectingFilteredDeals.filter(deal => deal.status === stageId).length,
+        }];
+      }),
+    ];
+  }, [activeBoard?.stages, isProspectingBoard, prospectingFilteredDeals]);
+
   const handleUpdateStage = (updatedStage: BoardStage) => {
     if (!activeBoard) return;
     const newStages = activeBoard.stages.map(s => (s.id === updatedStage.id ? updatedStage : s));
@@ -385,6 +415,30 @@ export const PipelineView: React.FC<PipelineViewProps> = ({
             onClearProspectingFilters={() => setProspectingFilters(DEFAULT_PROSPECTING_FILTERS)}
             hasProspectingFilters={hasProspectingFilters}
           />
+
+          {commercialSummary && (
+            <div
+              aria-label="Resumo comercial da prospecção"
+              className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7"
+            >
+              {commercialSummary.map(({ label, count }, index) => (
+                <div
+                  key={label}
+                  className={`min-w-0 rounded-lg border px-3 py-2 ${index === 0
+                    ? 'border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5'
+                    : 'border-slate-200/80 bg-white/60 dark:border-white/10 dark:bg-slate-900/40'
+                    }`}
+                >
+                  <div className="truncate text-[10px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    {label}
+                  </div>
+                  <div className="mt-0.5 text-xl font-bold leading-none text-slate-900 dark:text-white">
+                    {count}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <BoardStrategyHeader board={activeBoard} />
 
