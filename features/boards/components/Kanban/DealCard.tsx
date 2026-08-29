@@ -250,13 +250,16 @@ const DealCardComponent: React.FC<DealCardProps> = ({
       </p>
 
       {isProspeccaoComercial && (() => {
+        const categoria = deal.customFields?.categoriaDoEstabelecimento;
+        const categoriaLabel = typeof categoria === 'string' && categoria.trim() ? categoria.trim() : undefined;
         const prioridade = getNumericCustomField(deal, 'prioridadeDeProspeccao');
         const potencial = getNumericCustomField(deal, 'potencialComercial');
         const qualidade = deal.customFields?.qualidadeDoGancho;
         const qualidadeLabel = typeof qualidade === 'string' && qualidade.trim() ? qualidade.trim().charAt(0).toUpperCase() + qualidade.trim().slice(1) : undefined;
-        if (prioridade === undefined && potencial === undefined && !qualidadeLabel) return null;
+        if (!categoriaLabel && prioridade === undefined && potencial === undefined && !qualidadeLabel) return null;
         return (
           <div className="flex flex-wrap gap-1.5 mb-3 text-[10px]" aria-label="Indicadores de prospecção">
+            {categoriaLabel && <span className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-medium text-slate-600 dark:border-slate-700/50 dark:bg-slate-800/40 dark:text-slate-300">{categoriaLabel}</span>}
             {prioridade !== undefined && <span className={`rounded border px-1.5 py-0.5 font-semibold ${getIndicatorClass(prioridade)}`}>Prioridade {prioridade}/10</span>}
             {potencial !== undefined && <span className={`rounded border px-1.5 py-0.5 font-semibold ${getIndicatorClass(potencial)}`}>Potencial {potencial}/10</span>}
             {qualidadeLabel && <span className="rounded border border-violet-200 bg-violet-100 px-1.5 py-0.5 font-semibold text-violet-700 dark:border-violet-700/50 dark:bg-violet-900/30 dark:text-violet-300">Gancho {qualidadeLabel}</span>}
