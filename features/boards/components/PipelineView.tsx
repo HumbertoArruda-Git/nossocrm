@@ -3,7 +3,7 @@ import { DealDetailModal } from './Modals/DealDetailModal';
 import { CreateDealModal } from './Modals/CreateDealModal';
 import { CreateBoardModal } from './Modals/CreateBoardModal';
 import { BoardCreationWizard } from './BoardCreationWizard';
-import { KanbanHeader } from './Kanban/KanbanHeader';
+import { KanbanHeader, type ProspectingFilters } from './Kanban/KanbanHeader';
 import { BoardStrategyHeader } from './Kanban/BoardStrategyHeader';
 import { KanbanBoard } from './Kanban/KanbanBoard';
 import { KanbanList } from './Kanban/KanbanList';
@@ -78,6 +78,25 @@ interface PipelineViewProps {
   handleLossReasonClose: () => void;
   boardCreateOverlay?: { title: string; subtitle?: string } | null;
 }
+
+const DEFAULT_PROSPECTING_FILTERS: ProspectingFilters = {
+  category: 'all',
+  priority: 'all',
+  potential: 'all',
+  hook: 'all',
+};
+
+const normalizeFilterValue = (value: unknown): string =>
+  typeof value === 'string' ? value.trim().toLocaleLowerCase('pt-BR') : '';
+
+const getNumericCustomField = (value: unknown): number | undefined => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
+};
 
 /**
  * Componente React `PipelineView`.
@@ -246,6 +265,41 @@ export const PipelineView: React.FC<PipelineViewProps> = ({
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
   const [isExportModalOpen, setIsExportModalOpen] = React.useState(false);
+  const [prospectingFilters, setProspectingFilters] = React.useState<ProspectingFilters>(DEFAULT_PROSPECTING_FILTERS);
+  const isProspectingBoard = activeBoard?.key === 'prospeccao-comercial';
+
+  React.useEffect(() => {
+    if (!isProspectingBoard) setProspectingFilters(DEFAULT_PROSPECTING_FILTERS);
+  }, [isProspectingBoard]);
+
+  const hasProspectingFilters = isProspectingBoard && (
+    prospectingFilters.category !== 'all' ||
+    prospectingFilters.priority !== 'all' ||
+    prospectingFilters.potential !== 'all' ||
+    prospectingFilters.hook !== 'all'
+  );
+
+  const prospectingFilteredDeals = React.useMemo(() => {
+    if (!isProspectingBoard) return filteredDeals;
+
+    return filteredDeals.filter(deal => {
+      const customFields = deal.customFields;
+      const category = normalizeFilterValue(customFields?.categoriaDoEstabelecimento);
+      const hook = normalizeFilterValue(customFields?.qualidadeDoGancho);
+      const priority = getNumericCustomField(customFields?.prioridadeDeProspeccao);
+      const potential = getNumericCustomField(customFields?.potencialComercial);
+
+      const matchesCategory = prospectingFilters.category === 'all' ||
+        category === normalizeFilterValue(prospectingFilters.category);
+      const matchesPriority = prospectingFilters.priority === 'all' ||
+        (priority !== undefined && priority >= Number(prospectingFilters.priority));
+      const matchesPotential = prospectingFilters.potential === 'all' ||
+        (potential !== undefined && potential >= Number(prospectingFilters.potential));
+      const matchesHook = prospectingFilters.hook === 'all' || hook === prospectingFilters.hook;
+
+      return matchesCategory && matchesPriority && matchesPotential && matchesHook;
+    });
+  }, [filteredDeals, isProspectingBoard, prospectingFilters]);
 
   const handleUpdateStage = (updatedStage: BoardStage) => {
     if (!activeBoard) return;
@@ -326,15 +380,23 @@ export const PipelineView: React.FC<PipelineViewProps> = ({
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
             onNewDeal={() => setIsCreateModalOpen(true)}
+            prospectingFilters={prospectingFilters}
+            setProspectingFilters={setProspectingFilters}
+            onClearProspectingFilters={() => setProspectingFilters(DEFAULT_PROSPECTING_FILTERS)}
+            hasProspectingFilters={hasProspectingFilters}
           />
 
           <BoardStrategyHeader board={activeBoard} />
 
           <div className="flex-1 overflow-hidden">
-            {viewMode === 'kanban' ? (
+            {hasProspectingFilters && prospectingFilteredDeals.length === 0 ? (
+              <div className="h-full flex items-center justify-center p-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                Nenhum lead corresponde aos filtros selecionados.
+              </div>
+            ) : viewMode === 'kanban' ? (
               <KanbanBoard
                 stages={activeBoard.stages}
-                filteredDeals={filteredDeals}
+                filteredDeals={prospectingFilteredDeals}
                 isProspeccaoComercial={activeBoard?.key === 'prospeccao-comercial'}
                 draggingId={draggingId}
                 handleDragStart={handleDragStart}
@@ -350,7 +412,7 @@ export const PipelineView: React.FC<PipelineViewProps> = ({
             ) : (
               <KanbanList
                 stages={activeBoard.stages}
-                filteredDeals={filteredDeals}
+                filteredDeals={prospectingFilteredDeals}
                 customFieldDefinitions={customFieldDefinitions}
                 setSelectedDealId={setSelectedDealId}
                 openActivityMenuId={openActivityMenuId}

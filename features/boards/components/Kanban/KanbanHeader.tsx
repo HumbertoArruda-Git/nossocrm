@@ -24,6 +24,17 @@ interface KanbanHeaderProps {
     statusFilter: 'open' | 'won' | 'lost' | 'all';
     setStatusFilter: (filter: 'open' | 'won' | 'lost' | 'all') => void;
     onNewDeal: () => void;
+    prospectingFilters: ProspectingFilters;
+    setProspectingFilters: React.Dispatch<React.SetStateAction<ProspectingFilters>>;
+    onClearProspectingFilters: () => void;
+    hasProspectingFilters: boolean;
+}
+
+export interface ProspectingFilters {
+    category: string;
+    priority: 'all' | '8' | '6';
+    potential: 'all' | '8' | '6';
+    hook: 'all' | 'forte' | 'moderado' | 'fraco';
 }
 
 /**
@@ -70,7 +81,11 @@ export const KanbanHeader: React.FC<KanbanHeaderProps> = ({
     searchTerm, setSearchTerm,
     ownerFilter, setOwnerFilter,
     statusFilter, setStatusFilter,
-    onNewDeal
+    onNewDeal,
+    prospectingFilters,
+    setProspectingFilters,
+    onClearProspectingFilters,
+    hasProspectingFilters
 }) => {
     return (
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -206,6 +221,63 @@ export const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                     </select>
                     <User className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
                 </div>
+
+                {activeBoard.key === 'prospeccao-comercial' && (
+                    <div className="basis-full flex flex-wrap items-center gap-2 pt-1">
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Filtros rápidos</span>
+                        <select
+                            value={prospectingFilters.category}
+                            onChange={(e) => setProspectingFilters(current => ({ ...current, category: e.target.value }))}
+                            aria-label="Filtrar por categoria"
+                            className="max-w-full pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-white/5 text-xs outline-none focus:ring-2 focus:ring-primary-500 dark:text-white backdrop-blur-sm appearance-none cursor-pointer"
+                        >
+                            <option value="all">Todas as categorias</option>
+                            {['Restaurante', 'Clínica', 'Oficina', 'Loja', 'Academia', 'Hotel', 'Contabilidade', 'Salão', 'Escola', 'Outro'].map(category => (
+                                <option key={category} value={category}>{category}</option>
+                            ))}
+                        </select>
+                        <select
+                            value={prospectingFilters.priority}
+                            onChange={(e) => setProspectingFilters(current => ({ ...current, priority: e.target.value as ProspectingFilters['priority'] }))}
+                            aria-label="Filtrar por prioridade de prospecção"
+                            className="pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-white/5 text-xs outline-none focus:ring-2 focus:ring-primary-500 dark:text-white backdrop-blur-sm appearance-none cursor-pointer"
+                        >
+                            <option value="all">Prioridade: Todas</option>
+                            <option value="8">Prioridade: 8+</option>
+                            <option value="6">Prioridade: 6+</option>
+                        </select>
+                        <select
+                            value={prospectingFilters.potential}
+                            onChange={(e) => setProspectingFilters(current => ({ ...current, potential: e.target.value as ProspectingFilters['potential'] }))}
+                            aria-label="Filtrar por potencial comercial"
+                            className="pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-white/5 text-xs outline-none focus:ring-2 focus:ring-primary-500 dark:text-white backdrop-blur-sm appearance-none cursor-pointer"
+                        >
+                            <option value="all">Potencial: Todos</option>
+                            <option value="8">Potencial: 8+</option>
+                            <option value="6">Potencial: 6+</option>
+                        </select>
+                        <select
+                            value={prospectingFilters.hook}
+                            onChange={(e) => setProspectingFilters(current => ({ ...current, hook: e.target.value as ProspectingFilters['hook'] }))}
+                            aria-label="Filtrar por qualidade do gancho"
+                            className="pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-white/5 text-xs outline-none focus:ring-2 focus:ring-primary-500 dark:text-white backdrop-blur-sm appearance-none cursor-pointer"
+                        >
+                            <option value="all">Gancho: Todos</option>
+                            <option value="forte">Gancho: Forte</option>
+                            <option value="moderado">Gancho: Moderado</option>
+                            <option value="fraco">Gancho: Fraco</option>
+                        </select>
+                        {hasProspectingFilters && (
+                            <button
+                                type="button"
+                                onClick={onClearProspectingFilters}
+                                className="px-2 py-1.5 text-xs font-medium text-primary-700 dark:text-primary-300 hover:underline"
+                            >
+                                Limpar filtros
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="flex gap-3">
