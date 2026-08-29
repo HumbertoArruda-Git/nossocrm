@@ -405,9 +405,16 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
     }
   };
 
-  const updateCustomField = (key: string, value: string | number | boolean) => {
+  const updateCustomField = async (key: string, value: string | number | boolean) => {
     const updatedFields = { ...deal.customFields, [key]: value };
-    updateDeal(deal.id, { customFields: updatedFields });
+    try {
+      await updateDeal(deal.id, { customFields: updatedFields });
+    } catch (error) {
+      addToast(
+        error instanceof Error ? error.message : 'Não foi possível salvar o campo personalizado.',
+        'error'
+      );
+    }
   };
 
   // dealActivities memoized above.
