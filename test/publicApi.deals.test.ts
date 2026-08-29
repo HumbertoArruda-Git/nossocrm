@@ -64,6 +64,7 @@ const dealQueryBuilder = {
         closed_at: null,
         created_at: '2026-01-01T00:00:00Z',
         updated_at: '2026-01-01T00:00:00Z',
+        custom_fields: { placeId: 'PLACE-TEST-001', prioridadeDeProspeccao: 85 },
       },
     ],
     count: 1,
@@ -200,6 +201,7 @@ describe('GET /api/public/v1/deals', () => {
     expect(deal).toHaveProperty('client_company_id', null)
     expect(deal).toHaveProperty('loss_reason', null)
     expect(deal).toHaveProperty('closed_at', null)
+    expect(deal.custom_fields).toEqual({ placeId: 'PLACE-TEST-001', prioridadeDeProspeccao: 85 })
   })
 
   it('retorna nextCursor null quando todos os itens cabem na página', async () => {

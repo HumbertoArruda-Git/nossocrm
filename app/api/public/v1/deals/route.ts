@@ -58,7 +58,7 @@ export async function GET(request: Request) {
 
   let query = sb
     .from('deals')
-    .select('id,title,value,board_id,stage_id,contact_id,client_company_id,is_won,is_lost,loss_reason,closed_at,created_at,updated_at', { count: 'exact' })
+    .select('id,title,value,board_id,stage_id,contact_id,client_company_id,is_won,is_lost,loss_reason,closed_at,created_at,updated_at,custom_fields', { count: 'exact' })
     .eq('organization_id', auth.organizationId)
     .is('deleted_at', null)
     .order('updated_at', { ascending: false });
