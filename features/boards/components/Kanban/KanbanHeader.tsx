@@ -232,7 +232,7 @@ export const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                             className="max-w-full pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900 dark:text-white dark:[color-scheme:dark] dark:[&>option]:bg-slate-900 dark:[&>option]:text-white text-xs outline-none focus:ring-2 focus:ring-primary-500 backdrop-blur-sm appearance-none cursor-pointer"
                         >
                             <option value="all">Todas as categorias</option>
-                            {['Restaurante', 'Clínica', 'Oficina', 'Loja', 'Academia', 'Hotel', 'Contabilidade', 'Salão', 'Escola', 'Outro'].map(category => (
+                            {['Restaurante', 'Clínica', 'Oficina', 'Loja', 'Academia', 'Hotel', 'Contabilidade', 'Salão', 'Escola', 'Pet', 'Imobiliária', 'Outro'].map(category => (
                                 <option key={category} value={category}>{category}</option>
                             ))}
                         </select>
