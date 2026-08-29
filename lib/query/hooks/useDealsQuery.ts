@@ -373,14 +373,16 @@ export const useUpdateDeal = () => {
 
       return { previousDeals };
     },
-    onError: (_error, _variables, context) => {
+    onError: (_error, { id }, context) => {
       if (context?.previousDeals) {
         queryClient.setQueryData(DEALS_VIEW_KEY, context.previousDeals);
       }
+      queryClient.invalidateQueries({ queryKey: queryKeys.deals.detail(id) });
+      queryClient.invalidateQueries({ queryKey: DEALS_VIEW_KEY });
     },
-    onSettled: (_data, _error, { id }) => {
-      // NÃO fazer invalidateQueries para deals - Realtime gerencia a sincronização
-      // Apenas invalidar o detalhe específico se necessário
+    onSuccess: (_data, { id }) => {
+      // Confirmar a persistência sem depender exclusivamente do Realtime.
+      queryClient.invalidateQueries({ queryKey: DEALS_VIEW_KEY });
       queryClient.invalidateQueries({ queryKey: queryKeys.deals.detail(id) });
     },
   });

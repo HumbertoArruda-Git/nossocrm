@@ -84,6 +84,8 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ hash, isAdmin }) => {
 
           <CustomFieldsManager
             customFieldDefinitions={controller.customFieldDefinitions}
+            loading={controller.customFieldsLoading}
+            error={controller.customFieldsError}
             newFieldLabel={controller.newFieldLabel}
             setNewFieldLabel={controller.setNewFieldLabel}
             newFieldType={controller.newFieldType}

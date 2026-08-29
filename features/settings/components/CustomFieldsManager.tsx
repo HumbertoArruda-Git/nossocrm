@@ -7,6 +7,8 @@ import { InputField, SelectField } from '@/components/ui/FormField';
 
 interface CustomFieldsManagerProps {
   customFieldDefinitions: CustomFieldDefinition[];
+  loading?: boolean;
+  error?: boolean;
   newFieldLabel: string;
   setNewFieldLabel: (label: string) => void;
   newFieldType: CustomFieldType;
@@ -54,6 +56,8 @@ interface CustomFieldsManagerProps {
  */
 export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
   customFieldDefinitions,
+  loading,
+  error,
   newFieldLabel,
   setNewFieldLabel,
   newFieldType,
@@ -68,6 +72,8 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
 }) => {
   return (
     <SettingsSection title="Campos Personalizados" icon={PenTool}>
+      {loading && <p className="text-sm text-slate-500 mb-4">Carregando campos personalizados...</p>}
+      {error && <p className="text-sm text-red-500 mb-4">Não foi possível carregar os campos personalizados.</p>}
       <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
         Crie campos específicos para o seu negócio (ex: CNPJ, Data de Contrato, Origem). Eles aparecerão nos detalhes do negócio.
       </p>
@@ -99,6 +105,7 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
             ]}
             value={newFieldType}
             onChange={(e) => setNewFieldType(e.target.value as CustomFieldType)}
+            disabled={!!editingId}
           />
           <div className="flex gap-2">
             {editingId && (
@@ -136,7 +143,7 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
         )}
       </div>
 
-      <div className="space-y-2">
+      {!loading && <div className="space-y-2">
         {customFieldDefinitions.map(field => (
           <div key={field.id} className={`flex items-center justify-between p-3 bg-white dark:bg-white/5 border rounded-lg group transition-colors ${editingId === field.id ? 'border-amber-400 dark:border-amber-500/50 ring-1 ring-amber-400/30' : 'border-slate-200 dark:border-white/10 hover:border-primary-300 dark:hover:border-primary-500/50'}`}>
             <div className="flex items-center gap-3">
@@ -183,7 +190,7 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
         {customFieldDefinitions.length === 0 && (
           <p className="text-center text-slate-500 text-sm py-4 italic">Nenhum campo personalizado criado.</p>
         )}
-      </div>
+      </div>}
     </SettingsSection>
   );
 };

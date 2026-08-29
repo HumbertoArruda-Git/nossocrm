@@ -7,6 +7,7 @@ import { sanitizePostgrestValue } from '@/lib/utils/sanitize';
 import { resolveBoardIdFromKey, resolveFirstStageId } from '@/lib/public-api/resolve';
 import { normalizeEmail, normalizePhone, normalizeText } from '@/lib/public-api/sanitize';
 import { isValidUUID, sanitizeUUID } from '@/lib/supabase/utils';
+import { PublicCustomFieldsSchema, validateDealCustomFields } from '@/lib/public-api/customFields';
 
 export const runtime = 'nodejs';
 
@@ -27,6 +28,7 @@ const DealCreateSchema = z.object({
   contact_id: z.string().uuid().optional(),
   contact: ContactInlineSchema.optional(),
   client_company_id: z.string().uuid().optional(),
+  custom_fields: PublicCustomFieldsSchema.optional(),
 }).strict();
 
 export async function GET(request: Request) {
@@ -42,6 +44,8 @@ export async function GET(request: Request) {
   const clientCompanyId = sanitizeUUID(url.searchParams.get('client_company_id'));
   const status = (url.searchParams.get('status') || '').trim(); // open|won|lost
   const updatedAfter = (url.searchParams.get('updated_after') || '').trim();
+  const customFieldKey = (url.searchParams.get('custom_field_key') || '').trim();
+  const customFieldValue = url.searchParams.get('custom_field_value');
   const limit = parseLimit(url.searchParams.get('limit'));
   const offset = decodeOffsetCursor(url.searchParams.get('cursor'));
 
@@ -54,7 +58,7 @@ export async function GET(request: Request) {
 
   let query = sb
     .from('deals')
-    .select('id,title,value,board_id,stage_id,contact_id,client_company_id,is_won,is_lost,loss_reason,closed_at,created_at,updated_at', { count: 'exact' })
+    .select('id,title,value,board_id,stage_id,contact_id,client_company_id,is_won,is_lost,loss_reason,closed_at,created_at,updated_at,custom_fields', { count: 'exact' })
     .eq('organization_id', auth.organizationId)
     .is('deleted_at', null)
     .order('updated_at', { ascending: false });
@@ -67,6 +71,12 @@ export async function GET(request: Request) {
   if (q) {
     const safeQ = sanitizePostgrestValue(q)
     if (safeQ) query = query.ilike('title', `%${safeQ}%`);
+  }
+  if (customFieldKey || customFieldValue !== null) {
+    if (!customFieldKey || customFieldValue === null) return NextResponse.json({ error: 'custom_field_key and custom_field_value are required together', code: 'VALIDATION_ERROR' }, { status: 422 });
+    const valid = await validateDealCustomFields(auth.organizationId, { [customFieldKey]: customFieldValue });
+    if (valid.error) return NextResponse.json({ error: valid.error, code: valid.status === 500 ? 'DB_ERROR' : 'VALIDATION_ERROR' }, { status: valid.status ?? 422 });
+    query = query.contains('custom_fields', { [customFieldKey]: customFieldValue });
   }
 
   if (status === 'open') query = query.eq('is_won', false).eq('is_lost', false);
@@ -100,6 +110,7 @@ export async function GET(request: Request) {
       closed_at: d.closed_at ?? null,
       created_at: d.created_at,
       updated_at: d.updated_at,
+      custom_fields: d.custom_fields ?? {},
     })),
     nextCursor,
   });
@@ -195,8 +206,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: e?.message || 'Invalid contact', code: 'VALIDATION_ERROR' }, { status: 422 });
     }
   }
-  if (!contactId) {
-    return NextResponse.json({ error: 'Provide contact_id or contact', code: 'VALIDATION_ERROR' }, { status: 422 });
+  const companyId = parsed.data.client_company_id ? sanitizeUUID(parsed.data.client_company_id) : null;
+  if (contactId) {
+    const { data: contact, error } = await sb.from('contacts').select('id').eq('id', contactId).eq('organization_id', auth.organizationId).is('deleted_at', null).maybeSingle();
+    if (error) return NextResponse.json({ error: 'Internal server error', code: 'DB_ERROR' }, { status: 500 });
+    if (!contact) return NextResponse.json({ error: 'Contact not found', code: 'VALIDATION_ERROR' }, { status: 422 });
+  }
+  if (companyId) {
+    const { data: company, error } = await sb.from('crm_companies').select('id').eq('id', companyId).eq('organization_id', auth.organizationId).is('deleted_at', null).maybeSingle();
+    if (error) return NextResponse.json({ error: 'Internal server error', code: 'DB_ERROR' }, { status: 500 });
+    if (!company) return NextResponse.json({ error: 'Client company not found', code: 'VALIDATION_ERROR' }, { status: 422 });
+  }
+  if (!contactId && !companyId) {
+    return NextResponse.json({ error: 'Provide contact_id, contact, or client_company_id', code: 'VALIDATION_ERROR' }, { status: 422 });
+  }
+
+  let customFields: Record<string, unknown> = {};
+  if (parsed.data.custom_fields) {
+    const valid = await validateDealCustomFields(auth.organizationId, parsed.data.custom_fields);
+    if (valid.error) return NextResponse.json({ error: valid.error, code: valid.status === 500 ? 'DB_ERROR' : 'VALIDATION_ERROR' }, { status: valid.status ?? 422 });
+    customFields = valid.data ?? {};
   }
 
   const now = new Date().toISOString();
@@ -208,7 +237,8 @@ export async function POST(request: Request) {
     board_id: boardId,
     stage_id: stageId,
     contact_id: contactId,
-    client_company_id: sanitizeUUID(parsed.data.client_company_id) || null,
+    client_company_id: companyId,
+    custom_fields: customFields,
     is_won: false,
     is_lost: false,
     created_at: now,
@@ -218,7 +248,7 @@ export async function POST(request: Request) {
   const { data, error } = await sb
     .from('deals')
     .insert(insertPayload)
-    .select('id,title,value,board_id,stage_id,contact_id,client_company_id,is_won,is_lost,loss_reason,closed_at,created_at,updated_at')
+    .select('id,title,value,board_id,stage_id,contact_id,client_company_id,is_won,is_lost,loss_reason,closed_at,created_at,updated_at,custom_fields')
     .single();
   if (error) {
     console.error('[API] Database error:', error)
