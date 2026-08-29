@@ -48,6 +48,25 @@ function dropHighlightClasses(stageBgClass?: string): string {
   return 'border-emerald-500 bg-emerald-100/20 dark:bg-emerald-900/30 shadow-xl shadow-emerald-500/30';
 }
 
+const prospectingScore = (deal: DealView, key: string): number => {
+  const value = deal.customFields?.[key];
+  if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) return Number.NEGATIVE_INFINITY;
+  const numericValue = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(numericValue) ? numericValue : Number.NEGATIVE_INFINITY;
+};
+
+const sortProspectingDeals = (deals: DealView[]): DealView[] =>
+  deals
+    .map((deal, index) => ({ deal, index }))
+    .sort((a, b) => {
+      const priorityDifference = prospectingScore(b.deal, 'prioridadeDeProspeccao') - prospectingScore(a.deal, 'prioridadeDeProspeccao');
+      if (priorityDifference !== 0) return priorityDifference;
+
+      const potentialDifference = prospectingScore(b.deal, 'potencialComercial') - prospectingScore(a.deal, 'potencialComercial');
+      return potentialDifference !== 0 ? potentialDifference : a.index - b.index;
+    })
+    .map(({ deal }) => deal);
+
 interface KanbanBoardProps {
   stages: BoardStage[];
   filteredDeals: DealView[];
@@ -192,7 +211,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   return (
     <div role="list" aria-label="Colunas do pipeline" className="flex gap-4 h-full overflow-x-auto pb-2 w-full">
       {stages.map(stage => {
-        const stageDeals = dealsByStageId.map.get(stage.id) ?? [];
+        const stageDeals = isProspeccaoComercial
+          ? sortProspectingDeals(dealsByStageId.map.get(stage.id) ?? [])
+          : dealsByStageId.map.get(stage.id) ?? [];
         const stageValue = dealsByStageId.totals.get(stage.id) ?? 0;
         const isOver = dragOverStage === stage.id && draggingId !== null;
 
