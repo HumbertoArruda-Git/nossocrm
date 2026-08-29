@@ -44,7 +44,8 @@ import {
   Bug,
   CheckSquare,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Search
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -115,6 +116,7 @@ const NavItem = ({
   clickedPath,
   onItemClick,
   badge,
+  external,
 }: {
   to: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
@@ -123,6 +125,7 @@ const NavItem = ({
   clickedPath?: string;
   onItemClick?: (path: string) => void;
   badge?: number;
+  external?: boolean;
 }) => {
   const pathname = usePathname();
   const isActive = pathname === to || (to === '/boards' && pathname === '/pipeline');
@@ -133,9 +136,12 @@ const NavItem = ({
   const anotherItemWasClicked = clickedPath && clickedPath !== to;
   const isActuallyActive = anotherItemWasClicked ? false : (isActive || wasJustClicked);
 
+  const Component = external ? 'a' : Link;
+
   return (
-    <Link
+    <Component
       href={to}
+      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       onMouseEnter={prefetch ? () => prefetchRoute(prefetch) : undefined}
       onFocus={prefetch ? () => prefetchRoute(prefetch) : undefined}
       onClick={() => onItemClick?.(to)}
@@ -154,7 +160,7 @@ const NavItem = ({
         )}
       </div>
       <span className="font-display tracking-wide">{label}</span>
-    </Link>
+    </Component>
   );
 };
 
@@ -304,6 +310,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             { to: '/messaging', icon: MessageSquare, label: 'Mensagens', prefetch: undefined, badge: unreadMessagesCount },
             { to: '/dashboard', icon: LayoutDashboard, label: 'Visão Geral', prefetch: 'dashboard' as const, badge: undefined },
             { to: '/boards', icon: KanbanSquare, label: 'Boards', prefetch: 'boards' as const, badge: undefined },
+            { to: 'https://humbertoarruda.app.n8n.cloud/form/prospector', icon: Search, label: 'Buscar novos leads', prefetch: undefined, badge: undefined, external: true },
             { to: '/contacts', icon: Users, label: 'Contatos', prefetch: 'contacts' as const, badge: undefined },
             { to: '/activities', icon: CheckSquare, label: 'Atividades', prefetch: 'activities' as const, badge: undefined },
             { to: '/reports', icon: BarChart3, label: 'Relatórios', prefetch: 'reports' as const, badge: undefined },
@@ -314,8 +321,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <TooltipProvider key={item.to} delayDuration={200}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Link
+                      {item.external ? (
+                      <a
                         href={item.to}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         onMouseEnter={() => item.prefetch && prefetchRoute(item.prefetch)}
                         onClick={() => setClickedPath(item.to)}
                         className={(() => {
@@ -336,7 +346,31 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             {item.badge! > 99 ? '99+' : item.badge}
                           </span>
                         )}
+                      </a>
+                      ) : (
+                      <Link
+                        href={item.to}
+                        onMouseEnter={() => item.prefetch && prefetchRoute(item.prefetch)}
+                        onClick={() => setClickedPath(item.to)}
+                        className={(() => {
+                          const isActive = pathname === item.to || (item.to === '/boards' && pathname === '/pipeline');
+                          const wasJustClicked = clickedPath === item.to;
+                          const anotherItemWasClicked = clickedPath && clickedPath !== item.to;
+                          const isActuallyActive = anotherItemWasClicked ? false : (isActive || wasJustClicked);
+                          return `relative w-10 h-10 rounded-lg flex items-center justify-center ${isActuallyActive
+                            ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 border border-primary-200 dark:border-primary-900/50'
+                            : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                            }`;
+                        })()}
+                      >
+                        <item.icon size={20} />
+                        {(item.badge ?? 0) > 0 && (
+                          <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] flex items-center justify-center px-0.5 text-[9px] font-bold text-white bg-red-500 rounded-full shadow-sm">
+                            {item.badge! > 99 ? '99+' : item.badge}
+                          </span>
+                        )}
                       </Link>
+                      )}
                     </TooltipTrigger>
                     <TooltipContent side="right">
                       {item.label}
@@ -356,6 +390,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 clickedPath={clickedPath}
                 onItemClick={setClickedPath}
                 badge={item.badge}
+                external={item.external}
               />
             );
           })}
