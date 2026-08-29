@@ -164,6 +164,24 @@ const NavItem = ({
   );
 };
 
+type SidebarNavItemBase = {
+  to: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  label: string;
+  badge?: number;
+};
+
+type InternalSidebarNavItem = SidebarNavItemBase & {
+  external?: false;
+  prefetch?: RouteName;
+};
+
+type ExternalSidebarNavItem = SidebarNavItemBase & {
+  external: true;
+};
+
+type SidebarNavItem = InternalSidebarNavItem | ExternalSidebarNavItem;
+
 
 /**
  * Layout principal da aplicação
@@ -265,6 +283,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Gera iniciais do email
   const userInitials = profile?.email?.substring(0, 2).toUpperCase() || 'U';
 
+  const navigationItems: SidebarNavItem[] = [
+    { to: '/inbox', icon: Inbox, label: 'Inbox', prefetch: 'inbox' },
+    { to: '/messaging', icon: MessageSquare, label: 'Mensagens', badge: unreadMessagesCount },
+    { to: '/dashboard', icon: LayoutDashboard, label: 'Visão Geral', prefetch: 'dashboard' },
+    { to: '/boards', icon: KanbanSquare, label: 'Boards', prefetch: 'boards' },
+    { to: 'https://humbertoarruda.app.n8n.cloud/form/prospector', icon: Search, label: 'Buscar novos leads', external: true },
+    { to: '/contacts', icon: Users, label: 'Contatos', prefetch: 'contacts' },
+    { to: '/activities', icon: CheckSquare, label: 'Atividades', prefetch: 'activities' },
+    { to: '/reports', icon: BarChart3, label: 'Relatórios', prefetch: 'reports' },
+    { to: '/settings', icon: Settings, label: 'Configurações', prefetch: 'settings' },
+  ];
+
   if (!loading && !user) return null;
 
   return (
@@ -305,17 +335,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
 
         <nav className={`flex-1 p-4 space-y-2 flex flex-col ${sidebarCollapsed ? 'items-center px-2' : ''}`} aria-label="Navegação do sistema">
-          {[
-            { to: '/inbox', icon: Inbox, label: 'Inbox', prefetch: 'inbox' as const, badge: undefined },
-            { to: '/messaging', icon: MessageSquare, label: 'Mensagens', prefetch: undefined, badge: unreadMessagesCount },
-            { to: '/dashboard', icon: LayoutDashboard, label: 'Visão Geral', prefetch: 'dashboard' as const, badge: undefined },
-            { to: '/boards', icon: KanbanSquare, label: 'Boards', prefetch: 'boards' as const, badge: undefined },
-            { to: 'https://humbertoarruda.app.n8n.cloud/form/prospector', icon: Search, label: 'Buscar novos leads', prefetch: undefined, badge: undefined, external: true },
-            { to: '/contacts', icon: Users, label: 'Contatos', prefetch: 'contacts' as const, badge: undefined },
-            { to: '/activities', icon: CheckSquare, label: 'Atividades', prefetch: 'activities' as const, badge: undefined },
-            { to: '/reports', icon: BarChart3, label: 'Relatórios', prefetch: 'reports' as const, badge: undefined },
-            { to: '/settings', icon: Settings, label: 'Configurações', prefetch: 'settings' as const, badge: undefined },
-          ].map((item) => {
+          {navigationItems.map((item) => {
             if (sidebarCollapsed) {
               return (
                 <TooltipProvider key={item.to} delayDuration={200}>
@@ -326,7 +346,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         href={item.to}
                         target="_blank"
                         rel="noopener noreferrer"
-                        onMouseEnter={() => item.prefetch && prefetchRoute(item.prefetch)}
                         onClick={() => setClickedPath(item.to)}
                         className={(() => {
                           const isActive = pathname === item.to || (item.to === '/boards' && pathname === '/pipeline');
@@ -386,7 +405,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 to={item.to}
                 icon={item.icon}
                 label={item.label}
-                prefetch={item.prefetch}
+                prefetch={item.external ? undefined : item.prefetch}
                 clickedPath={clickedPath}
                 onItemClick={setClickedPath}
                 badge={item.badge}
