@@ -56,6 +56,8 @@ interface CustomFieldsManagerProps {
  */
 export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
   customFieldDefinitions,
+  loading,
+  error,
   newFieldLabel,
   setNewFieldLabel,
   newFieldType,
