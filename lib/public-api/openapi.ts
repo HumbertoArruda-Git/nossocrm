@@ -567,7 +567,29 @@ export function getPublicApiOpenApiDocument(): OpenApiDocument {
           tags: ['Deals'],
           summary: 'Criar deal',
           security: [{ ApiKeyAuth: [] }],
-          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['title'], properties: { title: { type: 'string' }, value: { type: 'number' }, board_id: { type: 'string' }, board_key: { type: 'string' }, stage_id: { type: 'string' }, contact_id: { type: 'string' }, contact: { type: 'object' }, client_company_id: { type: 'string' }, custom_fields: { $ref: '#/components/schemas/DealCustomFields' } }, description: 'Informe contact_id/contact ou client_company_id.' } } } },
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['title'],
+                  properties: {
+                    title: { type: 'string' },
+                    value: { type: 'number' },
+                    board_id: { type: 'string' },
+                    board_key: { type: 'string' },
+                    stage_id: { type: 'string' },
+                    contact_id: { type: 'string' },
+                    contact: { type: 'object' },
+                    client_company_id: { type: 'string' },
+                    custom_fields: { $ref: '#/components/schemas/DealCustomFields' },
+                  },
+                  description: 'Informe contact_id/contact ou client_company_id.',
+                },
+              },
+            },
+          },
           responses: {
             201: { description: 'Created', content: { 'application/json': { schema: { type: 'object' } } } },
             401: { $ref: '#/components/responses/Unauthorized' },
@@ -590,7 +612,27 @@ export function getPublicApiOpenApiDocument(): OpenApiDocument {
           summary: 'Atualizar deal',
           security: [{ ApiKeyAuth: [] }],
           parameters: [{ name: 'dealId', in: 'path', required: true, schema: { type: 'string' } }],
-          requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { title: { type: 'string' }, value: { type: 'number' }, contact_id: { type: 'string' }, client_company_id: { type: ['string', 'null'] }, loss_reason: { type: ['string', 'null'] }, custom_fields: { $ref: '#/components/schemas/DealCustomFields', description: 'Atualização parcial; chaves não enviadas são preservadas.' } } } } },
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    title: { type: 'string' },
+                    value: { type: 'number' },
+                    contact_id: { type: 'string' },
+                    client_company_id: { type: ['string', 'null'] },
+                    loss_reason: { type: ['string', 'null'] },
+                    custom_fields: {
+                      allOf: [{ $ref: '#/components/schemas/DealCustomFields' }],
+                      description: 'Atualização parcial; chaves não enviadas são preservadas.',
+                    },
+                  },
+                },
+              },
+            },
+          },
           responses: { 200: { description: 'OK', content: { 'application/json': { schema: { type: 'object' } } } }, 401: { $ref: '#/components/responses/Unauthorized' } },
         },
       },
