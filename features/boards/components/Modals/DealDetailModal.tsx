@@ -169,6 +169,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
   const [pendingLostStageId, setPendingLostStageId] = useState<string | null>(null);
   const [lossReasonOrigin, setLossReasonOrigin] = useState<'button' | 'stage'>('button');
   const [showBriefingDrawer, setShowBriefingDrawer] = useState(false);
+  const [expandedCustomFields, setExpandedCustomFields] = useState<Record<string, boolean>>({});
 
   // Tags suggestions (local for now; Settings UI writes to the same key)
   const [availableTags, setAvailableTags] = usePersistedState<string[]>('crm_tags', []);
@@ -197,6 +198,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
       setLossReasonOrigin('button');
       setTagQuery('');
       setShowBriefingDrawer(false);
+      setExpandedCustomFields({});
     }
   }, [isOpen, dealId]); // Depend on dealId to reset when switching deals
 
@@ -832,7 +834,14 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                       Campos Personalizados
                     </h3>
                     <div className="space-y-4">
-                      {customFieldDefinitions.map(field => (
+                      {customFieldDefinitions.map(field => {
+                        const rawValue = deal.customFields?.[field.key];
+                        const textValue = typeof rawValue === 'string' ? rawValue : '';
+                        const isLongText = field.type === 'text' && (textValue.length > 140 || textValue.includes('\n'));
+                        const isExpanded = expandedCustomFields[field.key] === true;
+                        const previewId = `custom-field-preview-${field.id}`;
+
+                        return (
                         <div key={field.id}>
                           <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
                             {field.label}
@@ -858,8 +867,30 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                               className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded px-2 py-1.5 text-sm dark:text-white focus:ring-1 focus:ring-primary-500 outline-none"
                             />
                           )}
+                          {isLongText && (
+                            <>
+                              <button
+                                type="button"
+                                aria-expanded={isExpanded}
+                                aria-controls={previewId}
+                                onClick={() => setExpandedCustomFields(current => ({ ...current, [field.key]: !current[field.key] }))}
+                                className="mt-1 text-xs font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+                              >
+                                {isExpanded ? 'Ocultar' : 'Ver completo'}
+                              </button>
+                              {isExpanded && (
+                                <div
+                                  id={previewId}
+                                  className="mt-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-relaxed text-slate-700 whitespace-pre-wrap break-words [overflow-wrap:anywhere] dark:border-white/10 dark:bg-black/20 dark:text-slate-200"
+                                >
+                                  {textValue}
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
