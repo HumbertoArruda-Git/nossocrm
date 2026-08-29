@@ -1,0 +1,4 @@
+@media (max-width: 800px) {
+  .hga-nav { display: flex; max-width: 62vw; overflow-x: auto; }
+  .hga-menu { display: none; }
+}
