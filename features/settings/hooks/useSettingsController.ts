@@ -3,6 +3,7 @@ import { useToast } from '@/context/ToastContext';
 import { CustomFieldDefinition, CustomFieldType } from '@/types';
 import { usePersistedState } from '@/hooks/usePersistedState';
 import { useCustomFieldDefinitions, useCreateCustomFieldDefinition, useUpdateCustomFieldDefinition, useDeleteCustomFieldDefinition } from '@/lib/query/hooks/useCustomFieldDefinitionsQuery';
+import { generateCustomFieldKey } from '@/features/settings/utils/customFieldKey';
 
 // TODO: Migrate customFieldDefinitions and tags to Supabase
 // For now, using local state as placeholder
@@ -64,12 +65,11 @@ export const useSettingsController = () => {
       cancelEditingField();
     } else {
       // CREATE NEW
-      const key = newFieldLabel
-        .toLowerCase()
-        .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) =>
-          index === 0 ? word.toLowerCase() : word.toUpperCase()
-        )
-        .replace(/\s+/g, '');
+      const key = generateCustomFieldKey(newFieldLabel);
+      if (!key) {
+        addToast('Informe um nome válido para o campo personalizado.', 'error');
+        return;
+      }
 
       const result = await createCustomField.mutateAsync({ key, label: newFieldLabel, type: newFieldType, options: optionsArray });
       if (result.error) { addToast(result.error.message, 'error'); return; }
