@@ -229,7 +229,7 @@ export const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                             value={prospectingFilters.category}
                             onChange={(e) => setProspectingFilters(current => ({ ...current, category: e.target.value }))}
                             aria-label="Filtrar por categoria"
-                            className="max-w-full pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-white/5 text-xs outline-none focus:ring-2 focus:ring-primary-500 dark:text-white backdrop-blur-sm appearance-none cursor-pointer"
+                            className="max-w-full pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900 dark:text-white dark:[color-scheme:dark] dark:[&>option]:bg-slate-900 dark:[&>option]:text-white text-xs outline-none focus:ring-2 focus:ring-primary-500 backdrop-blur-sm appearance-none cursor-pointer"
                         >
                             <option value="all">Todas as categorias</option>
                             {['Restaurante', 'Clínica', 'Oficina', 'Loja', 'Academia', 'Hotel', 'Contabilidade', 'Salão', 'Escola', 'Outro'].map(category => (
@@ -240,7 +240,7 @@ export const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                             value={prospectingFilters.priority}
                             onChange={(e) => setProspectingFilters(current => ({ ...current, priority: e.target.value as ProspectingFilters['priority'] }))}
                             aria-label="Filtrar por prioridade de prospecção"
-                            className="pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-white/5 text-xs outline-none focus:ring-2 focus:ring-primary-500 dark:text-white backdrop-blur-sm appearance-none cursor-pointer"
+                            className="pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900 dark:text-white dark:[color-scheme:dark] dark:[&>option]:bg-slate-900 dark:[&>option]:text-white text-xs outline-none focus:ring-2 focus:ring-primary-500 backdrop-blur-sm appearance-none cursor-pointer"
                         >
                             <option value="all">Prioridade: Todas</option>
                             <option value="8">Prioridade: 8+</option>
@@ -250,7 +250,7 @@ export const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                             value={prospectingFilters.potential}
                             onChange={(e) => setProspectingFilters(current => ({ ...current, potential: e.target.value as ProspectingFilters['potential'] }))}
                             aria-label="Filtrar por potencial comercial"
-                            className="pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-white/5 text-xs outline-none focus:ring-2 focus:ring-primary-500 dark:text-white backdrop-blur-sm appearance-none cursor-pointer"
+                            className="pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900 dark:text-white dark:[color-scheme:dark] dark:[&>option]:bg-slate-900 dark:[&>option]:text-white text-xs outline-none focus:ring-2 focus:ring-primary-500 backdrop-blur-sm appearance-none cursor-pointer"
                         >
                             <option value="all">Potencial: Todos</option>
                             <option value="8">Potencial: 8+</option>
@@ -260,7 +260,7 @@ export const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                             value={prospectingFilters.hook}
                             onChange={(e) => setProspectingFilters(current => ({ ...current, hook: e.target.value as ProspectingFilters['hook'] }))}
                             aria-label="Filtrar por qualidade do gancho"
-                            className="pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-white/5 text-xs outline-none focus:ring-2 focus:ring-primary-500 dark:text-white backdrop-blur-sm appearance-none cursor-pointer"
+                            className="pl-3 pr-8 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900 dark:text-white dark:[color-scheme:dark] dark:[&>option]:bg-slate-900 dark:[&>option]:text-white text-xs outline-none focus:ring-2 focus:ring-primary-500 backdrop-blur-sm appearance-none cursor-pointer"
                         >
                             <option value="all">Gancho: Todos</option>
                             <option value="forte">Gancho: Forte</option>

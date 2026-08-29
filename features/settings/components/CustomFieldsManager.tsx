@@ -103,6 +103,7 @@ export const CustomFieldsManager: React.FC<CustomFieldsManagerProps> = ({
               { value: 'date', label: 'Data' },
               { value: 'select', label: 'Seleção' },
             ]}
+            selectClassName="dark:bg-slate-900 dark:text-white dark:[color-scheme:dark] dark:[&>option]:bg-slate-900 dark:[&>option]:text-white"
             value={newFieldType}
             onChange={(e) => setNewFieldType(e.target.value as CustomFieldType)}
             disabled={!!editingId}
