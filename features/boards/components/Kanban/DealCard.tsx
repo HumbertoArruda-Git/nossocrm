@@ -7,6 +7,7 @@ import { priorityAriaLabelPtBr } from '@/lib/utils/priority';
 
 interface DealCardProps {
   deal: DealView;
+  isProspeccaoComercial?: boolean;
   isRotting: boolean;
   activityStatus: string;
   isDragging: boolean;
@@ -35,6 +36,17 @@ const isDealClosed = (deal: DealView) => deal.isWon || deal.isLost;
 // Get priority label for accessibility (PT-BR)
 const getPriorityLabel = (priority: string | undefined) => priorityAriaLabelPtBr(priority);
 
+const getIndicatorClass = (value: number) => {
+  if (value >= 8) return 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700/50';
+  if (value >= 6) return 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/50';
+  return 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-700/50 dark:text-slate-300 dark:border-slate-600';
+};
+
+const getNumericCustomField = (deal: DealView, key: string): number | undefined => {
+  const value = deal.customFields?.[key];
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+};
+
 // Get initials from name
 const getInitials = (name: string) => {
   return name
@@ -47,6 +59,7 @@ const getInitials = (name: string) => {
 
 const DealCardComponent: React.FC<DealCardProps> = ({
   deal,
+  isProspeccaoComercial = false,
   isRotting,
   activityStatus,
   isDragging,
@@ -235,6 +248,21 @@ const DealCardComponent: React.FC<DealCardProps> = ({
       <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1">
         <Building2 size={10} aria-hidden="true" /> {deal.companyName}
       </p>
+
+      {isProspeccaoComercial && (() => {
+        const prioridade = getNumericCustomField(deal, 'prioridadeDeProspeccao');
+        const potencial = getNumericCustomField(deal, 'potencialComercial');
+        const qualidade = deal.customFields?.qualidadeDoGancho;
+        const qualidadeLabel = typeof qualidade === 'string' && qualidade.trim() ? qualidade.trim().charAt(0).toUpperCase() + qualidade.trim().slice(1) : undefined;
+        if (prioridade === undefined && potencial === undefined && !qualidadeLabel) return null;
+        return (
+          <div className="flex flex-wrap gap-1.5 mb-3 text-[10px]" aria-label="Indicadores de prospecção">
+            {prioridade !== undefined && <span className={`rounded border px-1.5 py-0.5 font-semibold ${getIndicatorClass(prioridade)}`}>Prioridade {prioridade}/10</span>}
+            {potencial !== undefined && <span className={`rounded border px-1.5 py-0.5 font-semibold ${getIndicatorClass(potencial)}`}>Potencial {potencial}/10</span>}
+            {qualidadeLabel && <span className="rounded border border-violet-200 bg-violet-100 px-1.5 py-0.5 font-semibold text-violet-700 dark:border-violet-700/50 dark:bg-violet-900/30 dark:text-violet-300">Gancho {qualidadeLabel}</span>}
+          </div>
+        );
+      })()}
 
       <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-white/5">
         <div className="flex items-center gap-2">

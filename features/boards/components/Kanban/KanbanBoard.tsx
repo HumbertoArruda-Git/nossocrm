@@ -51,6 +51,7 @@ function dropHighlightClasses(stageBgClass?: string): string {
 interface KanbanBoardProps {
   stages: BoardStage[];
   filteredDeals: DealView[];
+  isProspeccaoComercial?: boolean;
   draggingId: string | null;
   handleDragStart: (e: React.DragEvent, id: string, title: string) => void;
   handleDragOver: (e: React.DragEvent) => void;
@@ -104,6 +105,7 @@ interface KanbanBoardProps {
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   stages,
   filteredDeals,
+  isProspeccaoComercial = false,
   draggingId,
   handleDragStart,
   handleDragOver,
@@ -296,6 +298,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 <div key={deal.id} role="listitem">
                   <DealCard
                     deal={deal}
+                    isProspeccaoComercial={isProspeccaoComercial}
                     isRotting={
                       isDealRotting(deal) &&
                       !deal.isWon &&
