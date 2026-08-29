@@ -382,12 +382,16 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
     setShowCustomItem(false);
   };
 
-  const confirmDeleteDeal = () => {
-    if (deleteId) {
-      deleteDeal(deleteId);
+  const confirmDeleteDeal = async () => {
+    if (!deleteId) return;
+
+    try {
+      await deleteDeal(deleteId);
       addToast('Negócio excluído com sucesso', 'success');
       setDeleteId(null);
       onClose();
+    } catch (error) {
+      addToast(error instanceof Error ? `Erro ao excluir negócio: ${error.message}` : 'Erro ao excluir negócio', 'error');
     }
   };
 
@@ -1317,7 +1321,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
   }
 
   return (
-    <FocusTrap active={isOpen} onEscape={onClose}>
+    <FocusTrap active={isOpen && !deleteId} onEscape={onClose}>
       <div
         // Backdrop + positioning wrapper. Clicking outside the panel should close the modal.
         // No desktop, este modal não deve cobrir a sidebar de navegação.
