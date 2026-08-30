@@ -60,6 +60,7 @@ import { ActivityRow } from '@/features/activities/components/ActivityRow';
 import { formatPriorityPtBr } from '@/lib/utils/priority';
 import { BriefingDrawer } from '@/features/deals/components/BriefingDrawer';
 import { AIExtractedFields } from '@/features/deals/components/AIExtractedFields';
+import { DealCommercialMessages } from '../DealCommercialMessages';
 
 interface DealDetailModalProps {
   dealId: string | null;
@@ -150,7 +151,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
   const [aiResult, setAiResult] = useState<{ suggestion: string; score: number } | null>(null);
   const [emailDraft, setEmailDraft] = useState<string | null>(null);
   const [newNote, setNewNote] = useState('');
-  const [activeTab, setActiveTab] = useState<'timeline' | 'products' | 'info'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'products' | 'info' | 'messages'>('timeline');
   const noteTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const [objection, setObjection] = useState('');
@@ -919,6 +920,15 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                   >
                     IA Insights
                   </button>
+                  {dealBoard?.key === 'prospeccao-comercial' && (
+                    <button
+                      onClick={() => setActiveTab('messages')}
+                      className={`text-sm font-bold h-14 border-b-2 transition-colors ${activeTab === 'messages' ? 'border-primary-500 text-primary-600 dark:text-white' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-white'}`}
+                      aria-label="Abrir mensagens comerciais"
+                    >
+                      Mensagens Comerciais
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -1270,6 +1280,10 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                       )}
                     </div>
                   </div>
+                )}
+
+                {activeTab === 'messages' && dealBoard?.key === 'prospeccao-comercial' && (
+                  <DealCommercialMessages />
                 )}
 
               </div>
