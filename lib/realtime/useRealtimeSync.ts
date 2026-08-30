@@ -517,6 +517,10 @@ export function useRealtimeSync(
                 normalizedDeal.lossReason = newData.loss_reason;
                 delete normalizedDeal.loss_reason;
               }
+              // Keep the raw field for compatibility while exposing the app's camelCase shape.
+              if (newData.custom_fields !== undefined) {
+                normalizedDeal.customFields = newData.custom_fields || {};
+              }
 
               // CRÍTICO: Atualizar APENAS DEALS_VIEW_KEY (única fonte de verdade)
               // O Kanban (useDealsByBoard) agora usa essa mesma query com filtragem client-side
