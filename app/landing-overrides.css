@@ -1,0 +1,24 @@
+@media (max-width: 800px) {
+  .hga-nav, .hga-header-cta { display: none; }
+  .hga-mobile-menu { display: block; position: relative; }
+  .hga-menu { display: grid; place-items: center; width: 40px; height: 40px; background: transparent; border: 1px solid var(--line); border-radius: 6px; color: #fff; }
+  .hga-mobile-panel { position: absolute; z-index: 10; top: 50px; right: 0; width: min(290px, calc(100vw - 40px)); padding: 12px; background: #0b192d; border: 1px solid rgba(117,168,245,.28); border-radius: 8px; box-shadow: 0 18px 42px rgba(0,0,0,.35); }
+  .hga-mobile-panel nav { display: grid; gap: 2px; }
+  .hga-mobile-panel nav a { padding: 13px 11px; color: #cbd6e7; font-size: 13px; border-radius: 5px; }
+  .hga-mobile-panel nav a:hover { background: rgba(88,145,232,.12); color: #fff; }
+  .hga-mobile-panel .hga-header-cta { display: flex; justify-content: center; margin-top: 8px; }
+}
+
+.hga-mobile-menu { display: none; }
+.hga-wordmark { display: inline-flex; align-items: baseline; gap: 8px; }
+.hga-wordmark-name { display: inline-flex; gap: 1px; font-weight: 800; letter-spacing: .04em; }
+.hga-wordmark-name b { font-weight: 800; }
+.hga-wordmark-a { color: var(--blue-bright); }
+.hga-wordmark small { color: #7891b7; font-size: 7px; letter-spacing: .22em; font-weight: 700; }
+.hga-core-mark { display: inline-flex; gap: 1px; letter-spacing: -.08em; }
+.hga-core-mark b { color: #fff; font-weight: 800; }
+.hga-core-mark b:last-child { color: var(--blue-bright); }
+
+@media (max-width: 800px) {
+  .hga-mobile-menu { display: block; }
+}
