@@ -7,12 +7,12 @@ import {
   Database,
   Layers3,
   Link2,
-  Mail,
   PenTool,
   Rocket,
   Workflow,
 } from 'lucide-react'
 import type { Metadata } from 'next'
+import { HgaMobileMenu } from '@/components/HgaMobileMenu'
 
 export const metadata: Metadata = {
   title: 'HGA Systems | Tecnologia para organizar, automatizar e crescer',
@@ -51,11 +51,12 @@ export default function HomePage() {
   return (
     <main className="hga-site">
       <header className="hga-header">
-        <a className="hga-wordmark" href="#inicio" aria-label="HGA Systems — início"><span>HGA</span> Systems</a>
+        <a className="hga-wordmark" href="#inicio" aria-label="HGA Systems — início"><span className="hga-wordmark-name"><b>H</b><b>G</b><b className="hga-wordmark-a">A</b></span><small>SYSTEMS</small></a>
         <nav className="hga-nav" aria-label="Navegação principal">
           <a href="#servicos">Serviços</a><a href="#solucoes">Soluções</a><a href="#processo">Como trabalhamos</a><a href="#contato">Contato</a>
         </nav>
         <a className="hga-header-cta" href="#contato">Falar com a HGA <ArrowRight size={16} /></a>
+        <HgaMobileMenu />
       </header>
 
       <section className="hga-hero" id="inicio">
@@ -67,7 +68,7 @@ export default function HomePage() {
         </div>
         <div className="hga-hero-visual" aria-label="Visualização abstrata de sistemas conectados">
           <div className="hga-orbit orbit-one" /><div className="hga-orbit orbit-two" /><div className="hga-orbit orbit-three" />
-          <div className="hga-core"><span className="hga-core-mark">H</span><span>HGA <b>SYSTEMS</b></span></div>
+          <div className="hga-core"><span className="hga-core-mark"><b>H</b><b>G</b><b>A</b></span><span>HGA <b>SYSTEMS</b></span></div>
           <div className="hga-node node-top"><Database size={15} /><span>dados</span></div><div className="hga-node node-right"><Bot size={15} /><span>inteligência</span></div><div className="hga-node node-bottom"><Rocket size={15} /><span>crescimento</span></div><div className="hga-node node-left"><Workflow size={15} /><span>fluxos</span></div>
           <div className="hga-visual-caption"><span className="hga-live-dot" /> sistemas conectados <span>·</span> operação em movimento</div>
         </div>
@@ -81,9 +82,9 @@ export default function HomePage() {
 
       <section className="hga-section hga-differentials"><div><p className="hga-eyebrow">Por que a HGA</p><h2>Construímos para o contexto real da sua empresa.</h2></div><div className="hga-diff-list">{differentiators.map((item) => <div key={item}><Check size={17} /> {item}</div>)}</div></section>
 
-      <section className="hga-contact" id="contato"><div className="hga-contact-copy"><p className="hga-eyebrow">Vamos conversar</p><h2>Sua empresa não precisa trabalhar mais. Precisa trabalhar melhor.</h2><p>Conte um pouco sobre o desafio atual. A HGA Systems pode ajudar a encontrar um caminho mais simples, conectado e eficiente.</p><a className="hga-contact-email" href="mailto:contato@hgasystems.com.br"><Mail size={17} /> contato@hgasystems.com.br</a></div><form className="hga-form"><div className="hga-form-row"><label>Nome<input name="name" placeholder="Seu nome" /></label><label>Empresa<input name="company" placeholder="Nome da empresa" /></label></div><div className="hga-form-row"><label>E-mail<input type="email" name="email" placeholder="voce@empresa.com" /></label><label>Telefone <small>(opcional)</small><input name="phone" placeholder="(00) 00000-0000" /></label></div><label>Mensagem<textarea name="message" rows={4} placeholder="Qual desafio você quer resolver?" /></label><button className="hga-submit" type="submit" disabled>Envio será habilitado em breve <ArrowRight size={16} /></button></form></section>
+      <section className="hga-contact" id="contato"><div className="hga-contact-copy"><p className="hga-eyebrow">Vamos conversar</p><h2>Sua empresa não precisa trabalhar mais. Precisa trabalhar melhor.</h2><p>Conte um pouco sobre o desafio atual. A HGA Systems pode ajudar a encontrar um caminho mais simples, conectado e eficiente.</p></div><form className="hga-form"><div className="hga-form-row"><label>Nome<input name="name" placeholder="Seu nome" /></label><label>Empresa<input name="company" placeholder="Nome da empresa" /></label></div><div className="hga-form-row"><label>E-mail<input type="email" name="email" placeholder="voce@empresa.com" /></label><label>Telefone <small>(opcional)</small><input name="phone" placeholder="(00) 00000-0000" /></label></div><label>Mensagem<textarea name="message" rows={4} placeholder="Qual desafio você quer resolver?" /></label><button className="hga-submit" type="submit" disabled>Envio será habilitado em breve <ArrowRight size={16} /></button></form></section>
 
-      <footer className="hga-footer"><a className="hga-wordmark" href="#inicio"><span>HGA</span> Systems</a><span>hgasystems.com.br</span><span>© HGA Systems</span></footer>
+      <footer className="hga-footer"><a className="hga-wordmark" href="#inicio"><span className="hga-wordmark-name"><b>H</b><b>G</b><b className="hga-wordmark-a">A</b></span><small>SYSTEMS</small></a><span>hgasystems.com.br</span><span>© HGA Systems</span></footer>
     </main>
   )
 }
