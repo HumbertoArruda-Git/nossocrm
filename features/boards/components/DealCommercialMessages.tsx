@@ -36,7 +36,7 @@ export function DealCommercialMessages() {
       </div>
       <div className="space-y-2">
         <label htmlFor="commercial-message-template" className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Template</label>
-        <select id="commercial-message-template" value={selectedId} onChange={(event) => setSelectedId(event.target.value)} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-black/20 dark:text-white">
+        <select id="commercial-message-template" value={selectedId} onChange={(event) => setSelectedId(event.target.value)} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-white/10 dark:bg-slate-900 dark:text-white dark:[color-scheme:dark] dark:[&>option]:bg-slate-900 dark:[&>option]:text-white dark:[&>option:checked]:bg-primary-600 dark:[&>option:checked]:text-white dark:[&>option:hover]:bg-primary-600">
           {COMMERCIAL_MESSAGE_TEMPLATES.map((template) => <option key={template.id} value={template.id}>{template.label}</option>)}
         </select>
       </div>
