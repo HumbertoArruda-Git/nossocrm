@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Menu, X } from 'lucide-react'
 
 const links = [
-  ['Serviços', '#servicos'],
+  ['Soluções', '#solucoes'],
   ['Processo', '#processo'],
 ]
 
@@ -53,8 +53,8 @@ export function HgaMobileMenu() {
             </a>
           ))}
         </nav>
-        <a className="hga-header-cta" href="#servicos" onClick={() => setOpen(false)}>
-          Conhecer serviços <ArrowRight size={16} aria-hidden="true" />
+        <a className="hga-header-cta" href="#solucoes" onClick={() => setOpen(false)}>
+          Conhecer soluções <ArrowRight size={16} aria-hidden="true" />
         </a>
       </div>
     </div>

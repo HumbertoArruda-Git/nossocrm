@@ -1,17 +1,12 @@
 import {
   ArrowRight,
-  Bot,
   Check,
-  CircuitBoard,
-  Layers3,
-  Link2,
-  PenTool,
-  Workflow,
 } from 'lucide-react'
 import type { Metadata } from 'next'
 import { Exo_2 } from 'next/font/google'
 import { HeroFragments } from '@/components/landing/HeroFragments'
 import { HgaMobileMenu } from '@/components/landing/HgaMobileMenu'
+import { ServiceRow } from '@/components/landing/ServiceRow'
 
 const exo2 = Exo_2({
   subsets: ['latin', 'latin-ext'],
@@ -26,12 +21,12 @@ export const metadata: Metadata = {
 }
 
 const services = [
-  { icon: Workflow, title: 'Automação de Processos', text: 'Reduza tarefas repetitivas e libere seu time para o que realmente movimenta o negócio.' },
-  { icon: Layers3, title: 'CRM e Gestão Comercial', text: 'Tenha uma operação comercial organizada, com contexto e próximos passos sempre claros.' },
-  { icon: Bot, title: 'Inteligência Artificial Aplicada', text: 'Use IA onde ela gera valor: decisões mais rápidas, atendimento melhor e operações mais inteligentes.' },
-  { icon: CircuitBoard, title: 'Sistemas Sob Medida', text: 'Construa a solução certa para o seu fluxo, sem forçar o negócio a caber em uma ferramenta genérica.' },
-  { icon: Link2, title: 'Integração entre Ferramentas', text: 'Faça seus sistemas conversarem para eliminar retrabalho e manter a informação no lugar certo.' },
-  { icon: PenTool, title: 'Sites e Landing Pages', text: 'Transforme sua presença digital em uma experiência clara, rápida e preparada para gerar oportunidades.' },
+  { category: 'AUTOMAÇÃO', title: 'Automação de Processos', description: 'Processos repetitivos ocupam tempo que poderia estar em decisões estratégicas. Mapeamos e automatizamos essas rotinas, liberando a equipe para o trabalho que realmente exige atenção humana.' },
+  { category: 'CRM / SISTEMAS', title: 'CRM e Gestão Comercial', description: 'Sem um lugar único para acompanhar oportunidades, informações comerciais se perdem entre conversas e planilhas. Um CRM bem estruturado organiza esse fluxo e deixa claro qual é o próximo passo de cada negociação.' },
+  { category: 'IA APLICADA', title: 'Inteligência Artificial Aplicada', description: 'Nem toda etapa comercial precisa esperar disponibilidade humana. Aplicamos IA nos pontos certos do processo — triagem, resposta inicial, apoio à análise — para tornar a operação mais ágil sem perder controle.' },
+  { category: 'SOFTWARE', title: 'Sistemas Sob Medida', description: 'Ferramentas genéricas nem sempre acompanham a forma como o negócio realmente funciona. Construímos sistemas desenhados para o seu fluxo específico, em vez de adaptar o negócio a um software pronto.' },
+  { category: 'INTEGRAÇÕES', title: 'Integração entre Ferramentas', description: 'Sistemas que não conversam entre si geram retrabalho e dados desencontrados. Conectamos as ferramentas que sua empresa já usa para que a informação circule automaticamente entre elas.' },
+  { category: 'WEB', title: 'Sites e Landing Pages', description: 'Uma presença digital confusa afasta quem já está interessado. Criamos sites e landing pages claros e diretos, pensados para transformar visita em oportunidade real.' },
 ]
 
 const painPoints = [
@@ -59,9 +54,9 @@ export default function HomePage() {
       <header className="hga-header">
         <a className="hga-wordmark" href="#inicio" aria-label="HGA Systems — início"><span className="hga-wordmark-name"><b>H</b><b>G</b><b className="hga-wordmark-a">A</b></span><small>SYSTEMS</small></a>
         <nav className="hga-nav" aria-label="Navegação principal">
-          <a href="#servicos">Serviços</a><a href="#processo">Processo</a>
+          <a href="#solucoes">Soluções</a><a href="#processo">Processo</a>
         </nav>
-        <a className="hga-header-cta" href="#servicos">Conhecer serviços</a>
+        <a className="hga-header-cta" href="#solucoes">Conhecer soluções</a>
         <HgaMobileMenu />
       </header>
 
@@ -72,14 +67,32 @@ export default function HomePage() {
             <p className="hga-eyebrow">Automação · CRM · Inteligência Artificial · Sistemas sob medida</p>
             <h1>Tecnologia para organizar, automatizar e crescer.</h1>
             <p className="hga-lede">A HGA Systems ajuda empresas a organizar processos, ganhar produtividade e melhorar resultados com tecnologia prática e eficiente.</p>
-            <div className="hga-actions"><a className="hga-button hga-button-primary" href="#servicos">Conhecer serviços <ArrowRight size={17} /></a></div>
+            <div className="hga-actions"><a className="hga-button hga-button-primary" href="#solucoes">Conhecer soluções <ArrowRight size={17} /></a></div>
           </div>
           <HeroFragments />
         </section>
 
-        <section className="hga-section hga-services" id="servicos"><div className="hga-section-intro"><p className="hga-eyebrow">O que fazemos</p><h2>Tecnologia que trabalha a favor do seu negócio.</h2><p>Do primeiro diagnóstico à evolução contínua, criamos soluções para tornar sua operação mais clara, integrada e eficiente.</p></div><div className="hga-service-grid">{services.map(({ icon: Icon, title, text }) => <article className="hga-service-card" key={title}><div className="hga-icon"><Icon size={20} /></div><h3>{title}</h3><p>{text}</p><ArrowRight className="hga-card-arrow" size={17} /></article>)}</div></section>
+        <section className="hga-problems" id="problemas">
+          <div className="hga-problem-heading">
+            <p className="hga-eyebrow">Menos atrito. Mais clareza.</p>
+            <h2>O que está impedindo sua operação de avançar?</h2>
+            <p>Nem todo problema precisa de mais uma ferramenta. Às vezes, ele precisa de uma visão melhor do todo.</p>
+          </div>
+          <ul className="hga-pain-list">
+            {painPoints.map((point) => <li key={point}>{point}</li>)}
+          </ul>
+        </section>
 
-        <section className="hga-section hga-problems" id="solucoes"><div className="hga-problem-heading"><p className="hga-eyebrow">Menos atrito. Mais clareza.</p><h2>O que está impedindo sua operação de avançar?</h2><p>Nem todo problema precisa de mais uma ferramenta. Às vezes, ele precisa de uma visão melhor do todo.</p></div><div className="hga-pain-list">{painPoints.map((point) => <div key={point}><Check size={16} />{point}</div>)}</div></section>
+        <section className="hga-section hga-solutions" id="solucoes">
+          <div className="hga-section-intro">
+            <p className="hga-eyebrow">O que fazemos</p>
+            <h2>Tecnologia que trabalha a favor do seu negócio.</h2>
+            <p>Do primeiro diagnóstico à evolução contínua, criamos soluções para tornar sua operação mais clara, integrada e eficiente.</p>
+          </div>
+          <div className="hga-service-list">
+            {services.map((service) => <ServiceRow key={service.title} {...service} />)}
+          </div>
+        </section>
 
         <section className="hga-section hga-process" id="processo"><div className="hga-section-intro"><p className="hga-eyebrow">Como trabalhamos</p><h2>Clareza antes. Resultado depois.</h2><p>Uma abordagem próxima e objetiva para transformar complexidade em próximos passos possíveis.</p></div><div className="hga-steps">{steps.map(([number, title, text], index) => <article key={number} className="hga-step"><span className="hga-step-number">{number}</span><div className="hga-step-line">{index < steps.length - 1 && <span />}</div><h3>{title}</h3><p>{text}</p></article>)}</div></section>
 
