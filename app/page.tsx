@@ -12,7 +12,7 @@ import {
   Workflow,
 } from 'lucide-react'
 import type { Metadata } from 'next'
-import { HgaMobileMenu } from '@/components/HgaMobileMenu'
+import { HgaMobileMenu } from '@/components/landing/HgaMobileMenu'
 
 export const metadata: Metadata = {
   title: 'HGA Systems | Tecnologia para organizar, automatizar e crescer',
