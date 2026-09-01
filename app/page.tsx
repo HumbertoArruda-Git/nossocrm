@@ -1,16 +1,11 @@
 import { ArrowRight } from 'lucide-react'
 import type { Metadata } from 'next'
-import { Exo_2 } from 'next/font/google'
 import { CapabilityFlow } from '@/components/landing/CapabilityFlow'
-import { HgaMobileMenu } from '@/components/landing/HgaMobileMenu'
 import { ServiceRow } from '@/components/landing/ServiceRow'
-
-const exo2 = Exo_2({
-  subsets: ['latin', 'latin-ext'],
-  weight: ['600', '700', '800'],
-  variable: '--font-exo2',
-  display: 'swap',
-})
+import { SiteFooter } from '@/components/landing/SiteFooter'
+import { SiteHeader } from '@/components/landing/SiteHeader'
+import { exo2 } from '@/lib/fonts/exo2'
+import { solutions } from '@/lib/content/solutions'
 
 export const metadata: Metadata = {
   title: 'HGA Systems | Tecnologia para organizar, automatizar e crescer',
@@ -33,15 +28,6 @@ export const metadata: Metadata = {
     description: 'Automação, CRM, inteligência artificial e sistemas sob medida para sua empresa.',
   },
 }
-
-const services = [
-  { category: 'AUTOMAÇÃO', title: 'Automação de Processos', description: 'Processos repetitivos ocupam tempo que poderia estar em decisões estratégicas. Mapeamos e automatizamos essas rotinas, liberando a equipe para o trabalho que realmente exige atenção humana.' },
-  { category: 'CRM / SISTEMAS', title: 'CRM e Gestão Comercial', description: 'Sem um lugar único para acompanhar oportunidades, informações comerciais se perdem entre conversas e planilhas. Um CRM bem estruturado organiza esse fluxo e deixa claro qual é o próximo passo de cada negociação.' },
-  { category: 'IA APLICADA', title: 'Inteligência Artificial Aplicada', description: 'Nem toda etapa comercial precisa esperar disponibilidade humana. Aplicamos IA nos pontos certos do processo — triagem, resposta inicial, apoio à análise — para tornar a operação mais ágil sem perder controle.' },
-  { category: 'SOFTWARE', title: 'Sistemas Sob Medida', description: 'Ferramentas genéricas nem sempre acompanham a forma como o negócio realmente funciona. Construímos sistemas desenhados para o seu fluxo específico, em vez de adaptar o negócio a um software pronto.' },
-  { category: 'INTEGRAÇÕES', title: 'Integração entre Ferramentas', description: 'Sistemas que não conversam entre si geram retrabalho e dados desencontrados. Conectamos as ferramentas que sua empresa já usa para que a informação circule automaticamente entre elas.' },
-  { category: 'WEB', title: 'Sites e Landing Pages', description: 'Uma presença digital confusa afasta quem já está interessado. Criamos sites e landing pages claros e diretos, pensados para transformar visita em oportunidade real.' },
-]
 
 const capabilities = [
   'Processos conectados de ponta a ponta',
@@ -79,14 +65,7 @@ const differentiators = [
 export default function HomePage() {
   return (
     <div className={`hga-site ${exo2.variable}`}>
-      <header className="hga-header">
-        <a className="hga-wordmark" href="#inicio" aria-label="HGA Systems — início"><span className="hga-wordmark-name"><b>H</b><b>G</b><b className="hga-wordmark-a">A</b></span><small>SYSTEMS</small></a>
-        <nav className="hga-nav" aria-label="Navegação principal">
-          <a href="#solucoes">Soluções</a><a href="#capacidade">Sistemas</a><a href="#processo">Processo</a><a href="#contato">Contato</a>
-        </nav>
-        <a className="hga-header-cta" href="#solucoes">Conhecer soluções</a>
-        <HgaMobileMenu />
-      </header>
+      <SiteHeader />
 
       <main>
         <section className="hga-hero" id="inicio">
@@ -114,10 +93,18 @@ export default function HomePage() {
           <div className="hga-section-intro">
             <p className="hga-eyebrow">O que fazemos</p>
             <h2>Tecnologia que trabalha a favor do seu negócio.</h2>
-            <p>Do primeiro diagnóstico à evolução contínua, criamos soluções para tornar sua operação mais clara, integrada e eficiente.</p>
+            <p>Do primeiro diagnóstico à evolução contínua, criamos soluções para tornar sua operação mais clara, integrada e eficiente. Toque em uma solução para conhecer os detalhes.</p>
           </div>
           <div className="hga-service-list">
-            {services.map((service) => <ServiceRow key={service.title} {...service} />)}
+            {solutions.map((solution) => (
+              <ServiceRow
+                key={solution.slug}
+                slug={solution.slug}
+                category={solution.category}
+                title={solution.title}
+                description={solution.description}
+              />
+            ))}
           </div>
         </section>
 
@@ -125,7 +112,7 @@ export default function HomePage() {
           <div className="hga-capability-copy">
             <p className="hga-eyebrow">Capacidade técnica</p>
             <h2>Sistemas conectados, pensados para a operação real.</h2>
-            <p>Da entrada de um dado até a decisão final, projetamos fluxos que conectam sistemas, pessoas e automações sem perder contexto.</p>
+            <p>Da entrada de um dado até a decisão final, projetamos fluxos que conectam sistemas, pessoas e automações sem perder contexto. Toque em cada etapa para entender o que ela faz.</p>
             <ul className="hga-capability-list">
               {capabilities.map((item) => <li key={item}>{item}</li>)}
             </ul>
@@ -190,16 +177,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer className="hga-footer">
-        <a className="hga-wordmark" href="#inicio"><span className="hga-wordmark-name"><b>H</b><b>G</b><b className="hga-wordmark-a">A</b></span><small>SYSTEMS</small></a>
-        <nav className="hga-footer-nav" aria-label="Navegação do rodapé">
-          <a href="#solucoes">Soluções</a><a href="#capacidade">Sistemas</a><a href="#processo">Processo</a><a href="#contato">Contato</a>
-        </nav>
-        <div className="hga-footer-meta">
-          <span>hgasystems.com.br</span>
-          <span>© HGA Systems</span>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }
