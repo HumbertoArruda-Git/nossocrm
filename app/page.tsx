@@ -2,7 +2,6 @@ import { ArrowRight } from 'lucide-react'
 import type { Metadata } from 'next'
 import { Exo_2 } from 'next/font/google'
 import { CapabilityFlow } from '@/components/landing/CapabilityFlow'
-import { HeroFragments } from '@/components/landing/HeroFragments'
 import { HgaMobileMenu } from '@/components/landing/HgaMobileMenu'
 import { ServiceRow } from '@/components/landing/ServiceRow'
 
@@ -16,6 +15,18 @@ const exo2 = Exo_2({
 export const metadata: Metadata = {
   title: 'HGA Systems | Tecnologia para organizar, automatizar e crescer',
   description: 'Automação, CRM, inteligência artificial e sistemas sob medida para sua empresa.',
+  openGraph: {
+    title: 'HGA Systems | Tecnologia para organizar, automatizar e crescer',
+    description: 'Automação, CRM, inteligência artificial e sistemas sob medida para sua empresa.',
+    siteName: 'HGA Systems',
+    locale: 'pt_BR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'HGA Systems | Tecnologia para organizar, automatizar e crescer',
+    description: 'Automação, CRM, inteligência artificial e sistemas sob medida para sua empresa.',
+  },
 }
 
 const services = [
@@ -79,9 +90,8 @@ export default function HomePage() {
             <p className="hga-eyebrow">Automação · CRM · Inteligência Artificial · Sistemas sob medida</p>
             <h1>Tecnologia para organizar, automatizar e crescer.</h1>
             <p className="hga-lede">A HGA Systems ajuda empresas a organizar processos, ganhar produtividade e melhorar resultados com tecnologia prática e eficiente.</p>
-            <div className="hga-actions"><a className="hga-button hga-button-primary" href="#solucoes">Conhecer soluções <ArrowRight size={17} /></a></div>
+            <div className="hga-actions"><a className="hga-button hga-button-primary" href="#solucoes">Conhecer soluções <ArrowRight size={17} aria-hidden="true" /></a></div>
           </div>
-          <HeroFragments />
         </section>
 
         <section className="hga-problems" id="problemas">
@@ -162,12 +172,12 @@ export default function HomePage() {
           </div>
           <form className="hga-form">
             <div className="hga-form-row">
-              <label>Nome<input name="name" placeholder="Seu nome" /></label>
-              <label>Empresa<input name="company" placeholder="Nome da empresa" /></label>
+              <label>Nome<input name="name" autoComplete="name" placeholder="Seu nome" /></label>
+              <label>Empresa<input name="company" autoComplete="organization" placeholder="Nome da empresa" /></label>
             </div>
             <div className="hga-form-row">
-              <label>E-mail<input type="email" name="email" placeholder="voce@empresa.com" /></label>
-              <label>Telefone <small>(opcional)</small><input name="phone" placeholder="(00) 00000-0000" /></label>
+              <label>E-mail<input type="email" name="email" autoComplete="email" placeholder="voce@empresa.com" /></label>
+              <label>Telefone <small>(opcional)</small><input type="tel" name="phone" autoComplete="tel" placeholder="(00) 00000-0000" /></label>
             </div>
             <label>Mensagem<textarea name="message" rows={4} placeholder="Qual desafio você quer resolver?" /></label>
             <button className="hga-submit" type="submit" disabled>Formulário em preparação</button>

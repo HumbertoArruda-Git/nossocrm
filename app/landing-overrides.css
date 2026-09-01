@@ -2,7 +2,7 @@
   .hga-nav, .hga-header-cta { display: none; }
   .hga-mobile-menu { display: block; position: relative; }
   .hga-menu { display: grid; place-items: center; width: 44px; height: 44px; background: transparent; border: 1px solid var(--hga-line); border-radius: 6px; color: var(--hga-white); }
-  .hga-mobile-panel { position: absolute; z-index: 10; top: 54px; right: 0; width: min(290px, calc(100vw - 40px)); padding: 12px; background: var(--hga-surface); border: 1px solid var(--hga-line); border-radius: 8px; box-shadow: 0 18px 42px rgba(0,0,0,.35); opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity var(--hga-dur-fast) var(--hga-ease-out), transform var(--hga-dur-fast) var(--hga-ease-out); }
+  .hga-mobile-panel { position: absolute; z-index: 10; top: 54px; right: 0; width: min(290px, calc(100vw - 40px)); padding: 12px; background: var(--hga-surface); border: 1px solid var(--hga-line); border-radius: 8px; box-shadow: 0 18px 42px rgba(0,0,0,.35); opacity: 0; transform: translateY(-8px); pointer-events: none; transition: opacity var(--hga-dur-base) var(--hga-ease-out), transform var(--hga-dur-base) var(--hga-ease-out); }
   .hga-mobile-panel[data-open="true"] { opacity: 1; transform: translateY(0); pointer-events: auto; }
   .hga-mobile-panel nav { display: grid; gap: 2px; }
   .hga-mobile-panel nav a { padding: 14px 12px; min-height: 44px; display: flex; align-items: center; color: var(--hga-text-secondary); font-size: 13px; font-family: var(--font-exo2), "Exo 2", sans-serif; border-radius: 5px; transition: color var(--hga-dur-fast) ease, background var(--hga-dur-fast) ease; }

@@ -14,7 +14,11 @@ export function CapabilityFlow() {
       <span className="hga-flow-rail" />
       {nodes.map((node, index) => (
         <div className="hga-flow-item" key={node.label}>
-          {index > 0 && <span className="hga-flow-connector" />}
+          {index > 0 && (
+            <span className="hga-flow-connector">
+              <span className="hga-flow-signal" />
+            </span>
+          )}
           <div className="hga-flow-node">
             <node.icon size={16} aria-hidden="true" />
             <span className="hga-flow-label">{node.label}</span>
