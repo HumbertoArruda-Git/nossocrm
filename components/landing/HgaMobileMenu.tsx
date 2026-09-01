@@ -5,6 +5,7 @@ import { ArrowRight, Menu, X } from 'lucide-react'
 
 const links = [
   ['Soluções', '#solucoes'],
+  ['Sistemas', '#capacidade'],
   ['Processo', '#processo'],
 ]
 

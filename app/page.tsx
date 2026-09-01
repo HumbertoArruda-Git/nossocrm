@@ -4,6 +4,7 @@ import {
 } from 'lucide-react'
 import type { Metadata } from 'next'
 import { Exo_2 } from 'next/font/google'
+import { CapabilityFlow } from '@/components/landing/CapabilityFlow'
 import { HeroFragments } from '@/components/landing/HeroFragments'
 import { HgaMobileMenu } from '@/components/landing/HgaMobileMenu'
 import { ServiceRow } from '@/components/landing/ServiceRow'
@@ -27,6 +28,13 @@ const services = [
   { category: 'SOFTWARE', title: 'Sistemas Sob Medida', description: 'Ferramentas genéricas nem sempre acompanham a forma como o negócio realmente funciona. Construímos sistemas desenhados para o seu fluxo específico, em vez de adaptar o negócio a um software pronto.' },
   { category: 'INTEGRAÇÕES', title: 'Integração entre Ferramentas', description: 'Sistemas que não conversam entre si geram retrabalho e dados desencontrados. Conectamos as ferramentas que sua empresa já usa para que a informação circule automaticamente entre elas.' },
   { category: 'WEB', title: 'Sites e Landing Pages', description: 'Uma presença digital confusa afasta quem já está interessado. Criamos sites e landing pages claros e diretos, pensados para transformar visita em oportunidade real.' },
+]
+
+const capabilities = [
+  'Processos conectados de ponta a ponta',
+  'Dados disponíveis no contexto certo',
+  'Automações integradas à operação',
+  'IA aplicada onde existe decisão ou análise',
 ]
 
 const painPoints = [
@@ -54,7 +62,7 @@ export default function HomePage() {
       <header className="hga-header">
         <a className="hga-wordmark" href="#inicio" aria-label="HGA Systems — início"><span className="hga-wordmark-name"><b>H</b><b>G</b><b className="hga-wordmark-a">A</b></span><small>SYSTEMS</small></a>
         <nav className="hga-nav" aria-label="Navegação principal">
-          <a href="#solucoes">Soluções</a><a href="#processo">Processo</a>
+          <a href="#solucoes">Soluções</a><a href="#capacidade">Sistemas</a><a href="#processo">Processo</a>
         </nav>
         <a className="hga-header-cta" href="#solucoes">Conhecer soluções</a>
         <HgaMobileMenu />
@@ -94,7 +102,38 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="hga-section hga-process" id="processo"><div className="hga-section-intro"><p className="hga-eyebrow">Como trabalhamos</p><h2>Clareza antes. Resultado depois.</h2><p>Uma abordagem próxima e objetiva para transformar complexidade em próximos passos possíveis.</p></div><div className="hga-steps">{steps.map(([number, title, text], index) => <article key={number} className="hga-step"><span className="hga-step-number">{number}</span><div className="hga-step-line">{index < steps.length - 1 && <span />}</div><h3>{title}</h3><p>{text}</p></article>)}</div></section>
+        <section className="hga-capability" id="capacidade">
+          <div className="hga-capability-copy">
+            <p className="hga-eyebrow">Capacidade técnica</p>
+            <h2>Sistemas conectados, pensados para a operação real.</h2>
+            <p>Da entrada de um dado até a decisão final, projetamos fluxos que conectam sistemas, pessoas e automações sem perder contexto.</p>
+            <ul className="hga-capability-list">
+              {capabilities.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          </div>
+          <CapabilityFlow />
+        </section>
+
+        <section className="hga-section hga-process" id="processo">
+          <div className="hga-section-intro">
+            <p className="hga-eyebrow">Como trabalhamos</p>
+            <h2>Clareza antes. Resultado depois.</h2>
+            <p>Uma abordagem próxima e objetiva para transformar complexidade em próximos passos possíveis.</p>
+          </div>
+          <div className="hga-steps">
+            {steps.map(([number, title, text]) => (
+              <article className="hga-step" key={number}>
+                <div className="hga-step-marker">
+                  <span className="hga-step-number">{number}</span>
+                </div>
+                <div className="hga-step-body">
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
 
         <section className="hga-section hga-differentials"><div><p className="hga-eyebrow">Por que a HGA</p><h2>Construímos para o contexto real da sua empresa.</h2></div><div className="hga-diff-list">{differentiators.map((item) => <div key={item}><Check size={17} /> {item}</div>)}</div></section>
 
