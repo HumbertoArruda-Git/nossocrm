@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Menu, X } from 'lucide-react'
+import Link from 'next/link'
 
 const links = [
-  ['Soluções', '#solucoes'],
-  ['Sistemas', '#capacidade'],
-  ['Processo', '#processo'],
-  ['Contato', '#contato'],
+  ['Soluções', '/#solucoes'],
+  ['Sistemas', '/#capacidade'],
+  ['Processo', '/#processo'],
+  ['Contato', '/#contato'],
 ]
 
 export function HgaMobileMenu() {
@@ -50,14 +51,14 @@ export function HgaMobileMenu() {
       <div className="hga-mobile-panel" id="hga-mobile-panel" data-open={open} inert={!open}>
         <nav aria-label="Navegação mobile">
           {links.map(([label, href]) => (
-            <a href={href} key={href} onClick={() => setOpen(false)}>
+            <Link href={href} key={href} onClick={() => setOpen(false)}>
               {label}
-            </a>
+            </Link>
           ))}
         </nav>
-        <a className="hga-header-cta" href="#solucoes" onClick={() => setOpen(false)}>
+        <Link className="hga-header-cta" href="/#solucoes" onClick={() => setOpen(false)}>
           Conhecer soluções <ArrowRight size={16} aria-hidden="true" />
-        </a>
+        </Link>
       </div>
     </div>
   )
