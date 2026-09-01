@@ -7,6 +7,7 @@ const links = [
   ['Soluções', '#solucoes'],
   ['Sistemas', '#capacidade'],
   ['Processo', '#processo'],
+  ['Contato', '#contato'],
 ]
 
 export function HgaMobileMenu() {

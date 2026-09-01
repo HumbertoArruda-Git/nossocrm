@@ -1,7 +1,4 @@
-import {
-  ArrowRight,
-  Check,
-} from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import type { Metadata } from 'next'
 import { Exo_2 } from 'next/font/google'
 import { CapabilityFlow } from '@/components/landing/CapabilityFlow'
@@ -54,7 +51,14 @@ const steps = [
   ['04', 'Evolução', 'Acompanhamos o uso e melhoramos continuamente o que foi construído.'],
 ]
 
-const differentiators = ['Tecnologia aplicada ao problema real', 'Soluções personalizadas', 'Automação com foco em resultado', 'Integração entre sistemas', 'Visão de negócio + tecnologia', 'Evolução contínua']
+const differentiators = [
+  { title: 'Tecnologia aplicada ao problema real', text: 'Cada solução nasce de um problema específico, não de um catálogo pronto.' },
+  { title: 'Soluções personalizadas', text: 'Construímos para o seu fluxo, não para um caso médio de mercado.' },
+  { title: 'Automação orientada a resultado', text: 'Automatizar só faz sentido quando muda o que a operação entrega.' },
+  { title: 'Integração entre sistemas', text: 'Suas ferramentas passam a conversar entre si, sem retrabalho.' },
+  { title: 'Visão de negócio + tecnologia', text: 'Tecnologia certa parte do contexto do negócio, não do contrário.' },
+  { title: 'Evolução contínua', text: 'O trabalho não termina na entrega — acompanhamos o uso e ajustamos.' },
+]
 
 export default function HomePage() {
   return (
@@ -62,7 +66,7 @@ export default function HomePage() {
       <header className="hga-header">
         <a className="hga-wordmark" href="#inicio" aria-label="HGA Systems — início"><span className="hga-wordmark-name"><b>H</b><b>G</b><b className="hga-wordmark-a">A</b></span><small>SYSTEMS</small></a>
         <nav className="hga-nav" aria-label="Navegação principal">
-          <a href="#solucoes">Soluções</a><a href="#capacidade">Sistemas</a><a href="#processo">Processo</a>
+          <a href="#solucoes">Soluções</a><a href="#capacidade">Sistemas</a><a href="#processo">Processo</a><a href="#contato">Contato</a>
         </nav>
         <a className="hga-header-cta" href="#solucoes">Conhecer soluções</a>
         <HgaMobileMenu />
@@ -135,12 +139,52 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="hga-section hga-differentials"><div><p className="hga-eyebrow">Por que a HGA</p><h2>Construímos para o contexto real da sua empresa.</h2></div><div className="hga-diff-list">{differentiators.map((item) => <div key={item}><Check size={17} /> {item}</div>)}</div></section>
+        <section className="hga-differentials">
+          <div className="hga-differentials-intro">
+            <p className="hga-eyebrow">Por que a HGA</p>
+            <h2>Construímos para o contexto real da sua empresa.</h2>
+          </div>
+          <ul className="hga-diff-list">
+            {differentiators.map((item) => (
+              <li key={item.title}>
+                <span className="hga-diff-title">{item.title}</span>
+                <span className="hga-diff-desc">{item.text}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-        <section className="hga-contact" id="contato"><div className="hga-contact-copy"><p className="hga-eyebrow">Vamos conversar</p><h2>Sua empresa não precisa trabalhar mais. Precisa trabalhar melhor.</h2><p>Conte um pouco sobre o desafio atual. A HGA Systems pode ajudar a encontrar um caminho mais simples, conectado e eficiente.</p></div><form className="hga-form"><div className="hga-form-row"><label>Nome<input name="name" placeholder="Seu nome" /></label><label>Empresa<input name="company" placeholder="Nome da empresa" /></label></div><div className="hga-form-row"><label>E-mail<input type="email" name="email" placeholder="voce@empresa.com" /></label><label>Telefone <small>(opcional)</small><input name="phone" placeholder="(00) 00000-0000" /></label></div><label>Mensagem<textarea name="message" rows={4} placeholder="Qual desafio você quer resolver?" /></label><button className="hga-submit" type="submit" disabled>Envio será habilitado em breve <ArrowRight size={16} /></button></form></section>
+        <section className="hga-contact" id="contato">
+          <div className="hga-contact-copy">
+            <p className="hga-eyebrow">Vamos conversar</p>
+            <h2>Sua empresa não precisa trabalhar mais. Precisa trabalhar melhor.</h2>
+            <p>Conte um pouco sobre o desafio atual. A HGA Systems pode ajudar a encontrar um caminho mais simples, conectado e eficiente.</p>
+          </div>
+          <form className="hga-form">
+            <div className="hga-form-row">
+              <label>Nome<input name="name" placeholder="Seu nome" /></label>
+              <label>Empresa<input name="company" placeholder="Nome da empresa" /></label>
+            </div>
+            <div className="hga-form-row">
+              <label>E-mail<input type="email" name="email" placeholder="voce@empresa.com" /></label>
+              <label>Telefone <small>(opcional)</small><input name="phone" placeholder="(00) 00000-0000" /></label>
+            </div>
+            <label>Mensagem<textarea name="message" rows={4} placeholder="Qual desafio você quer resolver?" /></label>
+            <button className="hga-submit" type="submit" disabled>Formulário em preparação</button>
+          </form>
+        </section>
       </main>
 
-      <footer className="hga-footer"><a className="hga-wordmark" href="#inicio"><span className="hga-wordmark-name"><b>H</b><b>G</b><b className="hga-wordmark-a">A</b></span><small>SYSTEMS</small></a><span>hgasystems.com.br</span><span>© HGA Systems</span></footer>
+      <footer className="hga-footer">
+        <a className="hga-wordmark" href="#inicio"><span className="hga-wordmark-name"><b>H</b><b>G</b><b className="hga-wordmark-a">A</b></span><small>SYSTEMS</small></a>
+        <nav className="hga-footer-nav" aria-label="Navegação do rodapé">
+          <a href="#solucoes">Soluções</a><a href="#capacidade">Sistemas</a><a href="#processo">Processo</a><a href="#contato">Contato</a>
+        </nav>
+        <div className="hga-footer-meta">
+          <span>hgasystems.com.br</span>
+          <span>© HGA Systems</span>
+        </div>
+      </footer>
     </div>
   )
 }
