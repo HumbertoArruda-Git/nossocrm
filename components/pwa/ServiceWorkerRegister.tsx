@@ -1,11 +1,16 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export function ServiceWorkerRegister() {
+  const pathname = usePathname();
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!('serviceWorker' in navigator)) return;
+    // Landing pública não deve registrar o service worker do NossoCRM
+    if (pathname === '/') return;
 
     const register = async () => {
       try {
@@ -41,7 +46,7 @@ export function ServiceWorkerRegister() {
     };
 
     register();
-  }, []);
+  }, [pathname]);
 
   return null;
 }

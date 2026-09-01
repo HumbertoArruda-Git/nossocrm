@@ -15,6 +15,7 @@ const exo2 = Exo_2({
 export const metadata: Metadata = {
   title: 'HGA Systems | Tecnologia para organizar, automatizar e crescer',
   description: 'Automação, CRM, inteligência artificial e sistemas sob medida para sua empresa.',
+  manifest: null,
   openGraph: {
     title: 'HGA Systems | Tecnologia para organizar, automatizar e crescer',
     description: 'Automação, CRM, inteligência artificial e sistemas sob medida para sua empresa.',
