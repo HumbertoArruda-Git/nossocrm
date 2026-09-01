@@ -5,10 +5,12 @@ import './landing.css'
 import './landing-overrides.css'
 import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister'
 import { InstallBanner } from '@/components/pwa/InstallBanner'
+import { SITE_URL } from '@/lib/seo/site'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'NossoCRM',
   description: 'CRM Inteligente para Gestão de Vendas',
 }

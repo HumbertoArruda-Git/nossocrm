@@ -16,9 +16,13 @@ export const metadata: Metadata = {
   title: 'HGA Systems | Tecnologia para organizar, automatizar e crescer',
   description: 'Automação, CRM, inteligência artificial e sistemas sob medida para sua empresa.',
   manifest: null,
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: 'HGA Systems | Tecnologia para organizar, automatizar e crescer',
     description: 'Automação, CRM, inteligência artificial e sistemas sob medida para sua empresa.',
+    url: '/',
     siteName: 'HGA Systems',
     locale: 'pt_BR',
     type: 'website',
