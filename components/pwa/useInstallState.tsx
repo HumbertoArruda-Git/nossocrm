@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -49,6 +50,7 @@ function readDismissedAt(): number | null {
 }
 
 export function useInstallState(): InstallState {
+  const pathname = usePathname();
   const [bipEvent, setBipEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [standalone, setStandalone] = useState<boolean>(() => detectStandalone());
   const [dismissedAt, setDismissedAt] = useState<number | null>(() => (typeof window === 'undefined' ? null : readDismissedAt()));
@@ -81,6 +83,8 @@ export function useInstallState(): InstallState {
   }, [dismissedAt]);
 
   const isEligible = useMemo(() => {
+    // Landing pública não é a PWA instalável do NossoCRM
+    if (pathname === '/') return false;
     if (standalone) return false;
     const platform = platformHint();
     // Só mostra em mobile/tablet — desktop não precisa de PWA
@@ -89,7 +93,7 @@ export function useInstallState(): InstallState {
     if (bipEvent) return true;
     // iOS: no native prompt; show instructional banner (still eligible).
     return platform === 'ios';
-  }, [bipEvent, standalone]);
+  }, [bipEvent, pathname, standalone]);
 
   const canPrompt = useMemo(() => !!bipEvent, [bipEvent]);
 
