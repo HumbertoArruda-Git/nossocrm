@@ -32,6 +32,13 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [{ source: '/api/chat', destination: '/api/ai/chat' }];
   },
+  async redirects() {
+    return [
+      { source: '/solucoes/inteligencia-artificial-aplicada', destination: '/solucoes/inteligencia-artificial', permanent: true },
+      { source: '/solucoes/integracao-entre-ferramentas', destination: '/solucoes/integracao-de-sistemas', permanent: true },
+      { source: '/solucoes/sites-e-landing-pages', destination: '/solucoes/sistemas-sob-medida', permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

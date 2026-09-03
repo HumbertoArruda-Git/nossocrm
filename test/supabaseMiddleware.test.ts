@@ -111,6 +111,20 @@ describe('updateSession (Proxy/Supabase)', () => {
     expect(res).toMatchObject({ kind: 'next' })
   })
 
+  it('permite a raiz sem autenticação', async () => {
+    const res = await updateSession(makeRequest('/'))
+
+    expect(mocks.nextResponseMock.redirect).not.toHaveBeenCalled()
+    expect(res).toMatchObject({ kind: 'next' })
+  })
+
+  it('permite /solucoes/* sem autenticação', async () => {
+    const res = await updateSession(makeRequest('/solucoes/crm'))
+
+    expect(mocks.nextResponseMock.redirect).not.toHaveBeenCalled()
+    expect(res).toMatchObject({ kind: 'next' })
+  })
+
   it('permite /auth/callback sem autenticação (sem redirect)', async () => {
     const req = makeRequest('/auth/callback')
 

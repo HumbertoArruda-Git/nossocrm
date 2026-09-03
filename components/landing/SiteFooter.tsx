@@ -8,7 +8,10 @@ export function SiteFooter() {
         <small>SYSTEMS</small>
       </Link>
       <nav className="hga-footer-nav" aria-label="Navegação do rodapé">
-        <Link href="/#solucoes">Soluções</Link><Link href="/#capacidade">Sistemas</Link><Link href="/#processo">Processo</Link><Link href="/#contato">Contato</Link>
+        <Link href="/#solucoes">Soluções</Link>
+        <Link href="/#processo">Processo</Link>
+        <Link href="/#mercado">Mercado</Link>
+        <Link href="/#contato">Contato</Link>
       </nav>
       <div className="hga-footer-meta">
         <span>hgasystems.com.br</span>
