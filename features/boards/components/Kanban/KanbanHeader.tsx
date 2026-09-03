@@ -198,7 +198,7 @@ export const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value as any)}
                         aria-label="Filtrar por status"
-                        className="pl-3 pr-8 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-white/5 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:text-white backdrop-blur-sm appearance-none cursor-pointer"
+                        className="pl-3 pr-8 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:text-white dark:[color-scheme:dark] dark:[&>option]:bg-slate-900 dark:[&>option]:text-white backdrop-blur-sm appearance-none cursor-pointer"
                     >
                         <option value="open">Em Aberto</option>
                         <option value="won">Ganhos</option>
