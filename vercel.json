@@ -1,7 +1,5 @@
 {
   "functions": {
-    "app/api/ai/**": { "maxDuration": 60 },
-    "app/api/messaging/ai/**": { "maxDuration": 60 },
     "app/api/cron/stage-evaluations/route.ts": { "maxDuration": 60 },
     "app/api/contacts/import/route.ts": { "maxDuration": 120 },
     "app/api/contacts/export/route.ts": { "maxDuration": 120 },
