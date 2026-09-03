@@ -30,6 +30,7 @@ function messageForStatus(status: number) {
 export function ContactForm() {
   const [state, setState] = useState<FormState>('idle')
   const [message, setMessage] = useState('')
+  const [isValid, setIsValid] = useState(false)
   const idempotencyKey = useRef<string | null>(null)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -61,6 +62,7 @@ export function ContactForm() {
         setState('success')
         setMessage('Mensagem recebida. Em breve entraremos em contato.')
         form.reset()
+        setIsValid(false)
         idempotencyKey.current = null
         return
       }
@@ -73,7 +75,7 @@ export function ContactForm() {
   }
 
   return (
-    <form className="hga-form" onSubmit={handleSubmit}>
+    <form className="hga-form" onSubmit={handleSubmit} onInput={(event) => setIsValid(event.currentTarget.checkValidity())}>
       <div className="hga-form-row">
         <label>Nome<input name="nome" autoComplete="name" placeholder="Seu nome" required maxLength={120} /></label>
         <label>Empresa<input name="empresa" autoComplete="organization" placeholder="Nome da empresa" maxLength={160} /></label>
@@ -98,7 +100,7 @@ export function ContactForm() {
         <textarea name="mensagem" rows={4} maxLength={5000} placeholder="Ex.: os pedidos chegam por WhatsApp e alguém relança tudo no ERP na mão." required />
       </label>
       <label className="hga-honeypot" aria-hidden="true">Site<input name="website" tabIndex={-1} autoComplete="off" maxLength={200} /></label>
-      <button className="hga-submit" type="submit" disabled={state === 'submitting'}>
+      <button className={`hga-submit${isValid ? ' is-ready' : ''}`} type="submit" disabled={!isValid || state === 'submitting'}>
         {state === 'submitting' ? 'Enviando…' : 'Falar sobre o meu caso'}
       </button>
       <p className="hga-form-note">Os dados são usados só para responder este contato, seguindo boas práticas de privacidade e a LGPD.</p>

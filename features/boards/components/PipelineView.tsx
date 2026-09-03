@@ -44,6 +44,8 @@ interface PipelineViewProps {
   setSearchTerm: (term: string) => void;
   ownerFilter: 'all' | 'mine';
   setOwnerFilter: (filter: 'all' | 'mine') => void;
+  sourceFilter: 'all' | 'WEBSITE';
+  setSourceFilter: (filter: 'all' | 'WEBSITE') => void;
   statusFilter: 'open' | 'won' | 'lost' | 'all';
   setStatusFilter: (filter: 'open' | 'won' | 'lost' | 'all') => void;
   draggingId: string | null;
@@ -247,6 +249,8 @@ export const PipelineView: React.FC<PipelineViewProps> = ({
   setSearchTerm,
   ownerFilter,
   setOwnerFilter,
+  sourceFilter,
+  setSourceFilter,
   statusFilter,
   setStatusFilter,
   draggingId,
@@ -407,6 +411,8 @@ export const PipelineView: React.FC<PipelineViewProps> = ({
             setSearchTerm={setSearchTerm}
             ownerFilter={ownerFilter}
             setOwnerFilter={setOwnerFilter}
+            sourceFilter={sourceFilter}
+            setSourceFilter={setSourceFilter}
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
             onNewDeal={() => setIsCreateModalOpen(true)}

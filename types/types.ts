@@ -252,6 +252,8 @@ export interface DealView extends Deal {
   clientCompanyName?: string; // Name of the CRM client company
   contactName: string;
   contactEmail: string;
+  /** Origem do contato associado, usada pelos filtros do pipeline. */
+  contactSource?: Contact['source'];
   /** Nome/label do estágio atual (resolvido a partir do status UUID) */
   stageLabel: string;
 

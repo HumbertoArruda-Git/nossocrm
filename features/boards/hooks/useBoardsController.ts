@@ -127,6 +127,7 @@ export const useBoardsController = () => {
   // Filter State (declared before AI context useEffect that uses them)
   const [searchTerm, setSearchTerm] = useState('');
   const [ownerFilter, setOwnerFilter] = useState<'all' | 'mine'>('all');
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'WEBSITE'>('all');
   const [statusFilter, setStatusFilter] = useState<'open' | 'won' | 'lost' | 'all'>('open');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
@@ -380,6 +381,9 @@ export const useBoardsController = () => {
       const matchesOwner =
         ownerFilter === 'all' || l.ownerId === profile?.id;
 
+      const matchesSource =
+        sourceFilter === 'all' || l.contactSource === sourceFilter;
+
       // Date: usa timestamps pré-computados (comparação numérica é mais rápida)
       let matchesDate = true;
       if (startTime !== null) {
@@ -409,7 +413,7 @@ export const useBoardsController = () => {
         }
       }
 
-      return matchesSearch && matchesOwner && matchesDate && matchesStatus && matchesRecent;
+      return matchesSearch && matchesOwner && matchesSource && matchesDate && matchesStatus && matchesRecent;
     }).map(deal => {
       // Enrich owner info if it matches current user
       if (deal.ownerId === profile?.id || deal.ownerId === (profile as any)?.user_id) { // Fallback for some profile types
@@ -429,6 +433,7 @@ export const useBoardsController = () => {
     deals,
     searchTerm,
     ownerFilter,
+    sourceFilter,
     dateRange.start,      // Apenas as propriedades usadas do dateRange
     dateRange.end,
     statusFilter,
@@ -861,6 +866,8 @@ export const useBoardsController = () => {
     setSearchTerm,
     ownerFilter,
     setOwnerFilter,
+    sourceFilter,
+    setSourceFilter,
     statusFilter,
     setStatusFilter,
     dateRange,

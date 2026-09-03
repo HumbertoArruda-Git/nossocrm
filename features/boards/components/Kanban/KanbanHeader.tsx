@@ -21,6 +21,8 @@ interface KanbanHeaderProps {
     setSearchTerm: (term: string) => void;
     ownerFilter: 'all' | 'mine';
     setOwnerFilter: (filter: 'all' | 'mine') => void;
+    sourceFilter: 'all' | 'WEBSITE';
+    setSourceFilter: (filter: 'all' | 'WEBSITE') => void;
     statusFilter: 'open' | 'won' | 'lost' | 'all';
     setStatusFilter: (filter: 'open' | 'won' | 'lost' | 'all') => void;
     onNewDeal: () => void;
@@ -51,6 +53,7 @@ export interface ProspectingFilters {
     viewMode, setViewMode,
     searchTerm, setSearchTerm,
     ownerFilter, setOwnerFilter,
+    sourceFilter, setSourceFilter,
     statusFilter, setStatusFilter,
     onNewDeal
 } - Parâmetro `{
@@ -80,6 +83,7 @@ export const KanbanHeader: React.FC<KanbanHeaderProps> = ({
     viewMode, setViewMode,
     searchTerm, setSearchTerm,
     ownerFilter, setOwnerFilter,
+    sourceFilter, setSourceFilter,
     statusFilter, setStatusFilter,
     onNewDeal,
     prospectingFilters,
@@ -209,12 +213,27 @@ export const KanbanHeader: React.FC<KanbanHeaderProps> = ({
                     </div>
                 </div>
 
+                <div className="relative flex items-center gap-2">
+                    <label htmlFor="pipeline-source-filter" className="text-sm text-slate-500 dark:text-slate-400">Origem</label>
+                    <select
+                        id="pipeline-source-filter"
+                        value={sourceFilter}
+                        onChange={(e) => setSourceFilter(e.target.value as 'all' | 'WEBSITE')}
+                        aria-label="Filtrar por origem"
+                        className="pl-3 pr-8 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:text-white dark:[color-scheme:dark] dark:[&>option]:bg-slate-900 dark:[&>option]:text-white backdrop-blur-sm appearance-none cursor-pointer"
+                    >
+                        <option value="all">Todos</option>
+                        <option value="WEBSITE">Website</option>
+                    </select>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">⌄</span>
+                </div>
+
                 <div className="relative">
                     <select
                         value={ownerFilter}
                         onChange={(e) => setOwnerFilter(e.target.value as 'all' | 'mine')}
                         aria-label="Filtrar negócios por proprietário"
-                        className="pl-3 pr-8 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-white/5 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:text-white backdrop-blur-sm appearance-none cursor-pointer"
+                        className="pl-3 pr-8 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:text-white dark:[color-scheme:dark] dark:[&>option]:bg-slate-900 dark:[&>option]:text-white backdrop-blur-sm appearance-none cursor-pointer"
                     >
                         <option value="all">Todos os Donos</option>
                         <option value="mine">Meus Negócios</option>

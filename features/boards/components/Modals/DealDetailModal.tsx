@@ -230,6 +230,12 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
     return activities.filter((a) => a.dealId === deal.id);
   }, [activities, deal]);
 
+  // Close a stale detail modal when the selected deal disappears after delete,
+  // refetch, or a realtime cache update.
+  useEffect(() => {
+    if (isOpen && dealId && !deal) onClose();
+  }, [deal, dealId, isOpen, onClose]);
+
   if (!isOpen || !deal) return null;
 
   const addDealTag = (raw: string) => {
@@ -1296,8 +1302,8 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
           onClose={() => setDeleteId(null)}
           onConfirm={confirmDeleteDeal}
           title="Excluir Negócio"
-          message="Tem certeza que deseja excluir este negócio? Esta ação não pode ser desfeita."
-          confirmText="Excluir"
+          message="Excluir este negócio? O contato e a empresa vinculados serão mantidos."
+          confirmText="Excluir negócio"
           variant="danger"
         />
 
