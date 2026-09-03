@@ -9,9 +9,12 @@ export function SiteHeader() {
         <small>SYSTEMS</small>
       </Link>
       <nav className="hga-nav" aria-label="Navegação principal">
-        <Link href="/#solucoes">Soluções</Link><Link href="/#capacidade">Sistemas</Link><Link href="/#processo">Processo</Link><Link href="/#contato">Contato</Link>
+        <Link href="/#solucoes">Soluções</Link>
+        <Link href="/#processo">Processo</Link>
+        <Link href="/#mercado">Mercado</Link>
+        <Link href="/#contato">Contato</Link>
       </nav>
-      <Link className="hga-header-cta" href="/#solucoes">Conhecer soluções</Link>
+      <Link className="hga-header-cta" href="/#contato">Falar com a gente</Link>
       <HgaMobileMenu />
     </header>
   )

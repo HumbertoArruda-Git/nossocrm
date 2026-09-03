@@ -6,8 +6,8 @@ import Link from 'next/link'
 
 const links = [
   ['Soluções', '/#solucoes'],
-  ['Sistemas', '/#capacidade'],
   ['Processo', '/#processo'],
+  ['Mercado', '/#mercado'],
   ['Contato', '/#contato'],
 ]
 
@@ -56,8 +56,8 @@ export function HgaMobileMenu() {
             </Link>
           ))}
         </nav>
-        <Link className="hga-header-cta" href="/#solucoes" onClick={() => setOpen(false)}>
-          Conhecer soluções <ArrowRight size={16} aria-hidden="true" />
+        <Link className="hga-header-cta" href="/#contato" onClick={() => setOpen(false)}>
+          Falar com a gente <ArrowRight size={16} aria-hidden="true" />
         </Link>
       </div>
     </div>
