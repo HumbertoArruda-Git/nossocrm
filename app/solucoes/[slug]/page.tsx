@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { SiteFooter } from '@/components/landing/SiteFooter'
 import { SiteHeader } from '@/components/landing/SiteHeader'
-import { SolutionVisual } from '@/components/landing/SolutionVisual'
+import { SolutionShowcase } from '@/components/landing/SolutionShowcase'
 import { exo2 } from '@/lib/fonts/exo2'
 import { archivo, plexMono } from '@/lib/fonts/landing'
 import { getSolutionBySlug, solutions } from '@/lib/content/solutions'
@@ -72,20 +72,20 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
             <span className="hga-solution-arc" />
           </div>
 
-          {/* Duas colunas: a tese à esquerda, a miniatura viva à direita —
-              a mesma que o visitante clicou no cartão da home, agora grande. */}
+          {/* A tese, e logo abaixo o artefato em largura cheia — a mesma
+              ordem da home: primeiro o que é, depois a prova rodando. */}
           <div className="hga-solution-top">
+            <Link href="/#solucoes" className="hga-solution-back">
+              <ArrowLeft size={14} aria-hidden="true" /> Todas as soluções
+            </Link>
             <div className="hga-solution-hero">
-              <Link href="/#solucoes" className="hga-solution-back">
-                <ArrowLeft size={14} aria-hidden="true" /> Todas as soluções
-              </Link>
               <p className="hga-solution-cat">{solution.category}</p>
               <h1>{solution.title}</h1>
               <p className="hga-solution-lead">{solution.description}</p>
             </div>
-
-            <SolutionVisual name={solution.visual} className="hga-solution-visual" />
           </div>
+
+          <SolutionShowcase name={solution.visual} />
 
           <div className="hga-solution-body">
             <section className="hga-solution-block">

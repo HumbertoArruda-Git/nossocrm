@@ -6,7 +6,7 @@ export function SiteHeader() {
   return (
     <HeaderShell>
       <header className="hga-header">
-        <Link className="hga-wordmark" href="/#inicio" aria-label="HGA Systems — início">
+        <Link className="hga-wordmark" href="/#inicio" aria-label="HGA Systems, início">
           <span className="hga-wordmark-name"><b>H</b><b>G</b><b className="hga-wordmark-a">A</b></span>
           <small>SYSTEMS</small>
         </Link>

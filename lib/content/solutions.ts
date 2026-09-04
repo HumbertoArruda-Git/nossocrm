@@ -35,7 +35,7 @@ export const solutions: Solution[] = [
     problem:
       'Boa parte do dia da equipe vai em tarefas que se repetem: copiar dados de um sistema para outro, gerar o mesmo documento, lembrar de cobrar um retorno. Quando alguém falta ou esquece, o processo simplesmente para.',
     how:
-      'Mapeamos o fluxo como ele acontece hoje, identificamos as etapas que não precisam de decisão humana e as automatizamos — conectando os sistemas que já estão em uso, com log de cada execução.',
+      'Mapeamos o fluxo como ele acontece hoje, identificamos as etapas que não precisam de decisão humana e as automatizamos, conectando os sistemas que já estão em uso, com log de cada execução.',
     examples: [
       'Movimentação de dados entre sistemas',
       'Follow-up automático de prazos e tarefas',
@@ -89,13 +89,13 @@ export const solutions: Solution[] = [
     shortTitle: 'IA aplicada',
     visual: 'ia',
     description:
-      'IA em pontos específicos da operação — triagem, primeira resposta, leitura de documento — com a decisão final no time.',
+      'IA em pontos específicos da operação (triagem, primeira resposta, leitura de documento), com a decisão final no time.',
     metaDescription:
       'IA aplicada à operação: triagem de solicitações, primeira resposta, classificação e leitura de documentos, com decisão humana preservada.',
     problem:
       'Nem toda etapa precisa esperar alguém ficar livre. Por outro lado, aplicar IA sem critério gera respostas erradas em lugares onde errar é caro.',
     how:
-      'Escolhemos com você as etapas em que a IA ajuda de fato — classificar, resumir, redigir um rascunho, extrair dados de um documento — e mantemos revisão humana onde a decisão tem peso.',
+      'Escolhemos com você as etapas em que a IA ajuda de fato (classificar, resumir, redigir um rascunho, extrair dados de um documento) e mantemos revisão humana onde a decisão tem peso.',
     examples: [
       'Triagem e classificação de solicitações',
       'Rascunho de primeira resposta ao cliente',
@@ -155,7 +155,7 @@ export const solutions: Solution[] = [
     problem:
       'O dado existe, mas está espalhado. Montar um número confiável exige exportar planilha, cruzar na mão e torcer para ninguém ter errado uma coluna.',
     how:
-      'Definimos quais perguntas o painel precisa responder, consolidamos as fontes e montamos indicadores atualizados — com alertas quando algo sai da faixa esperada.',
+      'Definimos quais perguntas o painel precisa responder, consolidamos as fontes e montamos indicadores atualizados, com alertas quando algo sai da faixa esperada.',
     examples: [
       'Indicadores comerciais e operacionais',
       'Painéis por área e por responsável',

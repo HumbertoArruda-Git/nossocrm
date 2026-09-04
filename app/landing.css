@@ -752,6 +752,80 @@
   100% { transform: translateY(0) }
 }
 
+/* ===================== peça grande da página de solução =====================
+   Mesmo compasso de 5.6s das miniaturas — as duas conversam quando o
+   visitante volta para a home. Só as distâncias mudam, porque aqui o
+   desenho é feito na escala real da página, não em 220 × 128. */
+
+.hs-chrome { fill: rgba(180, 202, 255, .035); }
+.hs-dot { fill: rgba(180, 202, 255, .22); }
+.hs-rule { stroke: var(--edge); stroke-width: 1; fill: none; }
+.hs-chip-ok { fill: rgba(var(--ok-rgb), .08); stroke: rgba(var(--ok-rgb), .28); stroke-width: 1; }
+.hs-dot-ok { fill: var(--ok); }
+
+.hs-title,
+.hs-num {
+  font-family: var(--font-hga-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: .12em;
+  fill: var(--paper-3);
+}
+.hs-num-accent { fill: var(--blue-lit); }
+.hs-num-ok { fill: rgba(var(--ok-rgb), .92); }
+
+.hs-label {
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  fill: var(--paper);
+}
+.hs-label-accent { fill: var(--blue-lit); }
+.hs-label-dim { fill: var(--paper-2); }
+.hs-meta {
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
+  font-size: 12px;
+  fill: var(--paper-3);
+}
+.hs-big {
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -.02em;
+  fill: var(--paper);
+}
+.hs-big-accent { fill: var(--blue-lit); }
+
+/* a linha que está rodando agora */
+.hs-row-live { fill: rgba(var(--blue-rgb), .10); stroke: rgba(var(--blue-rgb), .30); stroke-width: 1; }
+.hs-icon-live { fill: rgba(var(--blue-rgb), .30); stroke: rgba(var(--blue-rgb), .55); stroke-width: 1; }
+
+/* card avançando de etapa (224 = distância entre colunas nesta escala) */
+.hs-advance { animation: hs-advance-move 5.6s ease-in-out infinite; }
+@keyframes hs-advance-move {
+  0%, 34% { transform: translateX(0); opacity: 1; }
+  50%, 88% { transform: translateX(224px); opacity: 1; }
+  94% { transform: translateX(224px); opacity: 0; }
+  95% { transform: translateX(0); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+/* seleções — uma por altura de linha */
+.hs-select { animation: hs-select-70 5.6s ease-in-out infinite; }
+@keyframes hs-select-70 {
+  0%, 40% { transform: translateY(0) }
+  52%, 92% { transform: translateY(70px) }
+  100% { transform: translateY(0) }
+}
+.hs-select-row { animation: hs-select-58 5.6s ease-in-out infinite; }
+@keyframes hs-select-58 {
+  0%, 40% { transform: translateY(0) }
+  52%, 92% { transform: translateY(58px) }
+  100% { transform: translateY(0) }
+}
+
+/* terceira linha do rascunho, um passo atrás da segunda */
+.hv-type-3 { animation-delay: .68s; }
+
 /* ---- comparativo: dois estados, um apagado e um aceso ---- */
 .hga-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .hga-compare-col { display: flex; }
@@ -1130,28 +1204,37 @@
 }
 .hga-solution-beam {
   background: radial-gradient(closest-side,
-    rgba(196, 219, 255, .30) 0%,
-    rgba(104, 156, 255, .22) 18%,
-    rgba(47, 107, 255, .15) 32%,
-    rgba(19, 51, 168, .09) 48%,
+    rgba(196, 219, 255, .16) 0%,
+    rgba(104, 156, 255, .12) 18%,
+    rgba(47, 107, 255, .08) 32%,
+    rgba(19, 51, 168, .05) 48%,
     transparent 78%);
   filter: blur(16px);
 }
 .hga-solution-arc {
-  border-top: 1px solid rgba(178, 208, 255, .26);
+  border-top: 1px solid rgba(178, 208, 255, .18);
   -webkit-mask-image: linear-gradient(90deg, transparent 6%, #000 28%, #000 72%, transparent 94%);
   mask-image: linear-gradient(90deg, transparent 6%, #000 28%, #000 72%, transparent 94%);
 }
 
-.hga-solution-top {
+.hga-solution-top { position: relative; z-index: 1; }
+.hga-solution-hero { max-width: 720px; }
+
+/* A peça grande ganha a largura inteira. Espremida numa coluna lateral ela
+   viraria a miniatura do cartão de novo — e o ponto aqui é justamente ter
+   espaço para o detalhe que na miniatura não cabia. */
+.hga-solution-showcase {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
-  gap: clamp(32px, 5vw, 64px);
-  align-items: center;
+  margin-top: clamp(40px, 6vw, 64px);
+  padding: clamp(14px, 2vw, 22px);
+  border: 1px solid var(--edge-strong);
+  border-radius: var(--r);
+  background: linear-gradient(180deg, #0C1120, #070A11);
+  box-shadow: 0 34px 80px rgba(0, 0, 0, .55);
+  overflow: hidden;
 }
-.hga-solution-hero { max-width: 560px; }
+.hga-solution-showcase svg { display: block; width: 100%; height: auto; }
 .hga-solution-back {
   display: inline-flex;
   align-items: center;
@@ -1187,17 +1270,6 @@
 }
 .hga-solution-lead { font-size: 17px; line-height: 1.62; color: var(--paper-2); margin: 0; max-width: 54ch; }
 
-/* a miniatura que o visitante clicou no cartão da home, agora em tamanho
-   grande e com o mesmo movimento */
-.hga-solution-visual {
-  margin: 0;
-  padding: 30px 30px 10px;
-  border: 1px solid var(--edge-strong);
-  border-radius: var(--r);
-  background: linear-gradient(180deg, #0C1120, #070A11);
-  box-shadow: 0 30px 70px rgba(0, 0, 0, .5);
-}
-.hga-solution-visual svg { display: block; width: 100%; height: auto; }
 
 /* ---- corpo em ficha técnica: rótulo à esquerda, conteúdo à direita ---- */
 .hga-solution-body {
@@ -1383,7 +1455,8 @@
      em scaleX(0) ou opacity 0, e adiantá-los deixaria o desenho incompleto.
      Aqui elas são desligadas de fato e voltam ao estado desenhado. */
   .hv-flow, .hv-swap-a, .hv-swap-b, .hv-advance, .hv-pop, .hv-type,
-  .hv-throb, .hv-bar, .hv-spark, .hv-meter, .hv-select {
+  .hv-throb, .hv-bar, .hv-spark, .hv-meter, .hv-select,
+  .hs-advance, .hs-select, .hs-select-row {
     animation: none !important;
     transform: none !important;
   }
@@ -1415,8 +1488,7 @@
   .hga-band-grid li:nth-child(odd) { padding-left: 0; border-left: 0; }
   .hga-band-grid li:nth-child(even) { padding-right: 0; }
 
-  /* página de solução: dobra e ficha técnica empilham */
-  .hga-solution-top { grid-template-columns: 1fr; gap: 36px; }
+  /* página de solução: a ficha técnica empilha */
   .hga-solution-hero { max-width: none; }
   .hga-solution-block { grid-template-columns: 1fr; gap: 14px; }
   .hga-solution-block h2 { margin-bottom: 2px; }
@@ -1456,6 +1528,16 @@
   .hga-panel-step { gap: 12px; padding: 12px 10px; }
   .hga-panel-step-meta { display: none; }
   .hga-panel-foot { font-size: 12px; }
+
+  /* A peça grande é desenhada na escala da página; num viewport de 350px ela
+     encolhe para menos da metade e o texto fino vira borrão. O detalhe sai e
+     os rótulos que sustentam a leitura crescem — mesma tática das miniaturas
+     dos cartões. */
+  .hga-solution-showcase .hs-meta { display: none; }
+  .hga-solution-showcase .hs-label { font-size: 21px; }
+  .hga-solution-showcase .hs-title,
+  .hga-solution-showcase .hs-num { font-size: 17px; letter-spacing: .06em; }
+  .hga-solution-showcase .hs-big { font-size: 38px; }
 }
 
 /* No celular tudo que é conjunto fica 2 × 2. Empilhar em coluna única
@@ -1490,7 +1572,6 @@
   .hga-nudge { padding: 22px 20px 24px; }
   .hga-nudge h3 { font-size: 17px; }
   .hga-nudge .hga-btn { width: 100%; justify-content: center; }
-  .hga-solution-visual { padding: 18px 18px 6px; }
   .hga-solution-others-list { gap: 7px; }
 }
 

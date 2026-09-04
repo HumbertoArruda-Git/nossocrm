@@ -118,7 +118,7 @@ export function HeroPanel() {
 
       <div className="hga-panel-foot">
         <Clock size={13} aria-hidden="true" />
-        <span>Cada etapa fica registrada — dá para auditar o que rodou e quando.</span>
+        <span>Cada etapa fica registrada, dá para auditar o que rodou e quando.</span>
       </div>
     </div>
   )

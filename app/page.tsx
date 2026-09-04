@@ -15,7 +15,7 @@ const OG_IMAGE = {
   url: '/api/og',
   width: 1200,
   height: 630,
-  alt: 'HGA Systems — automação, CRM e integrações sob medida',
+  alt: 'HGA Systems: automação, CRM e integrações sob medida',
 }
 
 export const viewport: Viewport = {
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
 const capabilities = [
   { icon: Route, title: 'Processo antes de código', text: 'O levantamento começa com quem executa a rotina, não com a ferramenta.' },
   { icon: Blocks, title: 'Integra com o que já existe', text: 'Conectamos CRM, ERP, WhatsApp e planilhas em vez de exigir troca total.' },
-  { icon: ScanText, title: 'IA onde ela ajuda', text: 'Triagem, rascunho e leitura de documento — com revisão humana onde pesa.' },
+  { icon: ScanText, title: 'IA onde ela ajuda', text: 'Triagem, rascunho e leitura de documento, com revisão humana onde pesa.' },
   { icon: Timer, title: 'Entrega em ciclos curtos', text: 'Você vê funcionando cedo e corrige rota antes de virar retrabalho.' },
 ]
 
@@ -234,7 +234,7 @@ export default function HomePage() {
             <h2>Quase sempre o gargalo não é falta de ferramenta.</h2>
             <p className="hga-head-lead">
               É informação espalhada, etapa manual e sistema que não conversa. O trabalho é reorganizar
-              isso — não empilhar mais um software.
+              isso, não empilhar mais um software.
             </p>
           </header>
 
@@ -309,7 +309,7 @@ export default function HomePage() {
             <h2>A expectativa do cliente mudou antes das operações mudarem.</h2>
             <p className="hga-head-lead">
               A HGA ainda está construindo o próprio histórico de cases, então os números abaixo são de
-              pesquisas públicas — com a fonte sempre à vista.
+              pesquisas públicas, com a fonte sempre à vista.
             </p>
           </header>
 
