@@ -91,18 +91,15 @@ const dealQueryBuilder = {
   })),
 }
 
+type ContactLookupResult = { data: { id: string } | null; error: { message: string } | null }
+const inlineContactLookup = vi.fn<() => Promise<ContactLookupResult>>()
+const contactIdLookup = vi.fn<() => Promise<ContactLookupResult>>()
+
 const contactQueryBuilder = {
   select: vi.fn().mockReturnThis(),
   eq: vi.fn().mockReturnThis(),
   is: vi.fn().mockReturnThis(),
   or: vi.fn().mockReturnThis(),
-  // O lookup do contato inline e a validação de contact_id compartilham a
-  // tabela, mas têm semânticas diferentes: o primeiro começa inexistente;
-  // o segundo precisa encontrar o contato referenciado.
-  maybeSingle: vi.fn(async () => ({
-    data: contactQueryBuilder.or.mock.calls.length > 0 ? null : { id: CONTACT_ID },
-    error: null,
-  })),
   update: vi.fn().mockReturnThis(),
   insert: vi.fn().mockReturnThis(),
   single: vi.fn(async () => ({
@@ -111,10 +108,25 @@ const contactQueryBuilder = {
   })),
 }
 
+function createContactQueryBuilder() {
+  // Cada consulta tem seus próprios filtros; os resultados dos dois fluxos
+  // podem ser configurados independentemente, sem depender da ordem de chamadas.
+  let byId = false
+  const query = {
+    ...contactQueryBuilder,
+    eq: vi.fn((column: string) => {
+      if (column === 'id') byId = true
+      return query
+    }),
+    maybeSingle: vi.fn(() => byId ? contactIdLookup() : inlineContactLookup()),
+  }
+  return query
+}
+
 const supabaseMock = {
   from: vi.fn((table: string) => {
     if (table === 'deals') return dealQueryBuilder
-    if (table === 'contacts') return contactQueryBuilder
+    if (table === 'contacts') return createContactQueryBuilder()
     throw new Error(`Unexpected table: ${table}`)
   }),
 }
@@ -315,8 +327,8 @@ describe('POST /api/public/v1/deals', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(authPublicApi).mockResolvedValue(AUTH_OK)
-    // O mock distingue o lookup inline (não encontrado → cria) da validação
-    // de contact_id (contato existente), conforme os dois fluxos da rota.
+    inlineContactLookup.mockReset().mockResolvedValue({ data: null, error: null })
+    contactIdLookup.mockReset().mockResolvedValue({ data: { id: CONTACT_ID }, error: null })
   })
 
   function makePostRequest(body: unknown): Request {
@@ -348,6 +360,48 @@ describe('POST /api/public/v1/deals', () => {
       title: 'Novo Deal',
       board_id: BOARD_ID,
     })
+  })
+
+  it.each([
+    { email: 'novo@example.com' },
+    { phone: '+5511999999999' },
+    { email: 'novo@example.com', phone: '+5511999999999' },
+  ])('cria contato inline inexistente e valida o ID criado (%j)', async (identifiers) => {
+    const response = await POST(makePostRequest({
+      title: 'Deal inline', board_id: BOARD_ID, stage_id: STAGE_ID,
+      contact: { name: 'Novo contato', ...identifiers },
+    }))
+    expect(response.status).toBe(201)
+    expect(inlineContactLookup).toHaveBeenCalledTimes(1)
+    expect(contactQueryBuilder.insert).toHaveBeenCalledWith(expect.objectContaining({
+      organization_id: ORG_ID, name: 'Novo contato',
+    }))
+    expect(contactQueryBuilder.update).not.toHaveBeenCalled()
+    expect(contactIdLookup).toHaveBeenCalledTimes(1)
+    expect(dealQueryBuilder.insert).toHaveBeenCalledWith(expect.objectContaining({ contact_id: CONTACT_ID }))
+  })
+
+  it('atualiza contato inline existente antes de validar seu ID', async () => {
+    inlineContactLookup.mockResolvedValueOnce({ data: { id: CONTACT_ID }, error: null })
+    const response = await POST(makePostRequest({
+      title: 'Deal inline', board_id: BOARD_ID, stage_id: STAGE_ID,
+      contact: { name: 'Nome atualizado', email: 'existente@example.com' },
+    }))
+    expect(response.status).toBe(201)
+    expect(contactQueryBuilder.update).toHaveBeenCalledWith(expect.objectContaining({ name: 'Nome atualizado' }))
+    expect(contactQueryBuilder.insert).not.toHaveBeenCalled()
+    expect(contactIdLookup).toHaveBeenCalledTimes(1)
+  })
+
+  it('rejeita contact_id inexistente sem executar lookup inline nem inserir deal', async () => {
+    contactIdLookup.mockResolvedValueOnce({ data: null, error: null })
+    const response = await POST(makePostRequest({
+      title: 'Deal inválido', board_id: BOARD_ID, stage_id: STAGE_ID, contact_id: CONTACT_ID,
+    }))
+    expect(response.status).toBe(422)
+    expect(await response.json()).toMatchObject({ error: 'Contact not found' })
+    expect(inlineContactLookup).not.toHaveBeenCalled()
+    expect(dealQueryBuilder.insert).not.toHaveBeenCalled()
   })
 
   it('cria deal resolvendo board_key quando board_id ausente', async () => {

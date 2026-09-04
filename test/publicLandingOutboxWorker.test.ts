@@ -88,11 +88,12 @@ describe('landing outbox delivery worker', () => {
     const [url, init] = fetchMock.mock.calls[0]
     expect(url.toString()).toBe('https://example.com/hook')
     expect(init).toMatchObject({
-      headers: expect.objectContaining({
+      method: 'POST',
+      headers: {
         'content-type': 'application/json',
         'X-HGA-Event-Id': event.event_id,
         'X-HGA-Webhook-Token': 'fake-staging-token',
-      }),
+      },
       body: JSON.stringify(payload),
     })
     expect(JSON.stringify(fetchMock.mock.calls)).not.toContain('X-HGA-Timestamp')

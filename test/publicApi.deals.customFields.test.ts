@@ -119,9 +119,9 @@ describe('Public Deals API — custom fields', () => {
   it('filtra por placeId e retorna somente o Deal correspondente', async () => {
     const response = await GET_LIST(request('/api/public/v1/deals?custom_field_key=placeId&custom_field_value=ABC'));
     expect(response.status).toBe(200);
-    const dealsBuilder = vi.mocked(supabase.from).mock.results
-      .map((result) => result.value)
-      .find((value) => value?.contains);
+    const dealsCallIndex = vi.mocked(supabase.from).mock.calls.findIndex(([table]) => table === 'deals');
+    expect(dealsCallIndex).toBeGreaterThanOrEqual(0);
+    const dealsBuilder = vi.mocked(supabase.from).mock.results[dealsCallIndex].value;
     expect(dealsBuilder.contains).toHaveBeenCalledWith('custom_fields', { placeId: 'ABC' });
   });
 
