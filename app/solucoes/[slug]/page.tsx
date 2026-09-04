@@ -6,7 +6,7 @@ import { SiteFooter } from '@/components/landing/SiteFooter'
 import { SiteHeader } from '@/components/landing/SiteHeader'
 import { SolutionVisual } from '@/components/landing/SolutionVisual'
 import { exo2 } from '@/lib/fonts/exo2'
-import { instrumentSans, plexMono } from '@/lib/fonts/landing'
+import { archivo, plexMono } from '@/lib/fonts/landing'
 import { getSolutionBySlug, solutions } from '@/lib/content/solutions'
 
 interface SolutionPageProps {
@@ -49,7 +49,7 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
   const others = solutions.filter((item) => item.slug !== solution.slug)
 
   return (
-    <div className={`hga-site ${exo2.variable} ${instrumentSans.variable} ${plexMono.variable}`}>
+    <div className={`hga-site ${exo2.variable} ${archivo.variable} ${plexMono.variable}`}>
       <SiteHeader />
 
       <main>

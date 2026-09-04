@@ -57,7 +57,7 @@
   background: var(--ink);
   color: var(--paper);
   min-height: 100vh;
-  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   /* clip (não hidden): hidden tornaria .hga-site um container de rolagem e o
      header sticky deixaria de grudar na viewport. */
@@ -69,7 +69,7 @@
 .hga-site h1,
 .hga-site h2,
 .hga-site h3 {
-  font-family: var(--font-hga-display), var(--font-inter), Inter, system-ui, sans-serif;
+  font-family: var(--font-hga-sans), var(--font-hga-sans), system-ui, sans-serif;
   font-weight: 600;
 }
 
@@ -112,12 +112,13 @@
 }
 
 .hga-hero h1 {
-  font-size: clamp(38px, 5.4vw, 70px);
-  line-height: 1.01;
-  letter-spacing: -.042em;
-  margin: 0;
-  max-width: 19ch;
+  font-size: clamp(30px, 3.9vw, 52px);
+  line-height: 1.06;
+  letter-spacing: -.035em;
+  margin: 0 auto;
+  max-width: 21ch;
   color: var(--paper);
+  text-wrap: balance;
 }
 
 .hga-section h2,
@@ -264,10 +265,23 @@
   isolation: isolate;
   display: grid;
   align-items: center;
-  min-height: min(86svh, 840px);
-  padding: clamp(64px, 10vh, 120px) 0 clamp(150px, 24vh, 280px);
+  min-height: min(72svh, 680px);
+  padding: clamp(52px, 7vh, 92px) 0 clamp(112px, 17vh, 200px);
 }
-.hga-hero-inner { position: relative; z-index: 1; width: 100%; }
+/* A dobra é centralizada: o eixo vertical do hero, do horizonte e do painel
+   logo abaixo é o mesmo, então tudo cai na mesma prumada. */
+.hga-hero-inner { position: relative; z-index: 1; width: 100%; text-align: center; }
+.hga-hero .hga-eyebrow { justify-content: center; }
+/* centralizado, o traço do eyebrow vira um par simétrico em volta do rótulo */
+.hga-hero .hga-eyebrow::after {
+  content: "";
+  flex: none;
+  width: 22px;
+  height: 1px;
+  background: var(--blue);
+}
+.hga-hero .hga-lead { margin-inline: auto; max-width: 46ch; }
+.hga-hero .hga-actions { justify-content: center; }
 
 /* --- a luz ---
    Uma elipse de luz nascendo abaixo da dobra, com temperatura de verdade:
@@ -335,9 +349,9 @@
 .hga-showcase {
   position: relative;
   z-index: 2;
-  margin-top: clamp(-160px, -16vh, -80px);
+  margin-top: clamp(-140px, -14vh, -72px);
 }
-.hga-showcase-frame { max-width: 900px; }
+.hga-showcase-frame { max-width: 940px; }
 
 .hga-panel {
   position: relative;
@@ -348,11 +362,23 @@
   overflow: hidden;
 }
 .hga-panel-bar {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--edge);
+}
+/* a barra inferior do cabeçalho é o próprio progresso do ciclo */
+.hga-panel-progress {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: var(--hga-p, 0%);
+  height: 1px;
+  background: var(--blue-lit);
+  box-shadow: 0 0 10px rgba(var(--blue-rgb), .8);
+  transition: width 640ms var(--ease);
 }
 .hga-panel-dots { display: inline-flex; gap: 6px; }
 .hga-panel-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(150, 178, 255, .22); }
@@ -378,7 +404,17 @@
 }
 .hga-panel-status-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ok); }
 
-.hga-panel-steps { list-style: none; margin: 0; padding: 10px; display: flex; flex-direction: column; }
+/* duas colunas: o fluxo à esquerda, o registro que ele produz à direita */
+.hga-panel-body { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr); }
+
+.hga-panel-steps {
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--edge);
+}
 .hga-panel-step {
   position: relative;
   display: flex;
@@ -386,6 +422,7 @@
   gap: 14px;
   padding: 13px 12px;
   border-radius: var(--r-sm);
+  transition: background-color 420ms var(--ease);
 }
 .hga-panel-step + .hga-panel-step::before {
   content: "";
@@ -395,7 +432,11 @@
   width: 1px;
   height: 16px;
   background: var(--edge-strong);
+  transition: background-color 420ms var(--ease);
 }
+/* o fio entre duas etapas acende quando a de cima termina — o progresso
+   percorre a coluna em vez de piscar em cada linha isoladamente */
+.hga-panel-step[data-state="done"] + .hga-panel-step::before { background: var(--blue-lit); }
 .hga-panel-step-icon {
   display: grid;
   place-items: center;
@@ -405,6 +446,8 @@
   border-radius: 9px;
   border: 1px solid var(--edge);
   color: var(--paper-3);
+  background: transparent;
+  transition: color 420ms var(--ease), border-color 420ms var(--ease), background-color 420ms var(--ease);
 }
 .hga-panel-step-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .hga-panel-step-label { font-size: 14px; font-weight: 500; color: var(--paper); }
@@ -441,6 +484,62 @@
   animation: hga-blink 1.9s ease-in-out infinite;
 }
 @keyframes hga-blink { 0%, 100% { opacity: .2 } 50% { opacity: 1 } }
+
+/* ---- o registro que o fluxo produz ----
+   As linhas já existem antes de serem preenchidas: o traço vazio vira valor.
+   É o dado entrando, não um bloco surgindo do nada. */
+.hga-panel-record { padding: 16px 18px 18px; }
+.hga-panel-record-title {
+  margin: 0 0 14px;
+  font-family: var(--font-hga-mono), ui-monospace, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  color: var(--paper-3);
+}
+.hga-panel-record-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.hga-panel-record-row {
+  display: grid;
+  grid-template-columns: 18px minmax(0, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  padding: 0 2px;
+}
+.hga-panel-record-icon { display: grid; place-items: center; color: var(--paper-3); transition: color 420ms var(--ease); }
+.hga-panel-record-field {
+  font-family: var(--font-hga-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--paper-3);
+  white-space: nowrap;
+}
+.hga-panel-record-value,
+.hga-panel-record-blank { grid-column: 3; grid-row: 1; }
+.hga-panel-record-value {
+  justify-self: end;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--paper);
+  text-align: right;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 420ms var(--ease), transform 420ms var(--ease);
+}
+.hga-panel-record-value[data-accent] { color: var(--blue-lit); }
+/* o traço que espera o valor */
+.hga-panel-record-blank {
+  justify-self: end;
+  width: 54px;
+  height: 1px;
+  background: var(--edge-strong);
+  opacity: 1;
+  transition: opacity 260ms var(--ease);
+}
+.hga-panel-record-row[data-filled="true"] .hga-panel-record-value { opacity: 1; transform: none; }
+.hga-panel-record-row[data-filled="true"] .hga-panel-record-blank { opacity: 0; }
+.hga-panel-record-row[data-filled="true"] .hga-panel-record-icon { color: var(--blue-lit); }
 
 .hga-panel-foot {
   display: flex;
@@ -647,7 +746,7 @@
 .hga-stats li { display: flex; flex-direction: column; padding-top: 22px; border-top: 1px solid var(--edge-strong); height: 100%; }
 .hga-stat-value {
   display: block;
-  font-family: var(--font-hga-display), var(--font-inter), Inter, sans-serif;
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
   font-size: clamp(34px, 3.4vw, 44px);
   font-weight: 600;
   letter-spacing: -.04em;
@@ -732,7 +831,7 @@
 .hga-form legend { padding: 0; margin-bottom: 3px; }
 .hga-form input,
 .hga-form textarea {
-  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
   font-size: 14.5px;
   color: var(--paper);
   background: rgba(var(--ink-rgb), .8);
@@ -768,7 +867,7 @@
   padding: 0 15px;
   border: 1px solid var(--edge-strong);
   border-radius: var(--r-sm);
-  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
   font-size: 13.5px;
   font-weight: 400;
   text-transform: none;
@@ -792,7 +891,7 @@
   border: 1px solid var(--edge-strong);
   background: transparent;
   color: var(--paper-3);
-  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
   font-size: 15px;
   font-weight: 500;
   cursor: not-allowed;
@@ -935,10 +1034,46 @@
 [data-reveal="armed"][data-reveal-dir="right"] { transform: translateX(16px); }
 [data-reveal="in"] { opacity: 1; transform: none; }
 
+/* ===================== animação atrelada à rolagem =====================
+   Só onde o navegador suporta timeline de scroll nativa — nada de listener
+   de scroll em JS. Sem suporte, a página fica exatamente como está.
+
+   Dois usos, ambos com função:
+   1. a luz do hero afunda e apaga conforme você sai da dobra — a fonte de
+      luz fica para trás em vez de acompanhar a rolagem colada no conteúdo;
+   2. o cabeçalho de cada seção sobe ao entrar, dando um tempo de leitura
+      antes do conteúdo. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hga-hero-light {
+      animation: hga-light-recede linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 90svh;
+    }
+    @keyframes hga-light-recede {
+      to { transform: translateY(11%); opacity: .35; }
+    }
+
+    .hga-head,
+    .hga-band-grid li {
+      animation: hga-enter linear both;
+      animation-timeline: view();
+      animation-range: entry 8% cover 24%;
+    }
+    /* começa em .25 e não em 0: se a timeline travar em algum navegador, o
+       pior caso é texto apagado — nunca texto invisível. */
+    @keyframes hga-enter {
+      from { opacity: .25; transform: translateY(12px); }
+      to { opacity: 1; transform: none; }
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-reveal] { transition: none; opacity: 1; transform: none; }
   .hga-hero-inner > * { animation: none; }
   .hga-hero-beam { animation: none; opacity: .92; }
+  .hga-panel-progress { transition: none; }
   .hga-panel-step[data-state="running"] .hga-panel-step-state::after { animation: none; opacity: .8; }
   .hga-site *, .hga-site *::before, .hga-site *::after {
     animation-duration: .01ms !important;
@@ -986,6 +1121,9 @@
   /* sem o texto "Suporte · alta" a etiqueta ficaria larga demais para o que mostra */
   .hga-cards .hv-tag { width: 44px; }
 
+  /* estreito demais para duas colunas: o registro vai para baixo do fluxo */
+  .hga-panel-body { grid-template-columns: 1fr; }
+  .hga-panel-steps { border-right: 0; border-bottom: 1px solid var(--edge); }
   .hga-panel-step { gap: 12px; padding: 12px 10px; }
   .hga-panel-step-meta { display: none; }
   .hga-panel-foot { font-size: 12px; }

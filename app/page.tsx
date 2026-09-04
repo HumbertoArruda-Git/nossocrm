@@ -8,7 +8,7 @@ import { SiteHeader } from '@/components/landing/SiteHeader'
 import { SolutionVisual } from '@/components/landing/SolutionVisual'
 import { ContactForm } from '@/components/landing/ContactForm'
 import { exo2 } from '@/lib/fonts/exo2'
-import { instrumentSans, plexMono } from '@/lib/fonts/landing'
+import { archivo, plexMono } from '@/lib/fonts/landing'
 import { solutions } from '@/lib/content/solutions'
 
 export const metadata: Metadata = {
@@ -110,7 +110,7 @@ const marketStats = [
 
 export default function HomePage() {
   return (
-    <div className={`hga-site ${exo2.variable} ${instrumentSans.variable} ${plexMono.variable}`}>
+    <div className={`hga-site ${exo2.variable} ${archivo.variable} ${plexMono.variable}`}>
       <SiteHeader />
 
       <main>
