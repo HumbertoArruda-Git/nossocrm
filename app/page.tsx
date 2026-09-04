@@ -5,6 +5,7 @@ import { HeroPanel } from '@/components/landing/HeroPanel'
 import { ScrollReveal } from '@/components/landing/ScrollReveal'
 import { SiteFooter } from '@/components/landing/SiteFooter'
 import { SiteHeader } from '@/components/landing/SiteHeader'
+import { AnchorScroll } from '@/components/landing/AnchorScroll'
 import { SolutionVisual } from '@/components/landing/SolutionVisual'
 import { ContactForm } from '@/components/landing/ContactForm'
 import { exo2 } from '@/lib/fonts/exo2'
@@ -127,6 +128,7 @@ const marketStats = [
 export default function HomePage() {
   return (
     <div className={`hga-site ${exo2.variable} ${archivo.variable} ${plexMono.variable}`}>
+      <AnchorScroll />
       <SiteHeader />
 
       <main>

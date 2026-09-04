@@ -161,9 +161,31 @@ svg.lucide {
   --window-expired: oklch(62% 0.25 25);
 }
 
-/* Avoid accidental horizontal scroll on small screens (mobile/tablet). */
+/* Avoid accidental horizontal scroll on small screens (mobile/tablet).
+ *
+ * `clip` e não `hidden`: `hidden` faz de html/body um container de rolagem, e
+ * isso quebra `position: sticky` em TODOS os descendentes — era o motivo de o
+ * header da landing não grudar no topo. `clip` recorta o transbordo horizontal
+ * do mesmo jeito, sem criar container de rolagem.
+ *
+ * Safari < 16 não suporta `clip` e simplesmente ignora a regra: volta a poder
+ * haver rolagem horizontal acidental lá, sem quebrar layout.
+ */
 html, body {
-  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+/* O header da landing é sticky com 72px (64px abaixo de 800px). Sem isto, um
+ * salto para âncora (#solucoes, #contato) para com a seção EMBAIXO do header —
+ * e o mesmo acontece com o foco de teclado ao navegar por Tab, que fica
+ * escondido atrás dele. Os 88px param a rolagem antes.
+ */
+html {
+  scroll-padding-top: 88px;
+  /* EM TESTE: anima o salto das âncoras. Não afeta a rolagem do usuário
+   * (roda, trackpad, toque) — só âncoras e scroll por script. O bloco
+   * prefers-reduced-motion mais abaixo já desliga isto sozinho. */
+  scroll-behavior: smooth;
 }
 
 .dark {

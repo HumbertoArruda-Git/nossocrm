@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Menu, X } from 'lucide-react'
 import Link from 'next/link'
+import { scrollToHash } from '@/components/landing/scrollToHash'
 
 const links = [
   ['Soluções', '/#solucoes'],
@@ -36,6 +37,13 @@ export function HgaMobileMenu() {
     }
   }, [open])
 
+  // Fecha o painel em todo caso; a rolagem só é assumida quando o alvo está
+  // nesta página (fora dela, o Link navega normalmente).
+  function handleNavClick(event: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    setOpen(false)
+    scrollToHash(event, href)
+  }
+
   return (
     <div className="hga-mobile-menu" ref={rootRef}>
       <button
@@ -51,12 +59,16 @@ export function HgaMobileMenu() {
       <div className="hga-mobile-panel" id="hga-mobile-panel" data-open={open} inert={!open}>
         <nav aria-label="Navegação mobile">
           {links.map(([label, href]) => (
-            <Link href={href} key={href} onClick={() => setOpen(false)}>
+            <Link href={href} key={href} onClick={(event) => handleNavClick(event, href)}>
               {label}
             </Link>
           ))}
         </nav>
-        <Link className="hga-header-cta" href="/#contato" onClick={() => setOpen(false)}>
+        <Link
+          className="hga-header-cta"
+          href="/#contato"
+          onClick={(event) => handleNavClick(event, '/#contato')}
+        >
           Falar com a gente <ArrowRight size={16} aria-hidden="true" />
         </Link>
       </div>

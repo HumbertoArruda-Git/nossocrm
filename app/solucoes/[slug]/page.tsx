@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { SiteFooter } from '@/components/landing/SiteFooter'
 import { SiteHeader } from '@/components/landing/SiteHeader'
+import { AnchorScroll } from '@/components/landing/AnchorScroll'
 import { SolutionShowcase } from '@/components/landing/SolutionShowcase'
 import { exo2 } from '@/lib/fonts/exo2'
 import { archivo, plexMono } from '@/lib/fonts/landing'
@@ -61,6 +62,7 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
 
   return (
     <div className={`hga-site ${exo2.variable} ${archivo.variable} ${plexMono.variable}`}>
+      <AnchorScroll />
       <SiteHeader />
 
       <main>
