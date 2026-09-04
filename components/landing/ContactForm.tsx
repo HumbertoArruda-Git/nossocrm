@@ -53,16 +53,24 @@ export function ContactForm() {
         }),
       })
 
-      if (response.status === 202) {
-        setState('accepted')
-        setMessage('Recebemos sua mensagem e estamos processando o contato.')
-        return
-      }
+      // 201 (gravado) e 202 (recebido, ainda processando) são a mesma coisa para
+      // quem está do outro lado da tela: chegou. A distinção é encanamento, e
+      // não há nada que a pessoa possa fazer com "ainda processando" — deixar o
+      // formulário preenchido e o botão ativo só gerava dúvida e reenvio.
+      // A mensagem continua sendo diferente porque ela é honesta sobre o estado.
       if (response.ok) {
-        setState('success')
-        setMessage('Mensagem recebida. Em breve entraremos em contato.')
+        const stillProcessing = response.status === 202
+        setState(stillProcessing ? 'accepted' : 'success')
+        setMessage(
+          stillProcessing
+            ? 'Recebemos sua mensagem e estamos processando o contato.'
+            : 'Mensagem recebida. Em breve entraremos em contato.'
+        )
         form.reset()
         setIsValid(false)
+        // A chave identifica ESTA submissão, que o servidor já tem. Uma próxima
+        // mensagem é outra submissão e precisa de chave nova, senão o servidor
+        // a descarta como duplicata e o contato se perde em silêncio.
         idempotencyKey.current = null
         return
       }
