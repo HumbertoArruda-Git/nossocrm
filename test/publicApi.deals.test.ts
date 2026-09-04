@@ -96,7 +96,13 @@ const contactQueryBuilder = {
   eq: vi.fn().mockReturnThis(),
   is: vi.fn().mockReturnThis(),
   or: vi.fn().mockReturnThis(),
-  maybeSingle: vi.fn(async () => ({ data: null, error: null })),
+  // O lookup do contato inline e a validação de contact_id compartilham a
+  // tabela, mas têm semânticas diferentes: o primeiro começa inexistente;
+  // o segundo precisa encontrar o contato referenciado.
+  maybeSingle: vi.fn(async () => ({
+    data: contactQueryBuilder.or.mock.calls.length > 0 ? null : { id: CONTACT_ID },
+    error: null,
+  })),
   update: vi.fn().mockReturnThis(),
   insert: vi.fn().mockReturnThis(),
   single: vi.fn(async () => ({
@@ -309,8 +315,8 @@ describe('POST /api/public/v1/deals', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(authPublicApi).mockResolvedValue(AUTH_OK)
-    // Reset contact lookup para "não encontrado" (cria novo)
-    contactQueryBuilder.maybeSingle.mockResolvedValue({ data: null, error: null })
+    // O mock distingue o lookup inline (não encontrado → cria) da validação
+    // de contact_id (contato existente), conforme os dois fluxos da rota.
   })
 
   function makePostRequest(body: unknown): Request {

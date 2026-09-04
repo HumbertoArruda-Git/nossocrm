@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   buildLandingAutomationPayload,
+  createLandingAutomationTransport,
   createLandingAutomationTransportFromEnv,
   deliverNextLandingOutboxEvent,
   getLandingAutomationConfig,
@@ -83,14 +84,17 @@ describe('landing outbox delivery worker', () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(response)
     const transport = createLandingAutomationTransport({ url: 'https://example.com/hook', token: 'fake-staging-token' }, { production: true })
     await expect(transport(payload)).resolves.toEqual({ ok: true })
-    expect(fetchMock).toHaveBeenCalledWith('https://example.com/hook', expect.objectContaining({
-      headers: {
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url.toString()).toBe('https://example.com/hook')
+    expect(init).toMatchObject({
+      headers: expect.objectContaining({
         'content-type': 'application/json',
         'X-HGA-Event-Id': event.event_id,
         'X-HGA-Webhook-Token': 'fake-staging-token',
-      },
+      }),
       body: JSON.stringify(payload),
-    }))
+    })
     expect(JSON.stringify(fetchMock.mock.calls)).not.toContain('X-HGA-Timestamp')
     expect(JSON.stringify(fetchMock.mock.calls)).not.toContain('X-HGA-Signature')
     fetchMock.mockRestore()

@@ -32,7 +32,13 @@ export async function validateDealCustomFields(
     .in('key', keys);
   if (error) return { data: null, error: 'Internal server error', status: 500 };
 
-  const byKey = new Map((definitions as Definition[] | null ?? []).map((definition) => [definition.key, definition]));
+  // A query filter is the primary isolation boundary, but keep the check in
+  // memory as defense in depth when an adapter/mock returns extra rows.
+  const byKey = new Map(
+    (definitions as Definition[] | null ?? [])
+      .filter((definition) => definition.organization_id === organizationId)
+      .map((definition) => [definition.key, definition])
+  );
   for (const key of keys) {
     const definition = byKey.get(key);
     if (!definition) return { data: null, error: `Unknown custom field: ${key}`, status: 422 };
