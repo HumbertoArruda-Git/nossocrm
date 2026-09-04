@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight, Blocks, RefreshCw, Route, ScanText } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Blocks, RefreshCw, Route, ScanText, Search, Timer, Workflow, Wrench } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { HeroPanel } from '@/components/landing/HeroPanel'
@@ -38,7 +38,7 @@ const capabilities = [
   { icon: Route, title: 'Processo antes de código', text: 'O levantamento começa com quem executa a rotina, não com a ferramenta.' },
   { icon: Blocks, title: 'Integra com o que já existe', text: 'Conectamos CRM, ERP, WhatsApp e planilhas em vez de exigir troca total.' },
   { icon: ScanText, title: 'IA onde ela ajuda', text: 'Triagem, rascunho e leitura de documento — com revisão humana onde pesa.' },
-  { icon: RefreshCw, title: 'Entrega em ciclos curtos', text: 'Você vê funcionando cedo e corrige rota antes de virar retrabalho.' },
+  { icon: Timer, title: 'Entrega em ciclos curtos', text: 'Você vê funcionando cedo e corrige rota antes de virar retrabalho.' },
 ]
 
 const today = [
@@ -58,10 +58,10 @@ const after = [
 ]
 
 const process = [
-  { n: '01', title: 'Entender', text: 'Acompanhamos a rotina real e mapeamos onde o tempo e o retrabalho estão.' },
-  { n: '02', title: 'Desenhar', text: 'Definimos o fluxo, o que automatizar e o que continua sendo decisão humana.' },
-  { n: '03', title: 'Construir', text: 'Entregamos em ciclos curtos, integrando com os sistemas que já estão em uso.' },
-  { n: '04', title: 'Evoluir', text: 'Depois da entrega, ajustamos conforme a operação muda e novas necessidades aparecem.' },
+  { n: '01', icon: Search, title: 'Entender', text: 'Acompanhamos a rotina real e mapeamos onde o tempo e o retrabalho estão.' },
+  { n: '02', icon: Workflow, title: 'Desenhar', text: 'Definimos o fluxo, o que automatizar e o que continua sendo decisão humana.' },
+  { n: '03', icon: Wrench, title: 'Construir', text: 'Entregamos em ciclos curtos, integrando com os sistemas que já estão em uso.' },
+  { n: '04', icon: RefreshCw, title: 'Evoluir', text: 'Depois da entrega, ajustamos conforme a operação muda e novas necessidades aparecem.' },
 ]
 
 const benefits = [
@@ -234,15 +234,19 @@ export default function HomePage() {
             <h2>Quatro etapas, sem cerimônia desnecessária.</h2>
           </header>
 
+          {/* O trilho liga as quatro etapas e se preenche conforme a seção
+              entra em cena. Sem ScrollReveal por etapa: o trilho avançando já
+              é a revelação, e quatro fades soltos brigariam com ele. */}
           <ol className="hga-steps">
-            {process.map((step, index) => (
-              <ScrollReveal key={step.n} delay={index * 0.06}>
-                <li className="hga-step">
-                  <span className="hga-step-n">{step.n}</span>
-                  <h3>{step.title}</h3>
-                  <p>{step.text}</p>
-                </li>
-              </ScrollReveal>
+            {process.map(({ n, icon: Icon, title, text }) => (
+              <li className="hga-step" key={n}>
+                <span className="hga-step-node" aria-hidden="true">
+                  <Icon size={17} strokeWidth={1.6} />
+                </span>
+                <span className="hga-step-n">{n}</span>
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </li>
             ))}
           </ol>
         </section>

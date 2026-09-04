@@ -789,8 +789,14 @@
 .hga-list-before li::before { content: "—"; color: var(--paper-3); }
 .hga-list-after li::before { content: "→"; color: var(--blue-lit); }
 
-/* ---- processo: tabela regrada e numerada (é uma sequência) ---- */
+/* ---- processo: trilho com estações ----
+   É a única seção da página que é mesmo uma sequência, então o device
+   precisa mostrar ordem. Um trilho horizontal atravessa a seção e cada
+   etapa vira uma estação sobre ele: a placa é opaca e INTERROMPE o fio —
+   é esse corte que faz o conjunto ler como percurso, e não como quatro
+   caixas enfileiradas. */
 .hga-steps {
+  position: relative;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -798,17 +804,65 @@
   grid-template-columns: repeat(4, 1fr);
   gap: clamp(20px, 3vw, 34px);
 }
-.hga-step { padding-top: 22px; border-top: 1px solid var(--edge-strong); height: 100%; }
+/* trilho base: nasce azul na primeira etapa e vira fio comum adiante */
+.hga-steps::before {
+  content: "";
+  position: absolute;
+  top: 21px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(var(--blue-rgb), .34), var(--edge) 55%, var(--edge));
+}
+/* trecho aceso: cresce da esquerda conforme a seção entra em cena (ver o
+   bloco de animação atrelada à rolagem). Fica em scaleX(0) por padrão —
+   sem timeline de scroll no navegador ele simplesmente não aparece e o
+   trilho base continua ali. */
+.hga-steps::after {
+  content: "";
+  position: absolute;
+  top: 21px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--blue), var(--blue-lit));
+}
+
+.hga-step { height: 100%; }
+.hga-step-node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 43px;
+  height: 43px;
+  margin-bottom: 20px;
+  border: 1px solid var(--edge-strong);
+  border-radius: 12px;
+  /* opaco de propósito: é o que corta o trilho e cria a estação */
+  background: var(--ink);
+  color: var(--blue-lit);
+  transition: border-color var(--base) ease, color var(--base) ease, background-color var(--base) ease;
+}
 .hga-step-n {
   display: block;
-  margin-bottom: 20px;
+  margin-bottom: 11px;
   font-family: var(--font-hga-mono), ui-monospace, monospace;
-  font-size: 12px;
-  letter-spacing: .14em;
-  color: var(--blue-lit);
+  font-size: 11px;
+  letter-spacing: .18em;
+  color: var(--paper-3);
 }
 .hga-step h3 { font-size: 17px; letter-spacing: -.02em; margin: 0 0 9px; color: var(--paper); }
 .hga-step p { margin: 0; font-size: 13.5px; line-height: 1.62; color: var(--paper-2); }
+@media (hover: hover) and (pointer: fine) {
+  .hga-step:hover .hga-step-node {
+    border-color: rgba(var(--blue-rgb), .6);
+    background: rgba(var(--blue-rgb), .12);
+    color: #fff;
+  }
+}
 
 /* ---- benefícios: matriz (resultados paralelos, sem ordem) ---- */
 .hga-benefits {
@@ -1159,6 +1213,17 @@
       animation-timeline: view();
       animation-range: entry 8% cover 24%;
     }
+
+    /* o trilho do processo se preenche no ritmo da rolagem: a própria
+       sequência sendo percorrida serve de revelação da seção */
+    .hga-steps::after {
+      animation: hga-rail-fill linear both;
+      animation-timeline: view();
+      animation-range: entry 34% cover 64%;
+    }
+    @keyframes hga-rail-fill {
+      to { transform: scaleX(1); }
+    }
     /* começa em .25 e não em 0: se a timeline travar em algum navegador, o
        pior caso é texto apagado — nunca texto invisível. */
     @keyframes hga-enter {
@@ -1198,7 +1263,12 @@
 /* ===================== responsivo ===================== */
 @media (max-width: 1000px) {
   .hga-cards { grid-template-columns: repeat(2, 1fr); }
-  .hga-steps { grid-template-columns: repeat(2, 1fr); gap: 28px 24px; }
+  /* em duas linhas o trilho horizontal deixaria de descrever o percurso —
+     ele sai, e a numeração passa a carregar a ordem sozinha */
+  .hga-steps { grid-template-columns: repeat(2, 1fr); gap: 32px 24px; }
+  .hga-steps::before,
+  .hga-steps::after { display: none; }
+  .hga-step-node { width: 38px; height: 38px; margin-bottom: 16px; }
   .hga-stats { grid-template-columns: repeat(2, 1fr); gap: 28px 24px; }
   .hga-contact-grid { grid-template-columns: 1fr; }
   .hga-contact-copy { max-width: none; position: static; }
