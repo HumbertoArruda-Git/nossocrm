@@ -112,9 +112,9 @@
 }
 
 .hga-hero h1 {
-  font-size: clamp(30px, 3.9vw, 52px);
-  line-height: 1.06;
-  letter-spacing: -.035em;
+  font-size: clamp(27px, 3.3vw, 45px);
+  line-height: 1.08;
+  letter-spacing: -.032em;
   margin: 0 auto;
   max-width: 21ch;
   color: var(--paper);
@@ -304,12 +304,12 @@
   transform: translateX(-50%);
   border-radius: 50%;
   background: radial-gradient(closest-side,
-    rgba(196, 219, 255, .90) 0%,
-    rgba(104, 156, 255, .78) 15%,
-    rgba(47, 107, 255, .60) 29%,
-    rgba(19, 51, 168, .40) 45%,
-    rgba(11, 32, 118, .18) 62%,
-    transparent 79%);
+    rgba(196, 219, 255, .52) 0%,
+    rgba(104, 156, 255, .40) 16%,
+    rgba(47, 107, 255, .27) 30%,
+    rgba(19, 51, 168, .17) 46%,
+    rgba(11, 32, 118, .07) 63%,
+    transparent 80%);
   filter: blur(14px);
   animation: hga-breathe 16s ease-in-out infinite;
 }
@@ -323,12 +323,12 @@
   height: 78%;
   transform: translateX(-50%);
   border-radius: 50%;
-  border-top: 1px solid rgba(178, 208, 255, .55);
+  border-top: 1px solid rgba(178, 208, 255, .40);
   -webkit-mask-image: linear-gradient(90deg, transparent 3%, #000 24%, #000 76%, transparent 97%);
   mask-image: linear-gradient(90deg, transparent 3%, #000 24%, #000 76%, transparent 97%);
 }
 @keyframes hga-breathe {
-  0%, 100% { opacity: .82; }
+  0%, 100% { opacity: .88; }
   50% { opacity: 1; }
 }
 
@@ -569,6 +569,26 @@
 .hga-band-grid li { padding: 0 clamp(18px, 2.4vw, 30px); border-left: 1px solid var(--edge); }
 .hga-band-grid li:first-child { padding-left: 0; border-left: 0; }
 .hga-band-grid li:last-child { padding-right: 0; }
+
+/* A régua sozinha deixava a faixa parecendo texto derramado. A placa do
+   ícone dá um ponto de entrada visual a cada coluna e amarra a faixa ao
+   resto do sistema — mesma caixa, mesmo raio, mesmo azul das outras peças. */
+.hga-band-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 18px;
+  border: 1px solid var(--edge-strong);
+  border-radius: 10px;
+  background: linear-gradient(160deg, rgba(var(--blue-rgb), .14), rgba(var(--blue-rgb), .02));
+  color: var(--blue-lit);
+  transition: border-color var(--base) ease, background-color var(--base) ease, color var(--base) ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .hga-band-grid li:hover .hga-band-icon { border-color: rgba(var(--blue-rgb), .55); color: #fff; }
+}
+
 .hga-band-title {
   font-size: 15px;
   font-weight: 600;
@@ -654,6 +674,80 @@
   fill: rgba(233, 237, 247, .44);
 }
 .hv-num-accent { fill: rgba(127, 178, 255, .95); }
+
+/* ---- movimento das miniaturas ----
+   Cada card tem um laço só, e o laço conta o que a solução faz. O compasso
+   longo é sempre 5.6s, então as seis miniaturas respiram juntas em vez de
+   piscarem cada uma no seu tempo. */
+
+/* dado percorrendo os fios */
+.hv-flow { stroke-dasharray: 4 6; animation: hv-flow-move 1.6s linear infinite; }
+@keyframes hv-flow-move { to { stroke-dashoffset: -20; } }
+
+/* troca de valor: o "antes" sai, o "depois" entra, no mesmo lugar */
+.hv-swap-a { animation: hv-swap-out 5.6s ease-in-out infinite; }
+.hv-swap-b { animation: hv-swap-in 5.6s ease-in-out infinite; }
+@keyframes hv-swap-out { 0%, 38% { opacity: 1 } 46%, 90% { opacity: 0 } 98%, 100% { opacity: 1 } }
+@keyframes hv-swap-in { 0%, 38% { opacity: 0 } 46%, 90% { opacity: 1 } 98%, 100% { opacity: 0 } }
+
+/* card avançando de etapa no funil (some antes de voltar, para não pular) */
+.hv-advance { animation: hv-advance-move 5.6s ease-in-out infinite; }
+@keyframes hv-advance-move {
+  0%, 34% { transform: translateX(0); opacity: 1; }
+  50%, 88% { transform: translateX(72px); opacity: 1; }
+  94% { transform: translateX(72px); opacity: 0; }
+  95% { transform: translateX(0); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+/* a classificação chegando */
+.hv-pop { transform-box: fill-box; transform-origin: center; animation: hv-pop-in 5.6s ease-in-out infinite; }
+@keyframes hv-pop-in {
+  0%, 14% { opacity: 0; transform: translateY(4px); }
+  26%, 92% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(4px); }
+}
+
+/* o rascunho se escrevendo */
+.hv-type { transform-box: fill-box; transform-origin: left center; animation: hv-type-in 5.6s ease-in-out infinite; }
+.hv-type-2 { animation-delay: .34s; }
+@keyframes hv-type-in {
+  0%, 30% { transform: scaleX(0); }
+  46%, 92% { transform: scaleX(1); }
+  100% { transform: scaleX(0); }
+}
+
+/* núcleo de integração respirando */
+.hv-throb { animation: hv-throb-pulse 2.8s ease-in-out infinite; }
+@keyframes hv-throb-pulse { 0%, 100% { opacity: .78 } 50% { opacity: 1 } }
+
+/* barras do painel: dado vivo, não gráfico congelado */
+.hv-bar { transform-box: fill-box; transform-origin: center bottom; animation: hv-bar-breathe 4.4s ease-in-out infinite; }
+@keyframes hv-bar-breathe { 0%, 100% { transform: scaleY(1) } 50% { transform: scaleY(.66) } }
+
+/* a série temporal se desenhando */
+.hv-spark { stroke-dasharray: 1; animation: hv-spark-draw 5.6s ease-in-out infinite; }
+@keyframes hv-spark-draw {
+  0%, 6% { stroke-dashoffset: 1 }
+  46%, 94% { stroke-dashoffset: 0 }
+  100% { stroke-dashoffset: 1 }
+}
+
+/* indicador preenchendo */
+.hv-meter { transform-box: fill-box; transform-origin: left center; animation: hv-meter-fill 5.6s ease-in-out infinite; }
+@keyframes hv-meter-fill {
+  0%, 10% { transform: scaleX(.35) }
+  44%, 92% { transform: scaleX(1) }
+  100% { transform: scaleX(.35) }
+}
+
+/* seleção andando pela lista */
+.hv-select { animation: hv-select-move 5.6s ease-in-out infinite; }
+@keyframes hv-select-move {
+  0%, 40% { transform: translateY(0) }
+  52%, 92% { transform: translateY(26px) }
+  100% { transform: translateY(0) }
+}
 
 /* ---- comparativo: dois estados, um apagado e um aceso ---- */
 .hga-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -779,20 +873,25 @@
   padding-block: clamp(88px, 13vw, 150px) clamp(96px, 14vw, 160px);
   border-top: 1px solid var(--edge);
 }
+/* A luz do contato fica INTEIRA dentro da seção. Antes ela descia 62% abaixo
+   da caixa; como nada a recorta no eixo vertical, esse transbordo entrava na
+   altura rolável do documento e abria um vão escuro depois do rodapé.
+   Contida, e com o degradê chegando a transparente antes das bordas, ela
+   ilumina o formulário por trás sem esticar a página. */
 .hga-contact-light {
   position: absolute;
   left: 50%;
-  bottom: -62%;
-  width: 120%;
-  height: 108%;
+  bottom: 2%;
+  width: 122%;
+  height: 78%;
   transform: translateX(-50%);
   border-radius: 50%;
   z-index: 0;
   pointer-events: none;
   background: radial-gradient(closest-side,
-    rgba(104, 156, 255, .32) 0%,
-    rgba(47, 107, 255, .20) 26%,
-    rgba(15, 42, 140, .11) 50%,
+    rgba(104, 156, 255, .17) 0%,
+    rgba(47, 107, 255, .11) 28%,
+    rgba(15, 42, 140, .05) 52%,
     transparent 76%);
   filter: blur(20px);
 }
@@ -1075,8 +1174,23 @@
   .hga-hero-beam { animation: none; opacity: .92; }
   .hga-panel-progress { transition: none; }
   .hga-panel-step[data-state="running"] .hga-panel-step-state::after { animation: none; opacity: .8; }
+
+  /* As miniaturas não podem ser apenas "aceleradas": vários laços terminam
+     em scaleX(0) ou opacity 0, e adiantá-los deixaria o desenho incompleto.
+     Aqui elas são desligadas de fato e voltam ao estado desenhado. */
+  .hv-flow, .hv-swap-a, .hv-swap-b, .hv-advance, .hv-pop, .hv-type,
+  .hv-throb, .hv-bar, .hv-spark, .hv-meter, .hv-select {
+    animation: none !important;
+    transform: none !important;
+  }
+  .hv-flow { stroke-dasharray: none; }
+  .hv-spark { stroke-dashoffset: 0; }
+  /* das duas leituras sobrepostas fica só a primeira */
+  .hv-swap-b { opacity: 0; }
+
   .hga-site *, .hga-site *::before, .hga-site *::after {
     animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
   }
 }
@@ -1129,15 +1243,31 @@
   .hga-panel-foot { font-size: 12px; }
 }
 
+/* No celular tudo que é conjunto fica 2 × 2. Empilhar em coluna única
+   transforma a página num documento que se rola de cima a baixo; em pares,
+   cada seção volta a ser uma composição que se lê de uma vez. */
 @media (max-width: 560px) {
   .hga-hero h1 { max-width: none; }
   .hga-actions { gap: 10px; }
   .hga-actions .hga-btn { width: 100%; justify-content: center; }
-  .hga-band-grid { grid-template-columns: 1fr; gap: 26px; padding-block: 30px; }
-  .hga-band-grid li { padding: 0; border-left: 0; }
+
+  .hga-band-grid { gap: 26px 0; padding-block: 30px; }
+  .hga-band-grid li { padding-inline: 14px; }
+  .hga-band-icon { width: 32px; height: 32px; margin-bottom: 14px; }
+  .hga-band-title { font-size: 14px; }
+  .hga-band-grid p { font-size: 12.5px; line-height: 1.55; }
+
   .hga-steps { grid-template-columns: 1fr 1fr; gap: 22px 16px; }
-  .hga-stats { grid-template-columns: 1fr; gap: 26px; }
-  .hga-benefits { grid-template-columns: 1fr; }
+
+  .hga-stats { grid-template-columns: 1fr 1fr; gap: 24px 14px; }
+  .hga-stat-value { font-size: 29px; margin-bottom: 10px; }
+  .hga-stat-desc { font-size: 12.5px; line-height: 1.55; margin-bottom: 12px; }
+  .hga-stat-source { font-size: 9.5px; letter-spacing: .08em; }
+
+  .hga-benefits li { padding: 20px 16px 22px; }
+  .hga-benefits h3 { font-size: 14.5px; margin-bottom: 7px; }
+  .hga-benefits p { font-size: 12.5px; line-height: 1.55; }
+
   .hga-form-row { grid-template-columns: 1fr; }
   .hga-chips { grid-template-columns: 1fr; }
   .hga-panel-step-state { display: none; }

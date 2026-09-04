@@ -5,6 +5,13 @@ import type { SolutionVisual as VisualKey } from '@/lib/content/solutions'
  * (fluxo, funil, triagem, integração, painel, aplicação) em SVG — sem imagem,
  * sem objeto 3D. Herdam cor do CSS via currentColor e das classes .hv-*.
  *
+ * Cada miniatura tem UM movimento, e o movimento diz o que aquela solução faz:
+ * no fluxo o dado percorre os fios e a última etapa fecha; no funil o card
+ * troca de coluna e os contadores acompanham; na triagem a classificação
+ * chega e o rascunho se escreve; na integração os fios pulsam para o núcleo;
+ * no painel as barras respiram e a série se desenha; no sistema a seleção
+ * anda pela lista. Tudo em CSS — os componentes seguem sendo server components.
+ *
  * Os números/labels são CENOGRÁFICOS: contadores e estados de interface.
  * Nada aqui representa resultado, faturamento ou métrica real da HGA.
  * Em telas pequenas o CSS oculta as frases (.hv-num) e mantém apenas os rótulos
@@ -24,9 +31,9 @@ function Automacao() {
       <rect x="32" y="24" width="34" height="3.5" rx="1.75" className={line} />
       <rect x="32" y="32" width="22" height="3" rx="1.5" className={soft} />
 
-      <path d="M78 29 H104" className="hv-conn" />
-      <path d="M104 29 V60 H120" className="hv-conn" />
-      <path d="M104 29 H120" className="hv-conn" />
+      <path d="M78 29 H104" className="hv-conn hv-flow" />
+      <path d="M104 29 V60 H120" className="hv-conn hv-flow" />
+      <path d="M104 29 H120" className="hv-conn hv-flow" />
 
       <rect x="120" y="14" width="88" height="30" rx="7" className={box} />
       <text x="126" y="27" className="hv-num hv-num-min">01</text>
@@ -40,32 +47,37 @@ function Automacao() {
       <rect x="130" y="65" width="40" height="3" rx="1.5" className={soft} />
       <circle cx="198" cy="61" r="5" className="hv-ok" />
 
-      <path d="M104 60 V92 H120" className="hv-conn" />
+      <path d="M104 60 V92 H120" className="hv-conn hv-flow" />
       <rect x="120" y="78" width="88" height="30" rx="7" className={box} />
       <text x="126" y="91" className="hv-num hv-num-min">03</text>
       <rect x="146" y="87" width="22" height="3.5" rx="1.75" className={line} />
       <rect x="130" y="97" width="36" height="3" rx="1.5" className={soft} />
-      <circle cx="198" cy="93" r="5" className="hv-pending" />
+      {/* a terceira etapa fecha e o contador acompanha */}
+      <circle cx="198" cy="93" r="5" className="hv-pending hv-swap-a" />
+      <circle cx="198" cy="93" r="5" className="hv-ok hv-swap-b" />
 
-      <text x="8" y="120" className="hv-num">2 de 3 concluídas</text>
+      <text x="8" y="120" className="hv-num hv-swap-a">2 de 3 concluídas</text>
+      <text x="8" y="120" className="hv-num hv-swap-b">3 de 3 concluídas</text>
     </svg>
   )
 }
 
 function Crm() {
   const cols = [
-    { x: 8, count: '12', cards: [22, 54, 86], h: [26, 26, 16] },
-    { x: 80, count: '8', cards: [22, 54], h: [26, 22] },
-    { x: 152, count: '5', cards: [22], h: [26] },
+    { x: 8, counts: ['12', '11'], cards: [22, 54, 86], h: [26, 26, 16] },
+    { x: 80, counts: ['8', '9'], cards: [22, 54], h: [26, 22] },
+    { x: 152, counts: ['5', '5'], cards: [22], h: [26] },
   ]
   return (
     <svg viewBox="0 0 220 128" role="img" aria-label="Funil comercial em três colunas com contagem de oportunidades em cada etapa">
       {cols.map((col, i) => (
         <g key={col.x}>
           <rect x={col.x} y={6} width={i === 0 ? 34 : 30} height="3.5" rx="1.75" className={i === 0 ? accent : soft} />
-          <text x={col.x + 60} y={10} textAnchor="end" className="hv-num hv-num-min">{col.count}</text>
+          <text x={col.x + 60} y={10} textAnchor="end" className="hv-num hv-num-min hv-swap-a">{col.counts[0]}</text>
+          <text x={col.x + 60} y={10} textAnchor="end" className="hv-num hv-num-min hv-swap-b">{col.counts[1]}</text>
           {col.cards.map((y, j) => (
-            <g key={y}>
+            /* o último card da primeira coluna avança de etapa */
+            <g key={y} className={i === 0 && j === 2 ? 'hv-advance' : undefined}>
               <rect x={col.x} y={y} width="60" height={col.h[j]} rx="6" className={box} />
               <rect x={col.x + 9} y={y + 8} width="30" height="3.5" rx="1.75" className={line} />
               <rect x={col.x + 9} y={y + 16} width="18" height="3" rx="1.5" className={soft} />
@@ -88,14 +100,18 @@ function Ia() {
       <rect x="20" y="28" width="104" height="3" rx="1.5" className={soft} />
       <rect x="20" y="35" width="62" height="3" rx="1.5" className={soft} />
 
-      <rect x="8" y="54" width="96" height="18" rx="9" className="hv-tag" />
-      <circle cx="21" cy="63" r="3.5" className={accent} />
-      <text x="30" y="66" className="hv-num hv-num-accent">Suporte · alta</text>
+      {/* a classificação chega depois da mensagem */}
+      <g className="hv-pop">
+        <rect x="8" y="54" width="96" height="18" rx="9" className="hv-tag" />
+        <circle cx="21" cy="63" r="3.5" className={accent} />
+        <text x="30" y="66" className="hv-num hv-num-accent">Suporte · alta</text>
+      </g>
 
       <rect x="72" y="82" width="140" height="38" rx="8" className="hv-surface-2" />
       <text x="84" y="95" className="hv-num">Rascunho</text>
-      <rect x="84" y="101" width="112" height="3" rx="1.5" className={soft} />
-      <rect x="84" y="108" width="72" height="3" rx="1.5" className={soft} />
+      {/* e o rascunho se escreve */}
+      <rect x="84" y="101" width="112" height="3" rx="1.5" className={`${soft} hv-type`} />
+      <rect x="84" y="108" width="72" height="3" rx="1.5" className={`${soft} hv-type hv-type-2`} />
     </svg>
   )
 }
@@ -108,22 +124,27 @@ function Integracao() {
   ]
   return (
     <svg viewBox="0 0 220 128" role="img" aria-label="CRM, ERP e chat conectados a um núcleo de integração com quatro fluxos ativos">
-      {chips.map((c) => (
+      {chips.map((c, i) => (
         <g key={c.y}>
           <rect x={c.x} y={c.y} width="62" height="24" rx="7" className={box} />
           <circle cx={c.x + 13} cy={c.y + 12} r="3.5" className={soft} />
           <text x={c.x + 23} y={c.y + 15} className="hv-num hv-num-min">{c.label}</text>
-          <path d={`M70 ${c.y + 12} H108`} className="hv-conn" />
+          <path
+            d={`M70 ${c.y + 12} H108`}
+            className="hv-conn hv-flow"
+            style={{ animationDelay: `${i * 0.35}s` }}
+          />
         </g>
       ))}
-      <path d="M108 22 V64" className="hv-conn" />
-      <path d="M108 106 V64" className="hv-conn" />
+      <path d="M108 22 V64" className="hv-conn hv-flow" />
+      <path d="M108 106 V64" className="hv-conn hv-flow" />
 
-      <rect x="108" y="44" width="42" height="40" rx="10" className="hv-hub" />
+      <rect x="108" y="44" width="42" height="40" rx="10" className="hv-hub hv-throb" />
       <text x="129" y="62" textAnchor="middle" className="hv-num hv-num-accent">sync</text>
-      <text x="129" y="74" textAnchor="middle" className="hv-num hv-num-accent hv-num-min">4</text>
+      <text x="129" y="74" textAnchor="middle" className="hv-num hv-num-accent hv-num-min hv-swap-a">4</text>
+      <text x="129" y="74" textAnchor="middle" className="hv-num hv-num-accent hv-num-min hv-swap-b">5</text>
 
-      <path d="M150 64 H176" className="hv-conn" />
+      <path d="M150 64 H176" className="hv-conn hv-flow" />
       <rect x="176" y="50" width="36" height="28" rx="7" className={box} />
       <text x="185" y="67" className="hv-num hv-num-min">API</text>
     </svg>
@@ -143,11 +164,12 @@ function Dashboards() {
     <svg viewBox="0 0 220 128" role="img" aria-label="Painel com indicador, série temporal e barras por dia da semana">
       <rect x="8" y="8" width="96" height="30" rx="7" className="hv-surface-2" />
       <text x="18" y="20" className="hv-num">Em aberto</text>
-      <rect x="18" y="25" width="44" height="6" rx="3" className={accent} />
+      <rect x="18" y="25" width="44" height="6" rx="3" className={`${accent} hv-meter`} />
 
       <rect x="112" y="8" width="100" height="30" rx="7" className="hv-surface-2" />
       <text x="122" y="20" className="hv-num">7 dias</text>
-      <path d="M122 32 L138 27 L152 29 L168 20 L184 23 L202 16" className="hv-spark" />
+      {/* a série se desenha da esquerda para a direita, em laço */}
+      <path d="M122 32 L138 27 L152 29 L168 20 L184 23 L202 16" className="hv-spark" pathLength={1} />
 
       <rect x="8" y="46" width="204" height="74" rx="8" className={box} />
       <path d="M18 102 H202" className="hv-axis" />
@@ -159,7 +181,8 @@ function Dashboards() {
             width="12"
             height={b.h}
             rx="3"
-            className={i === bars.length - 1 ? accent : soft}
+            className={`${i === bars.length - 1 ? accent : soft} hv-bar`}
+            style={{ animationDelay: `${i * 0.28}s` }}
           />
           <text x={b.x + 6} y={114} textAnchor="middle" className="hv-num hv-num-min">{b.d}</text>
         </g>
@@ -186,12 +209,15 @@ function Sistemas() {
       <text x="18" y="82" className="hv-num">Relatórios</text>
 
       <text x="74" y="45" className="hv-num">Registros</text>
-      <text x="200" y="45" textAnchor="end" className="hv-num hv-num-min">18</text>
+      <text x="200" y="45" textAnchor="end" className="hv-num hv-num-min hv-swap-a">18</text>
+      <text x="200" y="45" textAnchor="end" className="hv-num hv-num-min hv-swap-b">19</text>
       <rect x="74" y="56" width="126" height="20" rx="5" className="hv-surface-2" />
       <rect x="84" y="64" width="52" height="3.5" rx="1.75" className={soft} />
       <rect x="74" y="82" width="126" height="20" rx="5" className="hv-surface-2" />
       <rect x="84" y="90" width="70" height="3.5" rx="1.75" className={soft} />
-      <rect x="160" y="106" width="40" height="6" rx="3" className={accent} />
+      {/* a seleção anda pela lista */}
+      <rect x="74" y="56" width="3" height="20" rx="1.5" className={`${accent} hv-select`} />
+      <rect x="160" y="106" width="40" height="6" rx="3" className={`${accent} hv-meter`} />
     </svg>
   )
 }

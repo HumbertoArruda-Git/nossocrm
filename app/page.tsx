@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Blocks, RefreshCw, Route, ScanText } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { HeroPanel } from '@/components/landing/HeroPanel'
@@ -35,10 +35,10 @@ export const metadata: Metadata = {
 }
 
 const capabilities = [
-  { title: 'Processo antes de código', text: 'O levantamento começa com quem executa a rotina, não com a ferramenta.' },
-  { title: 'Integra com o que já existe', text: 'Conectamos CRM, ERP, WhatsApp e planilhas em vez de exigir troca total.' },
-  { title: 'IA onde ela ajuda', text: 'Triagem, rascunho e leitura de documento — com revisão humana onde pesa.' },
-  { title: 'Entrega em ciclos curtos', text: 'Você vê funcionando cedo e corrige rota antes de virar retrabalho.' },
+  { icon: Route, title: 'Processo antes de código', text: 'O levantamento começa com quem executa a rotina, não com a ferramenta.' },
+  { icon: Blocks, title: 'Integra com o que já existe', text: 'Conectamos CRM, ERP, WhatsApp e planilhas em vez de exigir troca total.' },
+  { icon: ScanText, title: 'IA onde ela ajuda', text: 'Triagem, rascunho e leitura de documento — com revisão humana onde pesa.' },
+  { icon: RefreshCw, title: 'Entrega em ciclos curtos', text: 'Você vê funcionando cedo e corrige rota antes de virar retrabalho.' },
 ]
 
 const today = [
@@ -153,10 +153,13 @@ export default function HomePage() {
         {/* ---------- Capacidades ---------- */}
         <section className="hga-band" aria-label="Como a HGA trabalha">
           <ul className="hga-band-grid">
-            {capabilities.map((item) => (
-              <li key={item.title}>
-                <h2 className="hga-band-title">{item.title}</h2>
-                <p>{item.text}</p>
+            {capabilities.map(({ icon: Icon, title, text }) => (
+              <li key={title}>
+                <span className="hga-band-icon" aria-hidden="true">
+                  <Icon size={17} strokeWidth={1.6} />
+                </span>
+                <h2 className="hga-band-title">{title}</h2>
+                <p>{text}</p>
               </li>
             ))}
           </ul>
