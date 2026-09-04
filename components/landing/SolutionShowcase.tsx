@@ -16,8 +16,17 @@ import type { SolutionVisual as VisualKey } from '@/lib/content/solutions'
  * rótulos essenciais — a composição vira leitura de textura, não de dado.
  */
 
-/** Barra de janela comum a todas as peças. */
+/**
+ * Barra de janela comum a todas as peças.
+ *
+ * A pastilha de status se dimensiona pelo texto (a monoespaçada tem avanço
+ * fixo, então dá para calcular): com largura fixa, "SINCRONIZANDO" vazava.
+ * Em telas estreitas ela sai inteira — o título já diz o que a peça é.
+ */
 function Chrome({ title, status }: { title: string; status: string }) {
+  const chipWidth = 34 + status.length * 8
+  const chipX = 704 - chipWidth
+
   return (
     <>
       <rect x="0" y="0" width="720" height="42" className="hs-chrome" />
@@ -25,9 +34,11 @@ function Chrome({ title, status }: { title: string; status: string }) {
       <circle cx="34" cy="21" r="4" className="hs-dot" />
       <circle cx="48" cy="21" r="4" className="hs-dot" />
       <text x="68" y="26" className="hs-title">{title}</text>
-      <rect x="592" y="11" width="112" height="22" rx="11" className="hs-chip-ok" />
-      <circle cx="606" cy="22" r="3.5" className="hs-dot-ok" />
-      <text x="616" y="26" className="hs-num hs-num-ok">{status}</text>
+      <g className="hs-status">
+        <rect x={chipX} y="11" width={chipWidth} height="22" rx="11" className="hs-chip-ok" />
+        <circle cx={chipX + 14} cy="22" r="3.5" className="hs-dot-ok" />
+        <text x={chipX + 26} y="26" className="hs-num hs-num-ok">{status}</text>
+      </g>
       <path d="M0 42 H720" className="hs-rule" />
     </>
   )
@@ -51,7 +62,7 @@ function Automacao() {
       <text x="40" y="132" className="hs-meta">a cada 30 segundos</text>
 
       <rect x="24" y="164" width="170" height="86" rx="10" className="hv-surface" />
-      <text x="40" y="190" className="hs-num">EXECUÇÕES HOJE</text>
+      <text x="40" y="190" className="hs-num">EXECUÇÕES</text>
       <text x="40" y="228" className="hs-big hv-swap-a">128</text>
       <text x="40" y="228" className="hs-big hv-swap-b">129</text>
 
@@ -71,7 +82,7 @@ function Automacao() {
           {state === 'ok' && <circle cx="668" cy={y + 28} r="7" className="hv-ok" />}
           {state === 'run' && <circle cx="668" cy={y + 28} r="7" className="hv-hub hv-throb" />}
           {state === 'wait' && <circle cx="668" cy={y + 28} r="7" className="hv-pending" />}
-          <text x="560" y={y + 33} textAnchor="end" className={`hs-num${state === 'run' ? ' hs-num-accent' : ''}`}>
+          <text x="560" y={y + 33} textAnchor="end" className={`hs-num hs-drop-sm${state === 'run' ? ' hs-num-accent' : ''}`}>
             {state === 'ok' ? 'CONCLUÍDO' : state === 'run' ? 'RODANDO' : 'NA FILA'}
           </text>
         </g>
@@ -79,7 +90,7 @@ function Automacao() {
 
       <text x="24" y="345" className="hs-num hv-swap-a">3 DE 4 ETAPAS</text>
       <text x="24" y="345" className="hs-num hs-num-accent hv-swap-b">4 DE 4 ETAPAS</text>
-      <text x="696" y="345" textAnchor="end" className="hs-num">TEMPO MÉDIO 4,2 S</text>
+      <text x="696" y="345" textAnchor="end" className="hs-num hs-drop-sm">TEMPO MÉDIO 4,2 S</text>
       <rect x="24" y="360" width="672" height="4" rx="2" className="hv-pending" />
       <rect x="24" y="360" width="672" height="4" rx="2" className="hv-accent hv-meter" />
     </svg>
@@ -286,10 +297,10 @@ function Dashboards() {
 
 function Sistemas() {
   const nav = [
-    { y: 88, label: 'Pedidos', active: true },
-    { y: 128, label: 'Clientes' },
-    { y: 168, label: 'Estoque' },
-    { y: 208, label: 'Relatórios' },
+    { y: 116, label: 'Pedidos', active: true },
+    { y: 156, label: 'Clientes' },
+    { y: 196, label: 'Estoque' },
+    { y: 236, label: 'Relatórios' },
   ]
   const rows = [
     { y: 132, id: '#4182', w: 168, state: 'ok', label: 'Faturado' },
@@ -303,15 +314,15 @@ function Sistemas() {
 
       <rect x="0" y="42" width="164" height="358" className="hv-panel" />
       <path d="M164 42 V400" className="hs-rule" />
-      <text x="24" y="70" className="hs-num">MÓDULOS</text>
+      <text x="24" y="72" className="hs-num">MÓDULOS</text>
       {nav.map(({ y, label, active }) => (
         <g key={label}>
-          {active && <rect x="14" y={y - 18} width="136" height="30" rx="7" className="hv-tag" />}
+          {active && <rect x="14" y={y - 20} width="136" height="30" rx="7" className="hv-tag" />}
           <text x="28" y={y} className={active ? 'hs-label hs-label-accent' : 'hs-label hs-label-dim'}>{label}</text>
         </g>
       ))}
-      <rect x="14" y="252" width="136" height="34" rx="8" className="hv-hub hv-throb" />
-      <text x="82" y="274" textAnchor="middle" className="hs-num hs-num-accent">NOVO PEDIDO</text>
+      <rect x="14" y="284" width="136" height="34" rx="8" className="hv-hub hv-throb" />
+      <text x="82" y="306" textAnchor="middle" className="hs-num hs-num-accent">NOVO PEDIDO</text>
 
       <text x="192" y="76" className="hs-num">PEDIDOS DA SEMANA</text>
       <text x="696" y="76" textAnchor="end" className="hs-num hv-swap-a">18 REGISTROS</text>

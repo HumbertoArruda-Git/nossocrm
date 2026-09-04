@@ -1220,12 +1220,13 @@
 .hga-solution-top { position: relative; z-index: 1; }
 .hga-solution-hero { max-width: 720px; }
 
-/* A peça grande ganha a largura inteira. Espremida numa coluna lateral ela
-   viraria a miniatura do cartão de novo — e o ponto aqui é justamente ter
-   espaço para o detalhe que na miniatura não cabia. */
+/* Largura suficiente para o detalhe caber, mas não a medida inteira do
+   container: em 1100px a peça dominava a página e o texto acima virava
+   legenda dela. Em 780px ela fica no mesmo eixo da tese, como artefato. */
 .hga-solution-showcase {
   position: relative;
   z-index: 1;
+  max-width: 780px;
   margin-top: clamp(40px, 6vw, 64px);
   padding: clamp(14px, 2vw, 22px);
   border: 1px solid var(--edge-strong);
@@ -1530,14 +1531,17 @@
   .hga-panel-foot { font-size: 12px; }
 
   /* A peça grande é desenhada na escala da página; num viewport de 350px ela
-     encolhe para menos da metade e o texto fino vira borrão. O detalhe sai e
-     os rótulos que sustentam a leitura crescem — mesma tática das miniaturas
-     dos cartões. */
-  .hga-solution-showcase .hs-meta { display: none; }
-  .hga-solution-showcase .hs-label { font-size: 21px; }
+     encolhe para menos da metade e o texto fino vira borrão. A tática é a
+     mesma das miniaturas dos cartões: o secundário sai e o essencial cresce.
+     Aqui SAIR vem antes de CRESCER — ampliar texto dentro de formas de
+     tamanho fixo foi o que fez o rótulo da linha bater no estado dela. */
+  .hga-solution-showcase .hs-meta,
+  .hga-solution-showcase .hs-drop-sm,
+  .hga-solution-showcase .hs-status { display: none; }
+  .hga-solution-showcase .hs-label { font-size: 20px; }
   .hga-solution-showcase .hs-title,
-  .hga-solution-showcase .hs-num { font-size: 17px; letter-spacing: .06em; }
-  .hga-solution-showcase .hs-big { font-size: 38px; }
+  .hga-solution-showcase .hs-num { font-size: 16px; letter-spacing: .05em; }
+  .hga-solution-showcase .hs-big { font-size: 36px; }
 }
 
 /* No celular tudo que é conjunto fica 2 × 2. Empilhar em coluna única
