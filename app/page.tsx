@@ -7,6 +7,8 @@ import { SiteFooter } from '@/components/landing/SiteFooter'
 import { SiteHeader } from '@/components/landing/SiteHeader'
 import { SolutionVisual } from '@/components/landing/SolutionVisual'
 import { ContactForm } from '@/components/landing/ContactForm'
+import { Backdrop } from '@/components/landing/Backdrop'
+import { PointerGlow } from '@/components/landing/PointerGlow'
 import { exo2 } from '@/lib/fonts/exo2'
 import { solutions } from '@/lib/content/solutions'
 
@@ -110,6 +112,8 @@ const marketStats = [
 export default function HomePage() {
   return (
     <div className={`hga-site ${exo2.variable}`}>
+      <Backdrop />
+      <PointerGlow />
       <SiteHeader />
 
       <main>
@@ -165,7 +169,7 @@ export default function HomePage() {
           <div className="hga-cards">
             {solutions.map((solution, index) => (
               <ScrollReveal key={solution.slug} delay={Math.min(index, 3) * 0.05}>
-                <Link href={`/solucoes/${solution.slug}`} className="hga-card">
+                <Link href={`/solucoes/${solution.slug}`} className="hga-card" data-glow>
                   <SolutionVisual name={solution.visual} />
                   <div className="hga-card-body">
                     <p className="hga-card-cat">{solution.category}</p>

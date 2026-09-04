@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { SiteFooter } from '@/components/landing/SiteFooter'
 import { SiteHeader } from '@/components/landing/SiteHeader'
+import { Backdrop } from '@/components/landing/Backdrop'
 import { SolutionVisual } from '@/components/landing/SolutionVisual'
 import { exo2 } from '@/lib/fonts/exo2'
 import { getSolutionBySlug, solutions } from '@/lib/content/solutions'
@@ -49,6 +50,7 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
 
   return (
     <div className={`hga-site ${exo2.variable}`}>
+      <Backdrop />
       <SiteHeader />
 
       <main>
