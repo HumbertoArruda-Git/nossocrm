@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { SiteFooter } from '@/components/landing/SiteFooter'
@@ -11,6 +11,10 @@ import { getSolutionBySlug, solutions } from '@/lib/content/solutions'
 
 interface SolutionPageProps {
   params: Promise<{ slug: string }>
+}
+
+export const viewport: Viewport = {
+  themeColor: '#04060C',
 }
 
 export function generateStaticParams() {
@@ -28,16 +32,23 @@ export async function generateMetadata({ params }: SolutionPageProps): Promise<M
     title,
     description: solution.metaDescription,
     manifest: null,
+    icons: { icon: [{ url: '/icons/hga.svg', type: 'image/svg+xml' }] },
     alternates: { canonical: `/solucoes/${solution.slug}` },
     openGraph: {
       title,
       description: solution.metaDescription,
       url: `/solucoes/${solution.slug}`,
+      images: [{ url: `/api/og?slug=${solution.slug}`, width: 1200, height: 630, alt: title }],
       siteName: 'HGA Systems',
       locale: 'pt_BR',
       type: 'website',
     },
-    twitter: { card: 'summary', title, description: solution.metaDescription },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: solution.metaDescription,
+      images: [`/api/og?slug=${solution.slug}`],
+    },
   }
 }
 
@@ -54,57 +65,70 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
 
       <main>
         <article className="hga-solution-page">
-          <div className="hga-solution-hero">
-            <Link href="/#solucoes" className="hga-solution-back">
-              <ArrowLeft size={14} aria-hidden="true" /> Todas as soluções
-            </Link>
-            <p className="hga-solution-cat">{solution.category}</p>
-            <h1>{solution.title}</h1>
-            <p className="hga-solution-lead">{solution.description}</p>
+          {/* Mesma luz da home, em escala menor e contida na dobra: a página
+              de solução é um capítulo, não uma abertura. */}
+          <div className="hga-solution-light" aria-hidden="true">
+            <span className="hga-solution-beam" />
+            <span className="hga-solution-arc" />
           </div>
 
-          <SolutionVisual name={solution.visual} className="hga-solution-visual" />
+          {/* Duas colunas: a tese à esquerda, a miniatura viva à direita —
+              a mesma que o visitante clicou no cartão da home, agora grande. */}
+          <div className="hga-solution-top">
+            <div className="hga-solution-hero">
+              <Link href="/#solucoes" className="hga-solution-back">
+                <ArrowLeft size={14} aria-hidden="true" /> Todas as soluções
+              </Link>
+              <p className="hga-solution-cat">{solution.category}</p>
+              <h1>{solution.title}</h1>
+              <p className="hga-solution-lead">{solution.description}</p>
+            </div>
+
+            <SolutionVisual name={solution.visual} className="hga-solution-visual" />
+          </div>
 
           <div className="hga-solution-body">
-            <section>
+            <section className="hga-solution-block">
               <h2>O problema que resolve</h2>
               <p>{solution.problem}</p>
             </section>
 
-            <section>
+            <section className="hga-solution-block">
               <h2>Como funciona</h2>
               <p>{solution.how}</p>
             </section>
 
-            <section>
+            <section className="hga-solution-block">
               <h2>Onde costuma se aplicar</h2>
               <ul className="hga-solution-list">
                 {solution.examples.map((item) => <li key={item}>{item}</li>)}
               </ul>
             </section>
 
-            <section>
+            <section className="hga-solution-block">
               <h2>O que muda na rotina</h2>
               <ul className="hga-solution-checks">
                 {solution.benefits.map((item) => (
                   <li key={item}>
-                    <Check size={15} aria-hidden="true" />
+                    <span className="hga-solution-check" aria-hidden="true">
+                      <Check size={12} strokeWidth={2.4} />
+                    </span>
                     {item}
                   </li>
                 ))}
               </ul>
             </section>
 
-            <section>
+            <section className="hga-solution-block">
               <h2>Para quem é indicada</h2>
               <p>{solution.audience}</p>
             </section>
+          </div>
 
-            <div className="hga-solution-cta">
-              <Link className="hga-btn hga-btn-primary" href="/#contato">
-                Falar sobre isso <ArrowRight size={16} aria-hidden="true" />
-              </Link>
-            </div>
+          <div className="hga-solution-cta">
+            <Link className="hga-btn hga-btn-primary" href="/#contato">
+              Falar sobre isso <ArrowRight size={16} aria-hidden="true" />
+            </Link>
           </div>
 
           <nav className="hga-solution-others" aria-label="Outras soluções">
@@ -113,6 +137,7 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
               {others.map((item) => (
                 <Link key={item.slug} href={`/solucoes/${item.slug}`} className="hga-solution-other-link">
                   {item.shortTitle}
+                  <ArrowRight size={13} aria-hidden="true" />
                 </Link>
               ))}
             </div>

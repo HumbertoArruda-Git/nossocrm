@@ -1,5 +1,5 @@
 import { ArrowRight, ArrowUpRight, Blocks, RefreshCw, Route, ScanText, Search, Timer, Workflow, Wrench } from 'lucide-react'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
 import { HeroPanel } from '@/components/landing/HeroPanel'
 import { ScrollReveal } from '@/components/landing/ScrollReveal'
@@ -11,11 +11,25 @@ import { exo2 } from '@/lib/fonts/exo2'
 import { archivo, plexMono } from '@/lib/fonts/landing'
 import { solutions } from '@/lib/content/solutions'
 
+const OG_IMAGE = {
+  url: '/api/og',
+  width: 1200,
+  height: 630,
+  alt: 'HGA Systems — automação, CRM e integrações sob medida',
+}
+
+export const viewport: Viewport = {
+  // a barra do navegador no celular acompanha a tinta da página
+  themeColor: '#04060C',
+}
+
 export const metadata: Metadata = {
   title: 'HGA Systems | Automação, CRM e sistemas sob medida',
   description:
     'A HGA constrói automação de processos, CRM, integrações e painéis sob medida para organizar a operação e colocar o dado onde a decisão acontece.',
   manifest: null,
+  // o layout raiz serve o ícone do NossoCRM; na landing quem assina é a HGA
+  icons: { icon: [{ url: '/icons/hga.svg', type: 'image/svg+xml' }] },
   alternates: { canonical: '/' },
   openGraph: {
     title: 'HGA Systems | Automação, CRM e sistemas sob medida',
@@ -25,12 +39,14 @@ export const metadata: Metadata = {
     siteName: 'HGA Systems',
     locale: 'pt_BR',
     type: 'website',
+    images: [OG_IMAGE],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'HGA Systems | Automação, CRM e sistemas sob medida',
     description:
       'Automação de processos, CRM, integrações e painéis sob medida para organizar a operação.',
+    images: [OG_IMAGE.url],
   },
 }
 
@@ -193,6 +209,22 @@ export default function HomePage() {
               </ScrollReveal>
             ))}
           </div>
+
+          {/* Quem se convenceu aqui não deveria ter que rolar até o rodapé.
+              É um convite discreto, sem luz própria: a página tem dois
+              momentos de luz e este não é um deles. */}
+          <aside className="hga-nudge">
+            <div className="hga-nudge-copy">
+              <h3>Não sabe qual frente é a sua?</h3>
+              <p>
+                Na maioria dos casos o problema atravessa mais de uma. Descreva a rotina que mais
+                trava e a gente aponta por onde começar.
+              </p>
+            </div>
+            <Link className="hga-btn hga-btn-primary" href="#contato">
+              Falar sobre o seu caso <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </aside>
         </section>
 
         {/* ---------- Problema → transformação ---------- */}
