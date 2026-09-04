@@ -1,27 +1,83 @@
+/* ==========================================================================
+   HGA Systems — assinatura da marca e navegação mobile.
+   Carregado depois de landing.css e usando os mesmos tokens definidos lá.
+   ========================================================================== */
+
+/* ---------- assinatura ---------- */
+.hga-wordmark { display: inline-flex; align-items: baseline; gap: 9px; }
+.hga-wordmark-name { display: inline-flex; gap: 1px; font-weight: 800; letter-spacing: .04em; }
+.hga-wordmark-name b { font-weight: 800; }
+.hga-wordmark-a { color: var(--blue-lit); }
+.hga-wordmark small {
+  font-family: var(--font-hga-mono), ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: .24em;
+  color: var(--paper-3);
+}
+
+/* ---------- navegação mobile ---------- */
+.hga-mobile-menu { display: none; }
+
 @media (max-width: 800px) {
-  .hga-nav, .hga-header-cta { display: none; }
+  .hga-nav,
+  .hga-header > .hga-header-cta { display: none; }
+
   .hga-mobile-menu { display: block; position: relative; }
-  .hga-menu { display: grid; place-items: center; width: 44px; height: 44px; background: transparent; border: 1px solid var(--hga-line); border-radius: 6px; color: var(--hga-white); }
-  .hga-mobile-panel { position: absolute; z-index: 10; top: 54px; right: 0; width: min(290px, calc(100vw - 40px)); padding: 12px; background: var(--hga-surface); border: 1px solid var(--hga-line); border-radius: 8px; box-shadow: 0 18px 42px rgba(0,0,0,.35); opacity: 0; transform: translateY(-8px); pointer-events: none; transition: opacity var(--hga-dur-base) var(--hga-ease-out), transform var(--hga-dur-base) var(--hga-ease-out); }
+  .hga-menu {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: 1px solid var(--edge-strong);
+    border-radius: var(--r-sm);
+    color: var(--paper);
+  }
+
+  .hga-mobile-panel {
+    position: absolute;
+    z-index: 10;
+    top: 54px;
+    right: 0;
+    width: min(292px, calc(100vw - 40px));
+    padding: 10px;
+    background: #0A0E18;
+    border: 1px solid var(--edge-strong);
+    border-radius: var(--r);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .65);
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity var(--base) var(--ease), transform var(--base) var(--ease);
+  }
   .hga-mobile-panel[data-open="true"] { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
   .hga-mobile-panel nav { display: grid; gap: 2px; }
-  .hga-mobile-panel nav a { padding: 14px 12px; min-height: 44px; display: flex; align-items: center; color: var(--hga-text-secondary); font-size: 13px; font-family: var(--font-exo2), "Exo 2", sans-serif; border-radius: 5px; transition: color var(--hga-dur-fast) ease, background var(--hga-dur-fast) ease; }
-  .hga-mobile-panel nav a:hover { background: rgba(var(--hga-accent-rgb), .14); color: var(--hga-white); }
-  .hga-mobile-panel nav a:focus-visible, .hga-mobile-panel .hga-header-cta:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--hga-surface), 0 0 0 4px var(--hga-accent); }
-  .hga-mobile-panel .hga-header-cta { display: flex; justify-content: center; margin-top: 8px; min-height: 44px; }
+  .hga-mobile-panel nav a {
+    display: flex;
+    align-items: center;
+    min-height: 46px;
+    padding: 0 12px;
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    color: var(--paper-2);
+    transition: color var(--fast) ease, background-color var(--fast) ease;
+  }
+  .hga-mobile-panel nav a:hover { background: rgba(var(--blue-rgb), .14); color: var(--paper); }
+  .hga-mobile-panel nav a:focus-visible,
+  .hga-mobile-panel .hga-header-cta:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #0A0E18, 0 0 0 4px var(--blue-lit);
+  }
+  .hga-mobile-panel .hga-header-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+    min-height: 46px;
+  }
 }
 
 @media (max-width: 800px) and (prefers-reduced-motion: reduce) {
   .hga-mobile-panel { transition: opacity 1ms linear; transform: none; }
-}
-
-.hga-mobile-menu { display: none; }
-.hga-wordmark { display: inline-flex; align-items: baseline; gap: 8px; }
-.hga-wordmark-name { display: inline-flex; gap: 1px; font-weight: 800; letter-spacing: .04em; }
-.hga-wordmark-name b { font-weight: 800; }
-.hga-wordmark-a { color: var(--hga-accent); }
-.hga-wordmark small { color: #7891b7; font-size: 7px; letter-spacing: .22em; font-weight: 700; }
-
-@media (max-width: 800px) {
-  .hga-mobile-menu { display: block; }
 }

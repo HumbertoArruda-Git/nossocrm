@@ -7,9 +7,8 @@ import { SiteFooter } from '@/components/landing/SiteFooter'
 import { SiteHeader } from '@/components/landing/SiteHeader'
 import { SolutionVisual } from '@/components/landing/SolutionVisual'
 import { ContactForm } from '@/components/landing/ContactForm'
-import { Backdrop } from '@/components/landing/Backdrop'
-import { PointerGlow } from '@/components/landing/PointerGlow'
 import { exo2 } from '@/lib/fonts/exo2'
+import { instrumentSans, plexMono } from '@/lib/fonts/landing'
 import { solutions } from '@/lib/content/solutions'
 
 export const metadata: Metadata = {
@@ -111,35 +110,43 @@ const marketStats = [
 
 export default function HomePage() {
   return (
-    <div className={`hga-site ${exo2.variable}`}>
-      <Backdrop />
-      <PointerGlow />
+    <div className={`hga-site ${exo2.variable} ${instrumentSans.variable} ${plexMono.variable}`}>
       <SiteHeader />
 
       <main>
-        {/* ---------- Hero ---------- */}
+        {/* ---------- Hero ----------
+            Tipografia sobre uma única fonte de luz. O horizonte curvo é o corte
+            entre a luz e o breu — é ele que dá escala à dobra. */}
         <section className="hga-hero" id="inicio">
-          <div className="hga-hero-grid">
-            <div className="hga-hero-copy">
-              <p className="hga-eyebrow">Automação · CRM · Integrações · Dados</p>
-              <h1>Automação, CRM e integrações sob medida para a sua operação.</h1>
-              <p className="hga-lead">
-                A HGA desenha e constrói o software que organiza o processo, conecta os sistemas que
-                você já usa e coloca o dado onde a decisão acontece.
-              </p>
-              <div className="hga-actions">
-                <Link className="hga-btn hga-btn-primary" href="#solucoes">
-                  Ver soluções <ArrowRight size={16} aria-hidden="true" />
-                </Link>
-                <Link className="hga-btn hga-btn-ghost" href="#contato">
-                  Falar sobre o seu caso
-                </Link>
-              </div>
-            </div>
+          <div className="hga-hero-light" aria-hidden="true">
+            <span className="hga-hero-beam" />
+            <span className="hga-hero-arc" />
+          </div>
 
-            <ScrollReveal className="hga-hero-visual" delay={0.08}>
-              <HeroPanel />
-            </ScrollReveal>
+          <div className="hga-hero-inner">
+            <p className="hga-eyebrow">Automação · CRM · Integrações · Dados</p>
+            <h1>Automação, CRM e integrações sob medida para a sua operação.</h1>
+            <p className="hga-lead">
+              A HGA desenha e constrói o software que organiza o processo, conecta os sistemas que
+              você já usa e coloca o dado onde a decisão acontece.
+            </p>
+            <div className="hga-actions">
+              <Link className="hga-btn hga-btn-primary" href="#solucoes">
+                Ver soluções <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+              <Link className="hga-btn hga-btn-ghost" href="#contato">
+                Falar sobre o seu caso
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- Artefato ----------
+            A prova vem logo depois da tese: uma automação rodando de verdade,
+            iluminada pela mesma luz do hero. */}
+        <section className="hga-showcase" aria-label="Exemplo de automação em execução">
+          <div className="hga-showcase-frame">
+            <HeroPanel />
           </div>
         </section>
 
@@ -169,7 +176,7 @@ export default function HomePage() {
           <div className="hga-cards">
             {solutions.map((solution, index) => (
               <ScrollReveal key={solution.slug} delay={Math.min(index, 3) * 0.05}>
-                <Link href={`/solucoes/${solution.slug}`} className="hga-card" data-glow>
+                <Link href={`/solucoes/${solution.slug}`} className="hga-card">
                   <SolutionVisual name={solution.visual} />
                   <div className="hga-card-body">
                     <p className="hga-card-cat">{solution.category}</p>
@@ -216,7 +223,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ---------- Como trabalhamos ---------- */}
+        {/* ---------- Como trabalhamos ----------
+            Aqui a numeração é informação: as quatro etapas acontecem nessa ordem. */}
         <section className="hga-section" id="processo">
           <header className="hga-head">
             <p className="hga-eyebrow">Como trabalhamos</p>
@@ -281,8 +289,10 @@ export default function HomePage() {
           </ul>
         </section>
 
-        {/* ---------- Contato ---------- */}
+        {/* ---------- Contato ----------
+            Fecha a página com a mesma luz que a abriu, agora vindo de baixo. */}
         <section className="hga-contact" id="contato">
+          <div className="hga-contact-light" aria-hidden="true" />
           <div className="hga-contact-grid">
             <div className="hga-contact-copy">
               <p className="hga-eyebrow">Contato</p>
@@ -294,66 +304,6 @@ export default function HomePage() {
             </div>
 
             <ContactForm />
-            {/*
-              <div className="hga-form-row">
-                <label>
-                  Nome
-                  <input name="name" autoComplete="name" placeholder="Seu nome" required />
-                </label>
-                <label>
-                  Empresa
-                  <input name="company" autoComplete="organization" placeholder="Nome da empresa" />
-                </label>
-              </div>
-              <div className="hga-form-row">
-                <label>
-                  E-mail
-                  <input type="email" name="email" autoComplete="email" placeholder="voce@empresa.com" required />
-                </label>
-                <label>
-                  WhatsApp
-                  <input type="tel" name="phone" autoComplete="tel" placeholder="(00) 00000-0000" />
-                </label>
-              </div>
-
-              <fieldset className="hga-form-field">
-                <legend>Assunto</legend>
-                <div className="hga-chips">
-                  {solutionTypeOptions.map((option, index) => (
-                    <span key={option.slug}>
-                      <input
-                        className="hga-chip-input"
-                        type="radio"
-                        name="solutionType"
-                        id={`sol-${option.slug}`}
-                        value={option.slug}
-                        required={index === 0}
-                      />
-                      <label className="hga-chip" htmlFor={`sol-${option.slug}`}>{option.label}</label>
-                    </span>
-                  ))}
-                </div>
-              </fieldset>
-
-              <label className="hga-form-field">
-                O que está acontecendo hoje
-                <textarea
-                  name="message"
-                  rows={4}
-                  maxLength={1000}
-                  placeholder="Ex.: os pedidos chegam por WhatsApp e alguém relança tudo no ERP na mão."
-                  required
-                />
-              </label>
-
-              <button className="hga-submit" type="submit" disabled title="Envio ainda não conectado">
-                Em preparação — envio ainda não conectado
-              </button>
-              <p className="hga-form-note">
-                Os dados são usados só para responder este contato, seguindo boas práticas de
-                privacidade e a LGPD.
-              </p>
-            */}
           </div>
         </section>
       </main>
