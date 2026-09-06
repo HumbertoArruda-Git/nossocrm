@@ -5,6 +5,7 @@ import { enforceLandingRateLimit } from './rate-limit';
 import { LandingPayloadSchema, normalizeLandingPayload } from './validation';
 import { processLandingCrm } from './crm';
 import { notifyLandingSubmission } from './notification';
+import { LANDING_PROCESSING_TIMEOUT_MS, runClaimedLandingSubmission } from './processing';
 
 type LandingConfig = NonNullable<ReturnType<typeof getLandingConfig>>;
 type LandingDependencies = {
@@ -13,12 +14,14 @@ type LandingDependencies = {
   rateLimit?: typeof enforceLandingRateLimit;
   processCrm?: typeof processLandingCrm;
   notify?: typeof notifyLandingSubmission;
+  now?: () => number;
 };
 
 type SubmissionRow = {
   id: string;
   status: string;
   processing_token: string | null;
+  processing_started_at: string | null;
   attempt_count: number;
   next_retry_at: string | null;
   crm_contact_id: string | null;
@@ -38,21 +41,20 @@ function publicError(code: string, status: number) {
   return { body: { ok: false, error: 'Não foi possível processar a solicitação.', code }, status };
 }
 
-function isRetryable(error: unknown) {
-  const code = String((error as { code?: unknown })?.code ?? '');
-  const causeCode = String(((error as { cause?: { code?: unknown } })?.cause)?.code ?? '');
-  if (['23503', '23514', '22P02'].includes(causeCode)) return false;
-  return code.includes('CRM_') || code.includes('LOOKUP_FAILED') || code.includes('TEMPORARY') || code.includes('TIMEOUT') || code.includes('UNAVAILABLE') || code.includes('SUPABASE') || code.includes('PROGRESS_UPDATE') || code.includes('CLAIM_FAILED') || code.includes('COMPLETE_FAILED');
-}
-
-async function updateProgress(db: SupabaseClient, id: string, token: string, field: 'crm_contact_id' | 'crm_deal_id' | 'crm_activity_id', value: string) {
-  const result = await db.from('landing_submissions').update({ [field]: value }).eq('id', id).eq('status', 'processing').eq('processing_token', token).select('id').maybeSingle();
-  if (result.error) throw Object.assign(new Error('progress update failed'), { code: 'PROGRESS_UPDATE_FAILED', cause: result.error });
-  if (!result.data) throw Object.assign(new Error('lease lost'), { code: 'LEASE_LOST' });
+/**
+ * "Está processando" só é uma resposta honesta enquanto alguém de fato estiver
+ * processando. Uma execução que morreu no meio deixa a linha em `processing`
+ * para sempre; responder 202 a ela era prometer um contato que ninguém ia
+ * retomar. Passada a posse, a requisição segue e a reivindica de volta.
+ */
+function isLeaseAlive(row: SubmissionRow, now: number) {
+  if (!row.processing_started_at) return false;
+  const startedAt = Date.parse(row.processing_started_at);
+  return Number.isFinite(startedAt) && now - startedAt < LANDING_PROCESSING_TIMEOUT_MS;
 }
 
 async function getSubmission(db: SupabaseClient, key: string, organizationId: string) {
-  const result = await db.from('landing_submissions').select('id,status,processing_token,attempt_count,next_retry_at,crm_contact_id,crm_deal_id,crm_activity_id,response_code,name,email,phone,company_name,message,subject,source_page').eq('idempotency_key', key).eq('organization_id', organizationId).maybeSingle();
+  const result = await db.from('landing_submissions').select('id,status,processing_token,processing_started_at,attempt_count,next_retry_at,crm_contact_id,crm_deal_id,crm_activity_id,response_code,name,email,phone,company_name,message,subject,source_page').eq('idempotency_key', key).eq('organization_id', organizationId).maybeSingle();
   if (result.error) throw Object.assign(new Error('submission lookup failed'), { code: 'SUBMISSION_LOOKUP_FAILED', cause: result.error });
   return result.data as SubmissionRow | null;
 }
@@ -79,8 +81,7 @@ export async function handleLandingSubmission(request: Request, dependencies: La
   const input = normalizeLandingPayload(parsed.data);
   const db = (dependencies.createDb ?? createStaticAdminClient)();
   const applyRateLimit = dependencies.rateLimit ?? enforceLandingRateLimit;
-  const processCrm = dependencies.processCrm ?? processLandingCrm;
-  const notify = dependencies.notify ?? notifyLandingSubmission;
+  const now = dependencies.now ?? Date.now;
 
   // Replay/active state is checked before counting a legitimate retry against the limit.
   const existing = await getSubmission(db, key, config.organizationId).catch(() => null);
@@ -90,7 +91,7 @@ export async function handleLandingSubmission(request: Request, dependencies: La
     existing.subject !== input.subject || existing.source_page !== input.sourcePage
   )) return publicError('IDEMPOTENCY_KEY_REUSED', 409);
   if (existing?.status === 'processed') return { body: { ok: true, message: 'Recebido.' }, status: 200 };
-  if (existing?.status === 'processing') return { body: { ok: true, message: 'Recebido.' }, status: 202 };
+  if (existing?.status === 'processing' && isLeaseAlive(existing, now())) return { body: { ok: true, message: 'Recebido.' }, status: 202 };
   if (existing?.status === 'failed_terminal') return publicError('SUBMISSION_TERMINAL_FAILURE', 422);
 
   const limited = await applyRateLimit(db, request, config).catch(() => null);
@@ -123,13 +124,14 @@ export async function handleLandingSubmission(request: Request, dependencies: La
   if (claimed.claim_status === 'terminal_failure') return publicError('SUBMISSION_TERMINAL_FAILURE', 422);
   if (claimed.claim_status !== 'claimed' || !claimed.processing_token) return publicError('CLAIM_FAILED', 503);
 
-  const token = claimed.processing_token;
-  try {
-    const crm = await processCrm(db, {
-      organizationId: config.organizationId,
-      boardId: config.boardId,
-      stageId: config.stageId,
+  const result = await runClaimedLandingSubmission({
+    db,
+    config,
+    processCrm: dependencies.processCrm,
+    notify: dependencies.notify,
+    claimed: {
       submissionId: claimed.submission_id,
+      processingToken: claimed.processing_token,
       contactId: claimed.crm_contact_id,
       dealId: claimed.crm_deal_id,
       activityId: claimed.crm_activity_id,
@@ -139,46 +141,12 @@ export async function handleLandingSubmission(request: Request, dependencies: La
       companyName: input.companyName,
       subject: input.subject,
       message: input.message,
-    }, async (field, value) => updateProgress(db, claimed.submission_id, token, field, value));
+      sourcePage: input.sourcePage,
+    },
+  });
 
-    const completed = await db.rpc('complete_landing_submission', {
-      p_submission_id: claimed.submission_id,
-      p_processing_token: token,
-      p_crm_contact_id: crm.contactId,
-      p_crm_deal_id: crm.dealId,
-      p_crm_activity_id: crm.activityId,
-      p_response_code: 201,
-    });
-    if (completed.error) throw Object.assign(new Error('complete failed'), { code: 'COMPLETE_FAILED', cause: completed.error });
-    if (!completed.data) return publicError('LEASE_LOST', 202);
-    try {
-      await notify({
-        submissionId: claimed.submission_id,
-        name: input.name,
-        companyName: input.companyName,
-        email: input.email,
-        phone: input.phone,
-        subject: input.subject,
-        message: input.message,
-        sourcePage: input.sourcePage,
-      });
-    } catch (error) {
-      console.error('[landing-notification] provider exception', {
-        code: error instanceof Error ? error.name : 'UNKNOWN_ERROR',
-      });
-    }
-    return { body: { ok: true, message: 'Recebido.' }, status: 201 };
-  } catch (error) {
-    if (String((error as { code?: unknown })?.code) === 'LEASE_LOST') return publicError('LEASE_LOST', 202);
-    const retryable = isRetryable(error);
-    const failed = await db.rpc('fail_landing_submission', {
-      p_submission_id: claimed.submission_id,
-      p_processing_token: token,
-      p_error_code: String((error as { code?: unknown })?.code ?? 'CRM_PROCESSING_FAILED'),
-      p_retryable: retryable,
-      p_next_retry_at: retryable ? new Date(Date.now() + 5 * 60_000).toISOString() : null,
-    });
-    if (failed.error || !failed.data) return publicError('LEASE_LOST', 202);
-    return publicError(retryable ? 'TEMPORARY_FAILURE' : 'PROCESSING_FAILED', retryable ? 503 : 422);
-  }
+  if (result.outcome === 'processed') return { body: { ok: true, message: 'Recebido.' }, status: 201 };
+  if (result.outcome === 'lease_lost') return publicError('LEASE_LOST', 202);
+  if (result.outcome === 'failed_retryable') return publicError('TEMPORARY_FAILURE', 503);
+  return publicError('PROCESSING_FAILED', 422);
 }
