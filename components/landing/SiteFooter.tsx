@@ -12,6 +12,7 @@ export function SiteFooter() {
         <Link href="/#processo">Processo</Link>
         <Link href="/#mercado">Mercado</Link>
         <Link href="/#contato">Contato</Link>
+        <Link href="/privacidade">Privacidade</Link>
       </nav>
       <div className="hga-footer-meta">
         <span>hgasystems.com.br</span>

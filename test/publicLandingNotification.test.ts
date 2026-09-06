@@ -44,13 +44,27 @@ describe('landing notification', () => {
     );
   });
 
-  it('não lança quando Resend falha ou está sem configuração', async () => {
-    mocks.resendSend.mockRejectedValue(new Error('secret should not be logged'));
-    await expect(notifyLandingSubmission(input)).resolves.toBeUndefined();
+  it('não lança, e devolve um resultado que diz se vale a pena repetir', async () => {
+    // Sem configuração não adianta insistir: é problema de deploy, e uma fila
+    // que repete para sempre esconde o defeito em vez de expô-lo.
+    const missingConfig = await notifyLandingSubmission(input);
+    expect(missingConfig).toEqual({ ok: false, retryable: false, code: 'CONFIG_MISSING' });
 
     vi.stubEnv('RESEND_API_KEY', 're_test_key');
     vi.stubEnv('LANDING_NOTIFICATION_FROM', 'staging@hgasystems.com.br');
     vi.stubEnv('LANDING_NOTIFICATION_TO', 'hgasystems.comercial@gmail.com');
-    await expect(notifyLandingSubmission(input)).resolves.toBeUndefined();
+    mocks.resendSend.mockRejectedValue(new Error('secret should not be logged'));
+    const exception = await notifyLandingSubmission(input);
+    expect(exception).toMatchObject({ ok: false, retryable: true });
+    expect(JSON.stringify(exception)).not.toContain('secret should not be logged');
+  });
+
+  it('não repete erro de conteúdo, que nenhuma tentativa conserta', async () => {
+    vi.stubEnv('RESEND_API_KEY', 're_test_key');
+    vi.stubEnv('LANDING_NOTIFICATION_FROM', 'staging@hgasystems.com.br');
+    vi.stubEnv('LANDING_NOTIFICATION_TO', 'hgasystems.comercial@gmail.com');
+    mocks.resendSend.mockResolvedValue({ data: null, error: { name: 'validation_error', message: 'bad address' } });
+
+    expect(await notifyLandingSubmission(input)).toEqual({ ok: false, retryable: false, code: 'validation_error' });
   });
 });

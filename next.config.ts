@@ -9,6 +9,43 @@ const repoRoot = configDir.includes('/.claude/worktrees/')
   ? path.resolve(configDir, '../../../')
   : configDir;
 
+// Cabeçalhos de segurança aplicados a todas as respostas.
+//
+// O script-src continua com 'unsafe-inline' e 'unsafe-eval' porque o Next
+// injeta scripts inline de hidratação em toda página; trocar isso por nonce
+// exige gerar o nonce no proxy.ts e propagá-lo, o que é uma mudança à parte.
+// O resto da política é fechado, e é dele que vem a maior parte do ganho:
+// 'frame-ancestors' impede que o site seja embutido em outro (clickjacking),
+// 'connect-src' limita para onde o navegador pode mandar dados, e 'form-action'
+// impede que um formulário injetado poste em outro domínio.
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://*.supabase.co",
+  "font-src 'self' data:",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+  "media-src 'self' blob: data:",
+  "worker-src 'self' blob:",
+  "frame-src 'self'",
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "upgrade-insecure-requests",
+].join('; ');
+
+const securityHeaders = [
+  { key: "Content-Security-Policy", value: contentSecurityPolicy },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  // O microfone fica liberado para a própria origem: a gravação de áudio do CRM
+  // depende dele. Câmera, geolocalização e pagamento não são usados em lugar nenhum.
+  { key: "Permissions-Policy", value: "camera=(), geolocation=(), payment=(), microphone=(self)" },
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+];
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -41,6 +78,10 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        source: "/:path*",
+        headers: securityHeaders,
+      },
       {
         source: "/sw.js",
         headers: [

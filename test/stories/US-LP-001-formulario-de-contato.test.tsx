@@ -46,7 +46,7 @@ function bodyOf(fetchMock: FetchMock, call = 0) {
  */
 async function typeInto(
   user: ReturnType<typeof userEvent.setup>,
-  label: string,
+  label: RegExp,
   text: string
 ) {
   const field = screen.getByLabelText(label)
@@ -54,14 +54,21 @@ async function typeInto(
   await user.type(field, text)
 }
 
+// Os rótulos carregam marcação de obrigatório/opcional, então a busca é por
+// prefixo: o teste não deve travar a redação do rótulo, só a identidade do campo.
+const nomeField = /^Nome/
+const empresaField = /^Empresa/
+const emailField = /^E-mail/
+const mensagemField = /^O que está acontecendo hoje/
+
 async function fillForm(user: ReturnType<typeof userEvent.setup>) {
-  await typeInto(user, 'Nome', 'Marina')
-  await typeInto(user, 'Empresa', 'Bandeirantes Log')
-  await typeInto(user, 'E-mail', 'marina@bandeirantes.com.br')
+  await typeInto(user, nomeField, 'Marina')
+  await typeInto(user, empresaField, 'Bandeirantes Log')
+  await typeInto(user, emailField, 'marina@bandeirantes.com.br')
   await user.click(screen.getByLabelText('Automação de processos'))
   await typeInto(
     user,
-    'O que está acontecendo hoje',
+    mensagemField,
     'Os pedidos chegam por WhatsApp e alguém relança tudo no ERP na mão.'
   )
 }
@@ -163,7 +170,7 @@ describe('US-LP-001 — Formulário de contato da landing', () => {
     await user.click(submitButton())
 
     await screen.findByText('Recebemos sua mensagem e estamos processando o contato.')
-    expect((screen.getByLabelText('Nome') as HTMLInputElement).value).toBe('')
+    expect((screen.getByLabelText(nomeField) as HTMLInputElement).value).toBe('')
     expect(submitButton()).toHaveProperty('disabled', true)
 
     await fillForm(user)
@@ -187,7 +194,30 @@ describe('US-LP-001 — Formulário de contato da landing', () => {
     await user.click(submitButton())
 
     await screen.findByText(message)
-    expect((screen.getByLabelText('Nome') as HTMLInputElement).value).toBe('Marina')
+    expect((screen.getByLabelText(nomeField) as HTMLInputElement).value).toBe('Marina')
+  })
+
+  it('no 409 de chave reusada pede novo envio e troca a chave', async () => {
+    // Os dois 409 do servidor pedem coisas opostas. Quando o visitante edita a
+    // mensagem depois de uma falha, esperar não resolve nunca: a chave antiga
+    // descreve outro conteúdo e o servidor vai recusar para sempre. A tela
+    // precisa dizer "envie de novo" — e o próximo envio precisa de chave nova.
+    const user = userEvent.setup()
+    fetchMock.mockResolvedValueOnce(jsonResponse(409, { ok: false, code: 'IDEMPOTENCY_KEY_REUSED' }))
+    fetchMock.mockResolvedValue(jsonResponse(201))
+
+    render(<ContactForm />)
+    await fillForm(user)
+    await user.click(submitButton())
+
+    await screen.findByText(
+      'Você alterou os dados depois da tentativa anterior. Envie novamente para registrar a nova versão.'
+    )
+    expect((screen.getByLabelText(nomeField) as HTMLInputElement).value).toBe('Marina')
+
+    await user.click(submitButton())
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+    expect(idempotencyKeyOf(fetchMock, 1)).not.toBe(idempotencyKeyOf(fetchMock, 0))
   })
 
   it('na falha de rede avisa e mantém os dados na tela', async () => {
@@ -201,7 +231,7 @@ describe('US-LP-001 — Formulário de contato da landing', () => {
     await screen.findByText(
       'Não foi possível concluir agora. Seus dados continuam preenchidos; tente novamente em instantes.'
     )
-    expect((screen.getByLabelText('Nome') as HTMLInputElement).value).toBe('Marina')
+    expect((screen.getByLabelText(nomeField) as HTMLInputElement).value).toBe('Marina')
   })
 
   it('só habilita o envio com o formulário válido', async () => {
@@ -213,10 +243,44 @@ describe('US-LP-001 — Formulário de contato da landing', () => {
     render(<ContactForm />)
     expect(submitButton()).toHaveProperty('disabled', true)
 
-    await user.type(screen.getByLabelText('Nome'), 'Marina')
+    await user.type(screen.getByLabelText(nomeField), 'Marina')
     expect(submitButton()).toHaveProperty('disabled', true)
 
     await fillForm(user)
     expect(submitButton()).toHaveProperty('disabled', false)
+  })
+
+  it('aplica os mesmos mínimos do servidor, em vez de liberar um 422', async () => {
+    // O navegador aceitava nome "A" e mensagem "Oi": o botão acendia, o envio
+    // saía e voltava 422 com "confira os dados" — sem dizer qual dado.
+    const user = userEvent.setup()
+    fetchMock.mockResolvedValue(jsonResponse(201))
+
+    render(<ContactForm />)
+    await typeInto(user, nomeField, 'A')
+    await typeInto(user, emailField, 'marina@bandeirantes.com.br')
+    await user.click(screen.getByLabelText('Automação de processos'))
+    await typeInto(user, mensagemField, 'Oi')
+    expect(submitButton()).toHaveProperty('disabled', true)
+
+    await typeInto(user, nomeField, 'Marina')
+    await typeInto(user, mensagemField, 'Perdemos pedidos no WhatsApp.')
+    expect(submitButton()).toHaveProperty('disabled', false)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('diz qual campo está errado, e não só que algo está', async () => {
+    // Sem identificação por campo o visitante fica adivinhando — e um botão
+    // desativado sem explicação não dá nem como perguntar.
+    const user = userEvent.setup()
+    render(<ContactForm />)
+
+    expect(screen.getByText(/Falta preencher:/)).toBeTruthy()
+
+    await typeInto(user, emailField, 'marina@')
+    await user.tab()
+
+    await screen.findByText('Confira o e-mail: ele parece incompleto.')
+    expect((screen.getByLabelText(emailField) as HTMLInputElement).getAttribute('aria-invalid')).toBe('true')
   })
 })
