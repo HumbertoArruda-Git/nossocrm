@@ -45,16 +45,24 @@ async function resolveContact(db: SupabaseClient, input: LandingCrmInput, compan
     if (existing.data?.id) return existing.data.id as string;
   }
 
+  // O visitante não prova ser dono do e-mail nem do telefone que digitou. Um
+  // contato encontrado por esses campos, portanto, NÃO pode ser reescrito com o
+  // que veio do formulário: bastaria informar o dado de outra pessoa para
+  // contaminar o registro dela. Só preenchemos lacunas — campo vazio que ganha
+  // valor não destrói informação. O que o visitante escreveu vira uma atividade
+  // nova, que é o registro separado e auditável desta mensagem.
   const filters = [`email.eq.${input.email}`];
   if (input.phone) filters.push(`phone.eq.${input.phone}`);
-  const found = await db.from('contacts').select('id, name, email, phone').eq('organization_id', input.organizationId).is('deleted_at', null).or(filters.join(',')).limit(1).maybeSingle();
+  const found = await db.from('contacts').select('id, name, email, phone, client_company_id, source').eq('organization_id', input.organizationId).is('deleted_at', null).or(filters.join(',')).limit(1).maybeSingle();
   if (found.error) throw dbError('CRM_CONTACT_LOOKUP_FAILED', found.error);
   if (found.data?.id) {
-    const updates: Record<string, unknown> = { source: 'WEBSITE' };
+    const updates: Record<string, unknown> = {};
     if (!found.data.name || found.data.name === 'Sem nome') updates.name = input.name;
     if (!found.data.email) updates.email = input.email;
     if (!found.data.phone && input.phone) updates.phone = input.phone;
-    if (companyId) updates.client_company_id = companyId;
+    if (!found.data.client_company_id && companyId) updates.client_company_id = companyId;
+    if (!found.data.source) updates.source = 'WEBSITE';
+    if (Object.keys(updates).length === 0) return found.data.id as string;
     const updated = await db.from('contacts').update(updates).eq('id', found.data.id).eq('organization_id', input.organizationId).select('id').single();
     if (updated.error) throw dbError('CRM_CONTACT_UPDATE_FAILED', updated.error);
     return updated.data.id as string;
@@ -74,13 +82,13 @@ async function resolveDeal(db: SupabaseClient, input: LandingCrmInput, companyId
 
   const existing = await db.from('deals').select('id').eq('organization_id', input.organizationId).eq('board_id', input.boardId).eq('contact_id', contactId).eq('is_won', false).eq('is_lost', false).order('updated_at', { ascending: false }).limit(1).maybeSingle();
   if (existing.error) throw dbError('CRM_DEAL_LOOKUP_FAILED', existing.error);
-  const tags = ['Landing HGA', `Landing: ${input.subject}`];
-  if (existing.data?.id) {
-    const updated = await db.from('deals').update({ title: `Lead — ${input.name}`, client_company_id: companyId, tags }).eq('id', existing.data.id).eq('organization_id', input.organizationId).select('id').single();
-    if (updated.error) throw dbError('CRM_DEAL_UPDATE_FAILED', updated.error);
-    return updated.data.id as string;
-  }
+  // Uma oportunidade aberta é trabalho comercial em andamento: título, empresa e
+  // etiquetas foram escolhidos por alguém do time. Sobrescrevê-los com o que um
+  // visitante anônimo digitou apagaria esse trabalho — e apagaria em silêncio.
+  // A mensagem se anexa ao que já existe, como atividade, sem alterá-lo.
+  if (existing.data?.id) return existing.data.id as string;
 
+  const tags = ['Landing HGA', `Landing: ${input.subject}`];
   const created = await db.from('deals').insert({ organization_id: input.organizationId, title: `Lead — ${input.name}`, value: 0, probability: 10, priority: 'medium', board_id: input.boardId, stage_id: input.stageId, contact_id: contactId, client_company_id: companyId, tags, owner_id: null, last_stage_change_date: new Date().toISOString() }).select('id').single();
   if (created.error) throw dbError('CRM_DEAL_CREATE_FAILED', created.error);
   return created.data.id as string;

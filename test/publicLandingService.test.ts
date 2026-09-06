@@ -105,7 +105,7 @@ describe('landing submission service', () => {
       await progress('crm_contact_id', 'contact-1'); await progress('crm_deal_id', 'deal-1'); await progress('crm_activity_id', 'activity-1');
       return { contactId: 'contact-1', dealId: 'deal-1', activityId: 'activity-1' };
     });
-    const notify = vi.fn(async () => undefined);
+    const notify = vi.fn(async () => ({ ok: true as const }));
     const result = await handleLandingSubmission(request(), { ...deps(state, processCrm), notify });
     expect(result.status).toBe(201);
     expect(state.existing).toMatchObject({ crm_contact_id: 'contact-1', crm_deal_id: 'deal-1', crm_activity_id: 'activity-1' });
@@ -131,8 +131,27 @@ describe('landing submission service', () => {
   });
 
   it('returns 202 for active processing', async () => {
-    const state: any = { existing: { id: 'submission-1', status: 'processing', name: 'Pessoa Teste', email: payload.email, phone: null, company_name: null, message: payload.mensagem, subject: 'crm', source_page: '/' } };
-    expect((await handleLandingSubmission(request(), deps(state))).status).toBe(202);
+    const state: any = { existing: { id: 'submission-1', status: 'processing', processing_started_at: new Date().toISOString(), name: 'Pessoa Teste', email: payload.email, phone: null, company_name: null, message: payload.mensagem, subject: 'crm', source_page: '/' } };
+    const processCrm = vi.fn();
+    expect((await handleLandingSubmission(request(), deps(state, processCrm))).status).toBe(202);
+    // Posse viva: a requisição confia em quem está processando e não reivindica.
+    expect(processCrm).not.toHaveBeenCalled();
+  });
+
+  it('retoma uma submissão cujo processamento expirou em vez de responder 202', async () => {
+    // Este era o buraco: uma execução que morreu no meio deixava a linha em
+    // 'processing' para sempre, e toda tentativa seguinte recebia "recebido,
+    // estamos processando" — de um processamento que ninguém ia terminar.
+    const state: any = {
+      existing: { id: 'submission-1', status: 'processing', processing_started_at: new Date(Date.now() - 30 * 60_000).toISOString(), name: 'Pessoa Teste', email: payload.email, phone: null, company_name: null, message: payload.mensagem, subject: 'crm', source_page: '/', crm_contact_id: null, crm_deal_id: null, crm_activity_id: null },
+      claim: { submission_id: 'submission-1', claim_status: 'claimed', processing_token: 'token-9', crm_contact_id: null, crm_deal_id: null, crm_activity_id: null },
+      completed: true,
+    };
+    const processCrm = vi.fn(async () => ({ contactId: 'contact-1', dealId: 'deal-1', activityId: 'activity-1' }));
+    const notify = vi.fn(async () => ({ ok: true as const }));
+    const result = await handleLandingSubmission(request(), { ...deps(state, processCrm), notify });
+    expect(result.status).toBe(201);
+    expect(processCrm).toHaveBeenCalledOnce();
   });
 
   it('returns 202 and never overwrites after lease loss', async () => {

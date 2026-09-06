@@ -88,7 +88,9 @@ export async function updateSession(request: NextRequest) {
 
     // Protected routes - redirect to login if not authenticated
     const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/auth')
-    const isPublicRoute = pathname === '/' || pathname.startsWith('/join') || pathname.startsWith('/solucoes') || isSetupRoute || isInstallRoute
+    // /privacidade é parte do site público: o aviso de privacidade linkado no
+    // formulário de contato não pode exigir login para ser lido.
+    const isPublicRoute = pathname === '/' || pathname.startsWith('/join') || pathname.startsWith('/solucoes') || pathname.startsWith('/privacidade') || isSetupRoute || isInstallRoute
 
     if (!user && !isAuthRoute && !isPublicRoute) {
         const url = request.nextUrl.clone()

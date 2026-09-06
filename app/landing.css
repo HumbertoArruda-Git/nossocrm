@@ -1051,14 +1051,45 @@
   display: grid;
   gap: 9px;
   font-family: var(--font-hga-mono), ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 11.5px;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: .14em;
+  letter-spacing: .1em;
   color: var(--paper-3);
 }
+
+/* Obrigatório e opcional precisam ser visíveis ANTES do envio: com todos os
+   campos idênticos, e o botão travado sem explicação, a única forma de
+   descobrir o que faltava era adivinhar. */
+.hga-form-legend {
+  margin: 0;
+  font-family: var(--font-hga-mono), ui-monospace, monospace;
+  font-size: 11.5px;
+  letter-spacing: .06em;
+  color: var(--paper-3);
+}
+.hga-req { color: var(--blue); }
+.hga-optional {
+  text-transform: none;
+  letter-spacing: normal;
+  color: rgba(233, 237, 247, .45);
+}
+.hga-field-error,
+.hga-form-hint {
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.5;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.hga-field-error { color: #FF9B92; }
+.hga-form-hint { margin: -8px 0 0; color: var(--paper-3); }
+.hga-form input[aria-invalid="true"],
+.hga-form textarea[aria-invalid="true"] { border-color: rgba(255, 155, 146, .55); }
 .hga-form-field { border: 0; padding: 0; margin: 0; display: grid; gap: 9px; }
-.hga-form legend { padding: 0; margin-bottom: 3px; }
+/* O legend é o único rótulo que não embrulha um campo: como grid, o marcador
+   de obrigatório virava uma linha própria embaixo da palavra. */
+.hga-form legend { display: block; padding: 0; margin-bottom: 12px; }
 .hga-form input,
 .hga-form textarea {
   font-family: var(--font-hga-sans), system-ui, sans-serif;
@@ -1138,7 +1169,9 @@
 @media (hover: hover) and (pointer: fine) {
   .hga-submit.is-ready:not(:disabled):hover { background: #4A80FF; box-shadow: 0 8px 34px rgba(var(--blue-rgb), .44); }
 }
-.hga-form-note { font-size: 12px; line-height: 1.55; color: var(--paper-3); margin: 0; }
+.hga-form-note { font-size: 13px; line-height: 1.6; color: var(--paper-3); margin: 0; }
+.hga-form-note a { color: var(--paper-2); text-decoration: underline; text-underline-offset: 3px; }
+.hga-form-note a:hover { color: var(--paper); }
 .hga-honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .hga-form-status {
   min-height: 1.4em;
@@ -1508,9 +1541,18 @@
   .hga-cards { gap: 10px; }
   .hga-visual { padding: 14px 12px 0; }
   .hga-card-body { padding: 14px 15px 16px; }
-  .hga-card-cat { font-size: 9px; letter-spacing: .12em; margin-bottom: 7px; }
-  .hga-card h3 { font-size: 14.5px; line-height: 1.25; margin-bottom: 0; letter-spacing: -.015em; }
-  .hga-card-desc { display: none; }
+  .hga-card-cat { font-size: 10.5px; letter-spacing: .1em; margin-bottom: 7px; }
+  .hga-card h3 { font-size: 14.5px; line-height: 1.25; margin-bottom: 6px; letter-spacing: -.015em; }
+  .hga-card-desc {
+    font-size: 12.5px;
+    line-height: 1.5;
+    flex: 0 1 auto;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
   /* margin-top auto alinha os "Ver detalhes" mesmo com títulos de 1 ou 2 linhas */
   .hga-card-link { margin-top: auto; padding-top: 12px; font-size: 12px; }
   /* No card 2 × 3 a miniatura fica com ~1/4 da largura original: as frases
@@ -1563,7 +1605,7 @@
   .hga-stats { grid-template-columns: 1fr 1fr; gap: 24px 14px; }
   .hga-stat-value { font-size: 29px; margin-bottom: 10px; }
   .hga-stat-desc { font-size: 12.5px; line-height: 1.55; margin-bottom: 12px; }
-  .hga-stat-source { font-size: 9.5px; letter-spacing: .08em; }
+  .hga-stat-source { font-size: 11px; letter-spacing: .06em; }
 
   .hga-benefits li { padding: 20px 16px 22px; }
   .hga-benefits h3 { font-size: 14.5px; margin-bottom: 7px; }
@@ -1571,6 +1613,12 @@
 
   .hga-form-row { grid-template-columns: 1fr; }
   .hga-chips { grid-template-columns: 1fr; }
+  /* No celular o rótulo é lido de perto e em movimento: caixa alta com
+     espaçamento largo é o pior caso para texto pequeno. */
+  .hga-form label,
+  .hga-form legend,
+  .hga-form-legend { font-size: 12.5px; letter-spacing: .06em; }
+  .hga-form-note { font-size: 13.5px; }
   .hga-panel-step-state { display: none; }
 
   .hga-nudge { padding: 22px 20px 24px; }
