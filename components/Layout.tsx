@@ -64,6 +64,12 @@ import { UIChat } from './ai/UIChat';
 import { NotificationPopover } from './notifications/NotificationPopover';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
+const PROSPECTOR_FORM_URL =
+  process.env.NEXT_PUBLIC_PROSPECTOR_FORM_URL ||
+  (process.env.NODE_ENV === 'development'
+    ? 'http://localhost:5678/form/prospector'
+    : 'https://humbertoarruda.app.n8n.cloud/form/prospector');
+
 /**
  * Props do componente Layout
  * @interface LayoutProps
@@ -288,7 +294,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { to: '/messaging', icon: MessageSquare, label: 'Mensagens', badge: unreadMessagesCount },
     { to: '/dashboard', icon: LayoutDashboard, label: 'Visão Geral', prefetch: 'dashboard' },
     { to: '/boards', icon: KanbanSquare, label: 'Boards', prefetch: 'boards' },
-    { to: 'https://humbertoarruda.app.n8n.cloud/form/prospector', icon: Search, label: 'Buscar novos leads', external: true },
+    { to: PROSPECTOR_FORM_URL, icon: Search, label: 'Buscar novos leads', external: true },
     { to: '/contacts', icon: Users, label: 'Contatos', prefetch: 'contacts' },
     { to: '/activities', icon: CheckSquare, label: 'Atividades', prefetch: 'activities' },
     { to: '/reports', icon: BarChart3, label: 'Relatórios', prefetch: 'reports' },
