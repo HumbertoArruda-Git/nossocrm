@@ -66,9 +66,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 
 const PROSPECTOR_FORM_URL =
   process.env.NEXT_PUBLIC_PROSPECTOR_FORM_URL ||
-  (process.env.NODE_ENV === 'development'
-    ? 'http://localhost:5678/form/prospector'
-    : 'https://humbertoarruda.app.n8n.cloud/form/prospector');
+  'http://localhost:5678/form/prospector';
 
 /**
  * Props do componente Layout
