@@ -31,4 +31,26 @@ describe('WhatsApp assistido: telefone e texto', () => {
     expect(assistedMessage('follow_up_sent', { mensagemInicial: 'ignorar' }, 'Ana', 'Acme'))
       .toContain('retomar minha mensagem anterior');
   });
+
+  it('nunca mostra marcador sem valor: remove a frase em vez de inventar conteúdo', () => {
+    const followUp1 = assistedMessage('follow_up_sent', {}, 'Ana', 'Acme', 1);
+    expect(followUp1).toBe('Oi, Ana. Passando só para retomar minha mensagem anterior.\n\n'
+      + 'Se fizer sentido, te mostro rapidamente como eu estruturaria isso. São 10 minutos mesmo.');
+    const followUp2 = assistedMessage('follow_up_sent', {}, 'Ana', 'Acme', 2);
+    expect(followUp2).toContain('Vou encerrar por aqui');
+    const fallback = assistedMessage('initial_sent', {}, 'Ana', 'Acme');
+    for (const text of [followUp1, followUp2, fallback]) {
+      expect(text).not.toMatch(/\[[^\]]+\]/);
+      expect(text).not.toMatch(/\n{3,}/);
+    }
+  });
+
+  it('sem nome de contato, a saudação perde o nome em vez de usar um genérico', () => {
+    expect(assistedMessage('follow_up_sent', {}, '', 'Acme', 1)).toMatch(/^Oi\. Passando/);
+  });
+
+  it('mensagem do Prospector é mostrada como veio, para o usuário revisar', () => {
+    expect(assistedMessage('initial_sent', { mensagemInicial: 'Oi! Aqui é [seu nome].' }, 'Ana', 'Acme'))
+      .toBe('Oi! Aqui é [seu nome].');
+  });
 });

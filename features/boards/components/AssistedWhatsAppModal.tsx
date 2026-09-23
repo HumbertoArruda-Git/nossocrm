@@ -42,7 +42,7 @@ export function AssistedWhatsAppModal({
   useEffect(() => {
     if (!isOpen) return;
     const source = mode === 'replied' ? '' :
-      assistedMessage(mode, deal.customFields, contact?.name || '', company);
+      assistedMessage(mode, deal.customFields, contact?.name || '', company, followUpNumber);
     setPhone(contact?.phone || '');
     setMessage(source);
     setOpenedMessage(null);
@@ -50,7 +50,7 @@ export function AssistedWhatsAppModal({
     setBusy(false);
     inFlight.current = false;
     requestId.current = crypto.randomUUID();
-  }, [isOpen, mode, deal.id, contact?.id, contact?.phone, contact?.name, company, deal.customFields?.mensagemInicial]);
+  }, [isOpen, mode, deal.id, contact?.id, contact?.phone, contact?.name, company, deal.customFields?.mensagemInicial, followUpNumber]);
 
   const validPhone = validatedWhatsAppPhone(phone);
   const isReply = mode === 'replied';
