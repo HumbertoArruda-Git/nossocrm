@@ -1,0 +1,166 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Modal } from '@/components/ui/Modal';
+import { validatedWhatsAppPhone, whatsAppUrl } from '@/lib/whatsapp-assisted/phone';
+import { useAuth } from '@/context/AuthContext';
+import { assistedMessage, senderDisplayName } from '@/lib/whatsapp-assisted/message';
+import { recordAssistedWhatsApp, type AssistedWhatsAppEvent } from '@/lib/whatsapp-assisted/client';
+import type { Contact, Deal, DealView } from '@/types';
+
+type Mode = AssistedWhatsAppEvent;
+/** What the modal reads from a deal; the cockpit panels only hold a plain Deal. */
+type AssistedDeal = Pick<Deal, 'id' | 'title' | 'status' | 'customFields'>
+  & Pick<DealView, 'companyName' | 'clientCompanyName'>;
+
+/** useDealsQuery fills a missing company with this label; it must never reach the message. */
+const NO_COMPANY_LABEL = 'Sem empresa';
+const FIELD_CLASS = 'mt-1 w-full rounded-lg border border-slate-200 bg-white p-2 text-slate-900 '
+  + 'dark:border-white/10 dark:bg-slate-900/50 dark:text-white disabled:opacity-60';
+const SECONDARY_BUTTON_CLASS = 'rounded-lg border border-slate-200 px-3 py-2 dark:border-white/10';
+
+export function AssistedWhatsAppModal({
+  isOpen, mode, deal, contact, followUpTaskId, followUpNumber, onClose,
+}: {
+  isOpen: boolean;
+  mode: Mode;
+  deal: AssistedDeal;
+  contact: Contact | null | undefined;
+  followUpTaskId?: string;
+  followUpNumber?: number;
+  onClose: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const senderName = senderDisplayName(profile);
+  const [phone, setPhone] = useState('');
+  const [message, setMessage] = useState('');
+  const [openedMessage, setOpenedMessage] = useState<string | null>(null);
+  // The number wa.me was opened with: the one saved if the send is confirmed.
+  const [openedPhone, setOpenedPhone] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const requestId = useRef('');
+  const inFlight = useRef(false);
+  const company = [deal.clientCompanyName, deal.companyName]
+    .find((name) => name && name !== NO_COMPANY_LABEL) || deal.title;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const source = mode === 'replied' ? '' :
+      assistedMessage(mode, deal.customFields, contact?.name || '', company, followUpNumber, senderName);
+    setPhone(contact?.phone || '');
+    setMessage(source);
+    setOpenedMessage(null);
+    setOpenedPhone(null);
+    setError('');
+    setBusy(false);
+    inFlight.current = false;
+    requestId.current = crypto.randomUUID();
+  }, [isOpen, mode, deal.id, contact?.id, contact?.phone, contact?.name, company, deal.customFields?.mensagemInicial, followUpNumber, senderName]);
+
+  const validPhone = validatedWhatsAppPhone(phone);
+  const isReply = mode === 'replied';
+  const handleOpen = () => {
+    if (!validPhone || !message.trim()) return;
+    const text = message.trim();
+    window.open(whatsAppUrl(validPhone, text), '_blank', 'noopener,noreferrer');
+    setOpenedMessage(text);
+    setOpenedPhone(validPhone);
+  };
+
+  const handleConfirm = async () => {
+    if (inFlight.current || (!isReply && !openedMessage)) return;
+    inFlight.current = true;
+    setBusy(true);
+    setError('');
+    try {
+      await recordAssistedWhatsApp(queryClient, deal, {
+        event: mode,
+        message: isReply ? message.trim() : openedMessage ?? '',
+        requestId: requestId.current,
+        followUpTaskId: mode === 'follow_up_sent' ? followUpTaskId : undefined,
+        phone: isReply ? undefined : openedPhone ?? undefined,
+      });
+      onClose();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Falha ao confirmar.');
+    } finally {
+      setBusy(false);
+      inFlight.current = false;
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}
+      title={isReply ? 'Marcar como respondeu'
+        : mode === 'follow_up_sent' ? `Follow-up ${followUpNumber ?? 1} assistido` : 'Abrir WhatsApp'}>
+      <div className="space-y-4 text-sm">
+        <p className="font-medium text-slate-800 dark:text-white">{company}</p>
+        {!isReply && (
+          <>
+            <label className="block">
+              <span>Telefone</span>
+              <input value={phone} onChange={(event) => setPhone(event.target.value)}
+                disabled={openedMessage !== null}
+                className={FIELD_CLASS} />
+              {!validPhone && <span className="block mt-1 text-red-600 dark:text-red-400">Informe um telefone válido com DDD.</span>}
+              {!contact?.phone && (
+                <span className="block mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Sem telefone no cadastro: ele só será salvo se você confirmar o envio.
+                </span>
+              )}
+            </label>
+            <label className="block">
+              <span>Mensagem</span>
+              <textarea value={message} onChange={(event) => setMessage(event.target.value)}
+                disabled={openedMessage !== null} rows={8}
+                className={FIELD_CLASS} />
+            </label>
+          </>
+        )}
+        {isReply && (
+          <label className="block">
+            <span>Observação sobre a resposta (opcional)</span>
+            <textarea value={message} onChange={(event) => setMessage(event.target.value)}
+              rows={3} className={FIELD_CLASS} />
+          </label>
+        )}
+        {error && <p role="alert" className="text-red-600 dark:text-red-400">{error}</p>}
+        {!isReply && openedMessage === null && (
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => void navigator.clipboard.writeText(message)}
+              disabled={!message.trim()} className={SECONDARY_BUTTON_CLASS}>Copiar mensagem</button>
+            <button type="button" onClick={handleOpen}
+              disabled={!validPhone || !message.trim()} className="rounded-lg bg-green-600 px-3 py-2 text-white disabled:opacity-50">
+              Abrir WhatsApp
+            </button>
+            <button type="button" onClick={onClose} className={SECONDARY_BUTTON_CLASS}>Cancelar</button>
+          </div>
+        )}
+        {!isReply && openedMessage !== null && (
+          <div className="space-y-2">
+            <p className="font-semibold">Você enviou a mensagem?</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => void handleConfirm()} disabled={busy}
+                className="rounded-lg bg-green-600 px-3 py-2 text-white disabled:opacity-50">
+                Sim, marcar como enviado
+              </button>
+              <button type="button" onClick={onClose} disabled={busy}
+                className={SECONDARY_BUTTON_CLASS}>Ainda não</button>
+            </div>
+          </div>
+        )}
+        {isReply && (
+          <div className="flex gap-2">
+            <button type="button" onClick={() => void handleConfirm()} disabled={busy}
+              className="rounded-lg bg-green-600 px-3 py-2 text-white disabled:opacity-50">
+              Marcar como respondeu
+            </button>
+            <button type="button" onClick={onClose} disabled={busy}
+              className={SECONDARY_BUTTON_CLASS}>Cancelar</button>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+}

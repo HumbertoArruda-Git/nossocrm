@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useId, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   useContacts,
-  useActivities,
+  useActivitiesByDeal,
   useBoards,
   useLifecycleStages,
   useUpdateDeal,
@@ -61,6 +61,8 @@ import { formatPriorityPtBr } from '@/lib/utils/priority';
 import { BriefingDrawer } from '@/features/deals/components/BriefingDrawer';
 import { AIExtractedFields } from '@/features/deals/components/AIExtractedFields';
 import { DealCommercialMessages } from '../DealCommercialMessages';
+import { AssistedWhatsAppModal } from '../AssistedWhatsAppModal';
+import { assistedWhatsAppState, followUpDueStatus, followUpNumber } from '@/lib/whatsapp-assisted/sequence';
 
 interface DealDetailModalProps {
   dealId: string | null;
@@ -97,7 +99,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
   const removeItemFromDeal = (dealId: string, itemId: string) => removeDealItemMutation.mutateAsync({ dealId, itemId });
 
   const { data: contacts = [] } = useContacts();
-  const { data: activities = [] } = useActivities();
+  const { data: activities = [] } = useActivitiesByDeal(dealId ?? undefined);
   const { data: boards = [] } = useBoards();
   const { activeBoardId } = useUIState();
   const activeBoard = boards.find(b => b.id === activeBoardId) || boards.find(b => b.isDefault) || boards[0] || null;
@@ -166,6 +168,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
   const [customItemQuantity, setCustomItemQuantity] = useState(1);
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [whatsAppMode, setWhatsAppMode] = useState<'initial_sent' | 'follow_up_sent' | 'replied' | null>(null);
   const [showLossReasonModal, setShowLossReasonModal] = useState(false);
   const [pendingLostStageId, setPendingLostStageId] = useState<string | null>(null);
   const [lossReasonOrigin, setLossReasonOrigin] = useState<'button' | 'stage'>('button');
@@ -229,6 +232,10 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
     if (!deal) return [] as Activity[];
     return activities.filter((a) => a.dealId === deal.id);
   }, [activities, deal]);
+  const whatsAppSequence = useMemo(() => assistedWhatsAppState(dealActivities), [dealActivities]);
+  const pendingWhatsAppTask = whatsAppSequence.pendingTask;
+  const pendingFollowUpNumber = pendingWhatsAppTask ? followUpNumber(pendingWhatsAppTask) : undefined;
+  const followUpStatus = pendingWhatsAppTask ? followUpDueStatus(pendingWhatsAppTask.date) : null;
 
   // Close a stale detail modal when the selected deal disappears after delete,
   // refetch, or a realtime cache update.
@@ -702,7 +709,22 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                       <p className="text-slate-500 text-xs">{deal.contactEmail}</p>
                     </div>
                     {/* Send Message Button */}
-                    {contact?.phone && (
+                    {dealBoard?.key === 'prospeccao-comercial' ? (
+                      <div className="flex flex-wrap gap-2">
+                        {whatsAppSequence.nextEvent && (
+                          <button type="button" onClick={() => setWhatsAppMode(whatsAppSequence.nextEvent)}
+                            className="flex items-center gap-1 rounded-lg bg-green-50 px-2.5 py-1.5 text-xs font-medium text-green-700">
+                            <MessageSquare size={14} /> Abrir WhatsApp
+                          </button>
+                        )}
+                        {whatsAppSequence.canMarkReplied && (
+                          <button type="button" onClick={() => setWhatsAppMode('replied')}
+                            className="rounded-lg border px-2.5 py-1.5 text-xs font-medium">
+                            Marcar como respondeu
+                          </button>
+                        )}
+                      </div>
+                    ) : contact?.phone && (
                       <button
                         type="button"
                         onClick={() => {
@@ -725,6 +747,13 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                     )}
                   </div>
                 </div>
+                {dealBoard?.key === 'prospeccao-comercial' && pendingWhatsAppTask && (
+                  <div className="mt-2 text-xs font-semibold text-amber-700">
+                    {followUpStatus === 'overdue' ? `Follow-up ${pendingFollowUpNumber} vencido`
+                      : followUpStatus === 'today' ? `Follow-up ${pendingFollowUpNumber} hoje`
+                        : `Follow-up ${pendingFollowUpNumber} pendente`} · {PT_BR_DATE_FORMATTER.format(new Date(pendingWhatsAppTask.date))}
+                  </div>
+                )}
 
                 <div className="pt-4 border-t border-slate-100 dark:border-white/5">
                   <h3 className="text-xs font-bold text-slate-400 uppercase mb-2">Detalhes</h3>
@@ -1365,15 +1394,25 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
 
   if (isMobile) {
     return (
-      <DealSheet isOpen={isOpen} onClose={onClose} ariaLabel={`Negócio: ${deal.title}`}>
-        <div onKeyDown={handleKeyDown}>{inner}</div>
-      </DealSheet>
+      <>
+        <DealSheet isOpen={isOpen} onClose={onClose} ariaLabel={`Negócio: ${deal.title}`}
+          focusTrapEnabled={!whatsAppMode}>
+          <div onKeyDown={handleKeyDown}>{inner}</div>
+        </DealSheet>
+        {dealBoard?.key === 'prospeccao-comercial' && (
+          <AssistedWhatsAppModal isOpen={!!whatsAppMode} mode={whatsAppMode || 'initial_sent'}
+            deal={deal} contact={contact} followUpTaskId={pendingWhatsAppTask?.id}
+            followUpNumber={pendingFollowUpNumber}
+            onClose={() => setWhatsAppMode(null)} />
+        )}
+      </>
     );
   }
 
   return (
-    <FocusTrap active={isOpen && !deleteId} onEscape={onClose}>
-      <div
+    <>
+      <FocusTrap active={isOpen && !deleteId && !whatsAppMode} onEscape={onClose}>
+        <div
         // Backdrop + positioning wrapper. Clicking outside the panel should close the modal.
         // No desktop, este modal não deve cobrir a sidebar de navegação.
         // Em md+ deslocamos o overlay pela largura da sidebar via `--app-sidebar-width`.
@@ -1388,7 +1427,14 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
         }}
       >
         {inner}
-      </div>
-    </FocusTrap>
+        </div>
+      </FocusTrap>
+      {dealBoard?.key === 'prospeccao-comercial' && (
+        <AssistedWhatsAppModal isOpen={!!whatsAppMode} mode={whatsAppMode || 'initial_sent'}
+          deal={deal} contact={contact} followUpTaskId={pendingWhatsAppTask?.id}
+            followUpNumber={pendingFollowUpNumber}
+          onClose={() => setWhatsAppMode(null)} />
+      )}
+    </>
   );
 };

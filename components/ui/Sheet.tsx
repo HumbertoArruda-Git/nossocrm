@@ -18,9 +18,10 @@ export interface SheetProps {
   ariaLabel?: string;
   /** Extra classes for the panel */
   className?: string;
+  focusTrapEnabled?: boolean;
 }
 
-export function Sheet({ isOpen, onClose, children, ariaLabel, className }: SheetProps) {
+export function Sheet({ isOpen, onClose, children, ariaLabel, className, focusTrapEnabled = true }: SheetProps) {
   useFocusReturn({ enabled: isOpen });
 
   const handleBackdropClick = useCallback(
@@ -35,7 +36,7 @@ export function Sheet({ isOpen, onClose, children, ariaLabel, className }: Sheet
   return (
     <AnimatePresence>
       {isOpen ? (
-        <FocusTrap active={isOpen} onEscape={handleEscape} returnFocus={true}>
+        <FocusTrap active={isOpen && focusTrapEnabled} onEscape={handleEscape} returnFocus={true}>
           <motion.div
             className={cn(
               'fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-sm',

@@ -2,7 +2,8 @@
 // Minimal Service Worker (MVP): cache app shell assets for faster launch.
 // Note: This does NOT provide offline data sync.
 
-const CACHE_NAME = 'nossocrm-shell-v2';
+// v3 drops caches that v2 filled with Supabase/API responses.
+const CACHE_NAME = 'nossocrm-shell-v3';
 const SHELL_URLS = [
   '/',
   '/login',
@@ -46,7 +47,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stale-while-revalidate for static assets.
+  // Stale-while-revalidate for static assets only. API and Supabase data must always
+  // come from the network: a cached copy hides writes and can outlive the user's session.
+  const url = new URL(req.url);
+  const isStaticAsset = url.origin === self.location.origin
+    && (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/'));
+  if (!isStaticAsset) return;
+
   event.respondWith(
     caches.match(req).then((cached) => {
       const fetchPromise = fetch(req)

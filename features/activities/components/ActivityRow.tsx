@@ -101,6 +101,7 @@ const ActivityRowComponent: React.FC<ActivityRowProps> = ({
     };
 
     const isSystemActivity = activity.type === 'STATUS_CHANGE';
+    const isAssistedWhatsApp = activity.metadata?.channel === 'whatsapp';
     const isOverdue = new Date(activity.date) < new Date() && !activity.completed;
 
     if (isSystemActivity) {
@@ -137,7 +138,7 @@ const ActivityRowComponent: React.FC<ActivityRowProps> = ({
                 />
             )}
 
-            <button
+            {!isAssistedWhatsApp && <button
                 onClick={() => onToggleComplete(activity.id)}
                 className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${activity.completed
                     ? 'bg-green-500 border-green-500 text-white'
@@ -145,14 +146,14 @@ const ActivityRowComponent: React.FC<ActivityRowProps> = ({
                     }`}
             >
                 <CheckCircle2 size={14} fill="currentColor" />
-            </button>
+            </button>}
 
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                     <span className="p-1.5 bg-slate-100 dark:bg-white/5 rounded-lg">
                         {getActivityIcon(activity.type)}
                     </span>
-                    <h3 className={`font-medium text-slate-900 dark:text-white truncate ${activity.completed ? 'line-through text-slate-500' : ''}`}>
+                    <h3 className={`font-medium text-slate-900 dark:text-white truncate ${activity.completed && !(isAssistedWhatsApp && activity.type !== 'TASK') ? 'line-through text-slate-500' : ''}`}>
                         {formatTitle(activity.title)}
                     </h3>
                     {isOverdue && (
@@ -189,9 +190,14 @@ const ActivityRowComponent: React.FC<ActivityRowProps> = ({
                         {formatRelativeTime(activity.date)}
                     </span>
                 </div>
+                {isAssistedWhatsApp && activity.description && (
+                    <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600 dark:text-slate-300">
+                        {activity.description}
+                    </p>
+                )}
             </div>
 
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            {!isAssistedWhatsApp && <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                     onClick={() => onEdit(activity)}
                     className="p-2 text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10 rounded-lg transition-colors"
@@ -206,7 +212,7 @@ const ActivityRowComponent: React.FC<ActivityRowProps> = ({
                 >
                     <Trash2 size={16} />
                 </button>
-            </div>
+            </div>}
         </div>
     );
 };

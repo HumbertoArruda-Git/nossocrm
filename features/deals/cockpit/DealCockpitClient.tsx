@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   Activity as ActivityIcon,
@@ -25,9 +26,12 @@ import { useAuth } from '@/context/AuthContext';
 import { useDealsView, useUpdateDeal as useUpdateDealMut } from '@/lib/query/hooks/useDealsQuery';
 import { useContacts } from '@/lib/query/hooks/useContactsQuery';
 import { useBoards } from '@/lib/query/hooks/useBoardsQuery';
-import { useActivities, useCreateActivity } from '@/lib/query/hooks/useActivitiesQuery';
+import { useActivities, useActivitiesByDeal, useCreateActivity } from '@/lib/query/hooks/useActivitiesQuery';
 import { useMoveDealSimple } from '@/lib/query/hooks';
 import { normalizePhoneE164 } from '@/lib/phone';
+import { assistedSendRequest, assistedWhatsAppState } from '@/lib/whatsapp-assisted/sequence';
+import { recordAssistedWhatsApp } from '@/lib/whatsapp-assisted/client';
+import { AssistedWhatsAppModal } from '@/features/boards/components/AssistedWhatsAppModal';
 
 import { useAIDealAnalysis, deriveHealthFromProbability } from '@/features/inbox/hooks/useAIDealAnalysis';
 import { useDealNotes } from '@/features/inbox/hooks/useDealNotes';
@@ -585,6 +589,7 @@ function buildSuggestedEmailBody(opts: {
  * @returns {Element} Retorna um valor do tipo `Element`.
  */
 export default function DealCockpitClient({ dealId }: { dealId?: string }) {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -619,6 +624,7 @@ export default function DealCockpitClient({ dealId }: { dealId?: string }) {
   const [messagePrefill, setMessagePrefill] = useState<{ subject?: string; message?: string } | null>(null);
   const [messageLogContext, setMessageLogContext] = useState<MessageLogContext | null>(null);
   const [messageLogDedupe, setMessageLogDedupe] = useState<{ key: string; at: number } | null>(null);
+  const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
 
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [scheduleInitial, setScheduleInitial] = useState<{
@@ -724,6 +730,11 @@ export default function DealCockpitClient({ dealId }: { dealId?: string }) {
     if (!selectedDeal) return [] as Activity[];
     return activitiesByDealIdSorted.get(selectedDeal.id) ?? [];
   }, [activitiesByDealIdSorted, selectedDeal]);
+
+  // The org-wide list is capped, so the assisted sequence reads the deal's own activities.
+  const isProspectingBoard = selectedBoard?.key === 'prospeccao-comercial';
+  const { data: sequenceActivities = [] } = useActivitiesByDeal(isProspectingBoard ? selectedDeal?.id : undefined);
+  const whatsAppSequence = useMemo(() => assistedWhatsAppState(sequenceActivities), [sequenceActivities]);
 
   const { moveDeal } = useMoveDealSimple(selectedBoard as Board | null, []);
 
@@ -1173,6 +1184,19 @@ export default function DealCockpitClient({ dealId }: { dealId?: string }) {
       if (ev.channel === 'WHATSAPP') {
         const msg = ev.message?.trim() ? ev.message.trim() : 'Mensagem enviada via WhatsApp.';
         try {
+          // Outside an open sequence (after a reply, after the last follow-up) the send is a plain note.
+          const assistedStep = isProspectingBoard ? assistedSendRequest(whatsAppSequence) : null;
+          if (assistedStep) {
+            await recordAssistedWhatsApp(queryClient, selectedDeal, {
+              ...assistedStep,
+              message: msg,
+              requestId: ev.requestId || crypto.randomUUID(),
+              phone: ev.phone,
+            });
+            pushToast('WhatsApp confirmado', 'success');
+            setMessageLogContext(null);
+            return;
+          }
           await addActivity({
             dealId: selectedDeal.id,
             dealTitle: selectedDeal.title,
@@ -1211,7 +1235,7 @@ export default function DealCockpitClient({ dealId }: { dealId?: string }) {
         pushToast(errorMessage(e, 'Não foi possível registrar o email.'), 'danger');
       }
     },
-    [addActivity, actor, messageLogContext, messageLogDedupe, pushToast, selectedDeal]
+    [addActivity, actor, isProspectingBoard, messageLogContext, messageLogDedupe, pushToast, queryClient, selectedDeal, whatsAppSequence]
   );
 
   const handleScheduleSave = useCallback(
@@ -1736,6 +1760,17 @@ export default function DealCockpitClient({ dealId }: { dealId?: string }) {
                     Template E-mail
                   </button>
                 </div>
+
+                {isProspectingBoard && whatsAppSequence.canMarkReplied && (
+                  <button
+                    type="button"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/2 px-3 py-2 text-[11px] font-semibold text-slate-200 hover:bg-white/5"
+                    onClick={() => setIsReplyModalOpen(true)}
+                  >
+                    <Check className="h-4 w-4" />
+                    Marcar como respondeu
+                  </button>
+                )}
               </div>
             </Panel>
 
@@ -2516,6 +2551,7 @@ export default function DealCockpitClient({ dealId }: { dealId?: string }) {
         initialSubject={messagePrefill?.subject}
         initialMessage={messagePrefill?.message}
         onExecuted={(ev) => void handleMessageExecuted(ev)}
+        requireWhatsAppConfirmation
         aiContext={{
           cockpitSnapshot: cockpitSnapshot ?? undefined,
           nextBestAction: {
@@ -2526,6 +2562,16 @@ export default function DealCockpitClient({ dealId }: { dealId?: string }) {
           },
         }}
       />
+
+      {isProspectingBoard && selectedDeal && (
+        <AssistedWhatsAppModal
+          isOpen={isReplyModalOpen}
+          mode="replied"
+          deal={selectedDeal}
+          contact={selectedContact}
+          onClose={() => setIsReplyModalOpen(false)}
+        />
+      )}
 
       <ScheduleModal
         isOpen={isScheduleModalOpen}

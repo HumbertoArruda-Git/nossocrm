@@ -2220,6 +2220,7 @@ export default function DealCockpitRealClient({ dealId }: { dealId?: string }) {
         initialSubject={messagePrefill?.subject}
         initialMessage={messagePrefill?.message}
         onExecuted={(ev) => void handleMessageExecuted(ev)}
+        requireWhatsAppConfirmation
         aiContext={{
           cockpitSnapshot: cockpitSnapshot ?? undefined,
           nextBestAction: {

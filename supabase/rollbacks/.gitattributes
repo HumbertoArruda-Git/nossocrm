@@ -1,0 +1,2 @@
+# Byte-exact function bodies (md5-checked): never convert line endings.
+*.sql -text

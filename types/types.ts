@@ -263,6 +263,7 @@ export interface DealView extends Deal {
 
 export interface Activity {
   id: string;
+  metadata?: Record<string, unknown>;
   organizationId?: OrganizationId; // Tenant FK (for RLS) - optional during migration
   dealId: string;
   /** ID do contato associado (opcional). Útil para tarefas sem deal. */

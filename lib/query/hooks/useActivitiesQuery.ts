@@ -78,12 +78,28 @@ export const useActivitiesByDeal = (dealId: string | undefined) => {
   return useQuery({
     queryKey: queryKeys.activities.byDeal(dealId || ''),
     queryFn: async () => {
-      const { data, error } = await activitiesService.getAll();
+      const { data, error } = await activitiesService.getByDeal(dealId!);
       if (error) throw error;
-      const filtered = (data || []).filter(a => a.dealId === dealId);
-      return sortActivitiesSmart(filtered);
+      return data || [];
     },
     enabled: !authLoading && !!user && !!dealId,
+  });
+};
+
+/**
+ * Pending assisted-WhatsApp follow-ups for the whole board in one query (no per-card fetch).
+ */
+export const useAssistedFollowUps = (options?: { enabled?: boolean }) => {
+  const { user, loading: authLoading } = useAuth();
+  return useQuery({
+    queryKey: queryKeys.activities.list({ assistedFollowUps: true }),
+    queryFn: async () => {
+      const { data, error } = await activitiesService.getPendingAssistedFollowUps();
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !authLoading && !!user && (options?.enabled ?? true),
+    staleTime: 30 * 1000,
   });
 };
 

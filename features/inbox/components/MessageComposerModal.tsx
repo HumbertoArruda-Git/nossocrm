@@ -3,7 +3,7 @@ import { Copy, ExternalLink, Mail, MessageCircle, Sparkles, Loader2, AlertCircle
 import { Modal } from '@/components/ui/Modal';
 import { rewriteMessageDraft, type RewriteMessageDraftInput } from '@/lib/ai/actionsClient';
 import { isConsentError, isRateLimitError } from '@/lib/supabase/ai-proxy';
-import { toWhatsAppPhone } from '@/lib/phone';
+import { validatedWhatsAppPhone } from '@/lib/whatsapp-assisted/phone';
 
 export type MessageChannel = 'WHATSAPP' | 'EMAIL';
 
@@ -12,6 +12,9 @@ export type MessageExecutedEvent = {
     /** Para EMAIL */
     subject?: string;
     message: string;
+    requestId?: string;
+    /** WhatsApp number the conversation was opened with (digits, no "+"). */
+    phone?: string;
 };
 
 interface MessageComposerModalProps {
@@ -23,8 +26,9 @@ interface MessageComposerModalProps {
     contactPhone?: string;
     initialSubject?: string;
     initialMessage?: string;
-    /** Dispara quando o usuário realmente executa (abre) WhatsApp/mailto */
+    /** Executa após confirmação manual quando requireWhatsAppConfirmation está ativo. */
     onExecuted?: (event: MessageExecutedEvent) => void;
+    requireWhatsAppConfirmation?: boolean;
     /** Contexto rico opcional (ex.: cockpitSnapshot) para melhorar a reescrita com IA */
     aiContext?: {
         cockpitSnapshot?: unknown;
@@ -38,8 +42,7 @@ interface MessageComposerModalProps {
 }
 
 function formatPhoneForWhatsApp(raw?: string) {
-    // wa.me usa somente dígitos (sem '+')
-    return toWhatsAppPhone(raw);
+    return validatedWhatsAppPhone(raw);
 }
 
 function buildWhatsAppUrl(phone: string, message: string) {
@@ -168,6 +171,7 @@ function formatForEmail(input: string) {
     initialSubject,
     initialMessage,
     onExecuted,
+    requireWhatsAppConfirmation = false,
     aiContext,
 }`.
  * @returns {Element} Retorna um valor do tipo `Element`.
@@ -182,6 +186,7 @@ export function MessageComposerModal({
     initialSubject,
     initialMessage,
     onExecuted,
+    requireWhatsAppConfirmation = false,
     aiContext,
 }: MessageComposerModalProps) {
     const [subject, setSubject] = useState('');
@@ -190,8 +195,14 @@ export function MessageComposerModal({
     const [isRewriting, setIsRewriting] = useState(false);
     const [rewriteError, setRewriteError] = useState<string | null>(null);
     const [aiBadge, setAiBadge] = useState(false);
+    const [openedMessage, setOpenedMessage] = useState<{ message: string; requestId: string; phone: string } | null>(null);
+    const [typedPhone, setTypedPhone] = useState('');
 
-    const phone = useMemo(() => formatPhoneForWhatsApp(contactPhone), [contactPhone]);
+    const contactWhatsApp = useMemo(() => formatPhoneForWhatsApp(contactPhone), [contactPhone]);
+    // Assisted flow only: a contact without a usable number can be reached by typing one; it is
+    // saved only if the user then confirms the send.
+    const allowPhoneEntry = channel === 'WHATSAPP' && requireWhatsAppConfirmation && !contactWhatsApp;
+    const phone = contactWhatsApp ?? (allowPhoneEntry ? formatPhoneForWhatsApp(typedPhone) : null);
     const contactValue = useMemo(() => {
         return channel === 'WHATSAPP' ? phone : (contactEmail ?? '');
     }, [channel, phone, contactEmail]);
@@ -205,6 +216,8 @@ export function MessageComposerModal({
         setRewriteError(null);
         setIsRewriting(false);
         setAiBadge(false);
+        setOpenedMessage(null);
+        setTypedPhone('');
         setSubject(typeof initialSubject === 'string' ? initialSubject : '');
         const nextMsg = typeof initialMessage === 'string' ? initialMessage : '';
         setMessage(channel === 'WHATSAPP' ? formatForWhatsApp(nextMsg) : formatForEmail(nextMsg));
@@ -237,8 +250,12 @@ export function MessageComposerModal({
             const formatted = formatForWhatsApp(message);
             // Keep textarea consistent with what will be sent.
             if (formatted && formatted !== message) setMessage(formatted);
-            window.open(buildWhatsAppUrl(phone, formatted), '_blank');
-            onExecuted?.({ channel, message: formatted });
+            window.open(buildWhatsAppUrl(phone, formatted), '_blank', 'noopener,noreferrer');
+            if (requireWhatsAppConfirmation) {
+                setOpenedMessage({ message: formatted, requestId: crypto.randomUUID(), phone });
+            } else {
+                onExecuted?.({ channel, message: formatted });
+            }
             return;
         }
 
@@ -247,6 +264,13 @@ export function MessageComposerModal({
         if (formatted && formatted !== message) setMessage(formatted);
         window.open(buildMailtoUrl(contactEmail, subject, formatted), '_blank');
         onExecuted?.({ channel, subject, message: formatted });
+    };
+
+    const confirmWhatsApp = () => {
+        if (!openedMessage) return;
+        onExecuted?.({ channel: 'WHATSAPP', ...openedMessage });
+        setOpenedMessage(null);
+        onClose();
     };
 
     const handleRewriteWithAI = async () => {
@@ -303,6 +327,21 @@ export function MessageComposerModal({
             initialFocus="#message-composer-textarea"
         >
             <div className="space-y-4">
+                {allowPhoneEntry && (
+                    <label className="block text-sm">
+                        <span className="text-slate-700 dark:text-slate-300">Telefone para o WhatsApp</span>
+                        <input
+                            value={typedPhone}
+                            onChange={(e) => setTypedPhone(e.target.value)}
+                            disabled={openedMessage !== null}
+                            placeholder="(11) 99999-9999"
+                            className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white text-sm disabled:opacity-60"
+                        />
+                        <span className="block mt-1 text-xs text-slate-500 dark:text-slate-400">
+                            Sem telefone no cadastro: ele só será salvo se você confirmar o envio.
+                        </span>
+                    </label>
+                )}
                 <div className="flex items-start gap-3">
                     <div
                         className={
@@ -322,7 +361,7 @@ export function MessageComposerModal({
                                 {channel === 'WHATSAPP'
                                     ? phone
                                         ? `WhatsApp: ${phone}`
-                                        : 'Sem telefone para WhatsApp'
+                                        : 'Telefone inválido para WhatsApp'
                                     : contactEmail
                                         ? `Email: ${contactEmail}`
                                         : 'Sem email cadastrado'}
@@ -340,7 +379,7 @@ export function MessageComposerModal({
                                     <button
                                         type="button"
                                         onClick={handleOpen}
-                                        disabled={!canOpen}
+                                        disabled={!canOpen || (channel === 'WHATSAPP' && openedMessage !== null)}
                                         className="p-1 rounded-md hover:bg-slate-50 dark:hover:bg-white/5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                         title={channel === 'WHATSAPP' ? 'Abrir no WhatsApp' : 'Abrir no email'}
                                     >
@@ -391,6 +430,7 @@ export function MessageComposerModal({
                     <textarea
                         id="message-composer-textarea"
                         value={message}
+                        disabled={openedMessage !== null}
                         onChange={(e) => setMessage(e.target.value)}
                         rows={12}
                             className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white text-sm focus:outline-none focus-visible-ring resize-y min-h-80 max-h-[60vh]"
@@ -417,6 +457,17 @@ export function MessageComposerModal({
                     </div>
                 </div>
 
+                {channel === 'WHATSAPP' && requireWhatsAppConfirmation && openedMessage && (
+                    <div className="rounded-lg border border-green-200 p-3">
+                        <p className="mb-2 text-sm font-semibold">Você enviou a mensagem?</p>
+                        <div className="flex gap-2">
+                            <button type="button" onClick={confirmWhatsApp}
+                                className="rounded-lg bg-green-600 px-3 py-2 text-sm text-white">Sim, marcar como enviado</button>
+                            <button type="button" onClick={onClose}
+                                className="rounded-lg border px-3 py-2 text-sm">Ainda não</button>
+                        </div>
+                    </div>
+                )}
                 <div className="flex items-center gap-2 justify-end pt-2">
                     <div className="mr-auto">
                         <button
@@ -444,7 +495,7 @@ export function MessageComposerModal({
                     <button
                         type="button"
                         onClick={handleOpen}
-                        disabled={!canOpen}
+                        disabled={!canOpen || (channel === 'WHATSAPP' && openedMessage !== null)}
                         className={
                             channel === 'WHATSAPP'
                                 ? 'px-4 py-2 rounded-lg text-sm font-semibold bg-green-500 hover:bg-green-600 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-2'

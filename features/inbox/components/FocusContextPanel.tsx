@@ -32,7 +32,13 @@ import {
     RefreshCw,
     Building
 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Deal, Activity, Contact, Board } from '@/types';
+import { useToast } from '@/context/ToastContext';
+import { useActivitiesByDeal } from '@/lib/query/hooks/useActivitiesQuery';
+import { assistedSendRequest, assistedWhatsAppState } from '@/lib/whatsapp-assisted/sequence';
+import { recordAssistedWhatsApp } from '@/lib/whatsapp-assisted/client';
+import { AssistedWhatsAppModal } from '@/features/boards/components/AssistedWhatsAppModal';
 import { useAIDealAnalysis, deriveHealthFromProbability } from '../hooks/useAIDealAnalysis';
 import { useDealNotes } from '../hooks/useDealNotes';
 import { useDealFiles } from '../hooks/useDealFiles';
@@ -42,7 +48,7 @@ import type { CallLogData } from './CallModal';
 import type { ScriptFormData } from './ScriptEditorModal';
 import type { ScheduleData, ScheduleType } from './ScheduleModal';
 import { generateSalesScript } from '@/lib/ai/tasksClient';
-import type { MessageChannel } from './MessageComposerModal';
+import type { MessageChannel, MessageExecutedEvent } from './MessageComposerModal';
 
 const CallModal = dynamic(
     () => import('./CallModal').then(m => ({ default: m.CallModal })),
@@ -233,6 +239,45 @@ export const FocusContextPanel: React.FC<FocusContextPanelProps> = ({
         subject?: string;
         message?: string;
     } | null>(null);
+
+    // Assisted WhatsApp (prospecção only): same sequence rules as the deal modal.
+    const queryClient = useQueryClient();
+    const { addToast } = useToast();
+    const isProspectingBoard = board?.key === 'prospeccao-comercial';
+    const { data: sequenceActivities = [] } = useActivitiesByDeal(isProspectingBoard ? deal.id : undefined);
+    const whatsAppSequence = useMemo(() => assistedWhatsAppState(sequenceActivities), [sequenceActivities]);
+    const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
+
+    const handleMessageExecuted = async (event: MessageExecutedEvent) => {
+        if (event.channel !== 'WHATSAPP' || !isProspectingBoard) return;
+        const message = event.message.trim() || 'Mensagem enviada via WhatsApp.';
+        // Outside an open sequence (after a reply, after the last follow-up) the send is a plain note.
+        const step = assistedSendRequest(whatsAppSequence);
+        try {
+            if (step) {
+                await recordAssistedWhatsApp(queryClient, deal, {
+                    ...step,
+                    message,
+                    requestId: event.requestId || crypto.randomUUID(),
+                    phone: event.phone,
+                });
+            } else {
+                onAddActivity({
+                    dealId: deal.id,
+                    dealTitle: deal.title,
+                    type: 'NOTE',
+                    title: 'WhatsApp',
+                    description: message,
+                    date: new Date().toISOString(),
+                    completed: true,
+                    user: { name: 'Eu', avatar: '' },
+                });
+            }
+            addToast('WhatsApp confirmado', 'success');
+        } catch {
+            addToast('Não foi possível registrar o WhatsApp.', 'error');
+        }
+    };
 
     const openMessageComposer = (
         channel: MessageChannel,
@@ -1441,11 +1486,20 @@ export const FocusContextPanel: React.FC<FocusContextPanelProps> = ({
                                                 message: buildSuggestedWhatsAppMessage('TASK', `Queria falar sobre ${deal.title}`),
                                             })
                                         }
-                                        disabled={!contact?.phone}
+                                        // Prospecção accepts a typed number when the contact has none.
+                                        disabled={!contact?.phone && !isProspectingBoard}
                                         className="px-3 py-1.5 hover:bg-green-500/10 text-slate-500 hover:text-green-400 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-medium rounded-md transition-colors flex items-center gap-2 group"
                                     >
                                         <MessageCircle size={14} className="group-hover:text-green-400 transition-colors" /> WhatsApp
                                     </button>
+                                    {isProspectingBoard && whatsAppSequence.canMarkReplied && (
+                                        <button
+                                            onClick={() => setIsReplyModalOpen(true)}
+                                            className="px-3 py-1.5 hover:bg-green-500/10 text-slate-500 hover:text-green-400 text-xs font-medium rounded-md transition-colors flex items-center gap-2"
+                                        >
+                                            <CheckCircle2 size={14} /> Marcar como respondeu
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() =>
                                             handleEmail({
@@ -1898,6 +1952,8 @@ export const FocusContextPanel: React.FC<FocusContextPanelProps> = ({
                 contactPhone={contact?.phone}
                 initialSubject={messagePrefill?.subject}
                 initialMessage={messagePrefill?.message}
+                onExecuted={(event) => void handleMessageExecuted(event)}
+                requireWhatsAppConfirmation={isProspectingBoard}
                 aiContext={{
                     cockpitSnapshot,
                     nextBestAction: {
@@ -1908,6 +1964,16 @@ export const FocusContextPanel: React.FC<FocusContextPanelProps> = ({
                     },
                 }}
             />
+
+            {isProspectingBoard && (
+                <AssistedWhatsAppModal
+                    isOpen={isReplyModalOpen}
+                    mode="replied"
+                    deal={deal}
+                    contact={contact}
+                    onClose={() => setIsReplyModalOpen(false)}
+                />
+            )}
         </>
     );
 };
