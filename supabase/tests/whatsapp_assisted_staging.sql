@@ -1,7 +1,17 @@
 -- STAGING ONLY. All fixtures and assertions are rolled back.
--- Requires 20260923135915, 20260923150000 (two-follow-up limit) and
+-- Requires 20260923130000 (check_deal_duplicate pinned search_path),
+-- 20260923135915, 20260923150000 (two-follow-up limit) and
 -- 20260923180000 (contact created/filled on a confirmed send).
 BEGIN;
+-- The RPC runs with search_path = '' and the trigger inherits it unless pinned.
+DO $pinned$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_proc
+    WHERE oid = 'public.check_deal_duplicate()'::regprocedure
+      AND 'search_path=""' = ANY (proconfig)) THEN
+    RAISE EXCEPTION 'check_deal_duplicate sem search_path fixo: aplique 20260923130000';
+  END IF;
+END $pinned$;
 SELECT set_config('request.jwt.claim.sub',
   (SELECT id::text FROM public.profiles WHERE organization_id IS NOT NULL LIMIT 1), true);
 
