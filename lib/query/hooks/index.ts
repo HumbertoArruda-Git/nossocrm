@@ -53,6 +53,7 @@ export {
   useActivities,
   useActivitiesByDeal,
   usePendingActivities,
+  useAssistedFollowUps,
   useTodayActivities,
   useCreateActivity,
   useUpdateActivity,

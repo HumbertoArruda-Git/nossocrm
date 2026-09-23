@@ -46,6 +46,7 @@ async function getCurrentOrganizationId(): Promise<string | null> {
 export interface DbActivity {
   /** ID único da atividade (UUID). */
   id: string;
+  metadata?: Record<string, unknown> | null;
   /** ID da organização/tenant. */
   organization_id: string;
   /** Título da atividade. */
@@ -85,6 +86,7 @@ interface DbActivityWithDeal extends DbActivity {
  */
 const transformActivity = (db: DbActivityWithDeal): Activity => ({
   id: db.id,
+  metadata: db.metadata ?? {},
   organizationId: db.organization_id,
   title: db.title,
   description: db.description || undefined,
@@ -107,6 +109,7 @@ const transformActivity = (db: DbActivityWithDeal): Activity => ({
  */
 const transformActivityToDb = (activity: Partial<Activity>): Partial<DbActivity> => {
   const db: Partial<DbActivity> = {};
+  if (activity.metadata !== undefined) db.metadata = activity.metadata;
 
   if (activity.title !== undefined) db.title = activity.title;
   if (activity.description !== undefined) db.description = activity.description || null;
@@ -150,6 +153,42 @@ export const activitiesService = {
       return { data: null, error: e as Error };
     }
   },
+  async getByDeal(dealId: string): Promise<{ data: Activity[] | null; error: Error | null }> {
+    const sb = supabase;
+    if (!sb) return { data: null, error: new Error('Supabase não configurado') };
+    const organizationId = await getCurrentOrganizationId();
+    if (!organizationId) return { data: null, error: new Error('Organização não encontrada') };
+    const { data, error } = await sb.from('activities')
+      .select('*, deals:deal_id (title)')
+      .eq('deal_id', dealId)
+      .eq('organization_id', organizationId)
+      .is('deleted_at', null)
+      .order('date', { ascending: false });
+    if (error) return { data: null, error };
+    return { data: sortActivitiesSmart((data || []).map((row) => transformActivity(row as DbActivityWithDeal))), error: null };
+  },
+
+  /** Pending assisted-WhatsApp follow-ups of the organization, one row per open TASK. */
+  async getPendingAssistedFollowUps(): Promise<{ data: { dealId: string; date: string }[] | null; error: Error | null }> {
+    const sb = supabase;
+    if (!sb) return { data: null, error: new Error('Supabase não configurado') };
+    const organizationId = await getCurrentOrganizationId();
+    if (!organizationId) return { data: null, error: new Error('Organização não encontrada') };
+    const { data, error } = await sb.from('activities')
+      .select('deal_id, date')
+      .eq('organization_id', organizationId)
+      .eq('type', 'TASK')
+      .eq('completed', false)
+      .is('deleted_at', null)
+      .eq('metadata->>channel', 'whatsapp')
+      .eq('metadata->>event', 'follow_up_due')
+      .not('deal_id', 'is', null);
+    if (error) return { data: null, error };
+    return {
+      data: (data || []).map((row: { deal_id: string; date: string }) => ({ dealId: row.deal_id, date: row.date })),
+      error: null,
+    };
+  },
 
   /**
    * Cria uma nova atividade.
@@ -169,6 +208,7 @@ export const activitiesService = {
         type: activity.type,
         date: activity.date,
         completed: activity.completed || false,
+        ...(activity.metadata ? { metadata: activity.metadata } : {}),
         deal_id: sanitizeUUID(activity.dealId),
         contact_id: sanitizeUUID(activity.contactId),
         client_company_id: sanitizeUUID(activity.clientCompanyId),

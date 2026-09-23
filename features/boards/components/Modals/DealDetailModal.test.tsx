@@ -74,6 +74,7 @@ vi.mock('@/lib/query/hooks', () => ({
   useMoveDealSimple: () => ({ moveDeal: vi.fn() }),
   useContacts: () => ({ data: [], isLoading: false }),
   useActivities: () => ({ data: [], isLoading: false }),
+  useActivitiesByDeal: () => ({ data: [], isLoading: false }),
   useBoards: () => ({ data: [], isLoading: false }),
   useLifecycleStages: () => ({ data: [], isLoading: false }),
   useUpdateDeal: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),

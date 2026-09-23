@@ -8,6 +8,7 @@ export interface DealSheetProps {
   ariaLabel: string;
   children: React.ReactNode;
   className?: string;
+  focusTrapEnabled?: boolean;
 }
 
 /**
@@ -15,12 +16,13 @@ export interface DealSheetProps {
  *
  * Desktop continues to use the existing modal implementation; this is used only on mobile.
  */
-export function DealSheet({ isOpen, onClose, ariaLabel, children, className }: DealSheetProps) {
+export function DealSheet({ isOpen, onClose, ariaLabel, children, className, focusTrapEnabled }: DealSheetProps) {
   return (
     <Sheet
       isOpen={isOpen}
       onClose={onClose}
       ariaLabel={ariaLabel}
+      focusTrapEnabled={focusTrapEnabled}
       className={cn(
         // Make the outer sheet container transparent so the deal UI can control its own surface.
         'h-[100dvh] rounded-none bg-transparent dark:bg-transparent border-0 shadow-none p-0 pb-0',

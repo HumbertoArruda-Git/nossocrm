@@ -8,6 +8,8 @@ import { priorityAriaLabelPtBr } from '@/lib/utils/priority';
 interface DealCardProps {
   deal: DealView;
   isProspeccaoComercial?: boolean;
+  /** Assisted-WhatsApp follow-up due today or overdue (prospecção only). */
+  followUpAlert?: 'today' | 'overdue';
   isRotting: boolean;
   activityStatus: string;
   isDragging: boolean;
@@ -60,6 +62,7 @@ const getInitials = (name: string) => {
 const DealCardComponent: React.FC<DealCardProps> = ({
   deal,
   isProspeccaoComercial = false,
+  followUpAlert,
   isRotting,
   activityStatus,
   isDragging,
@@ -159,6 +162,7 @@ const DealCardComponent: React.FC<DealCardProps> = ({
     const priority = getPriorityLabel(deal.priority);
     if (priority) parts.push(priority);
     if (isRotting && !isClosed) parts.push('estagnado');
+    if (followUpAlert) parts.push(followUpAlert === 'overdue' ? 'follow-up vencido' : 'follow-up hoje');
 
     return parts.join(', ');
   };
@@ -227,6 +231,15 @@ const DealCardComponent: React.FC<DealCardProps> = ({
         {deal.isLost && (
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-800/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700">
             ✗ PERDIDO
+          </span>
+        )}
+        {followUpAlert && (
+          <span
+            className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${followUpAlert === 'overdue'
+              ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/50'
+              : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700/50'}`}
+          >
+            {followUpAlert === 'overdue' ? 'Follow-up vencido' : 'Follow-up hoje'}
           </span>
         )}
         {/* Regular tags */}

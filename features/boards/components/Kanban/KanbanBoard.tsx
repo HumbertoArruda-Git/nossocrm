@@ -5,6 +5,8 @@ import { isDealRotting, getActivityStatus } from '@/features/boards/hooks/useBoa
 import { MoveToStageModal } from '../Modals/MoveToStageModal';
 import { SkeletonDealCard } from '@/components/ui/Skeleton';
 import { useLifecycleStages } from '@/lib/query/hooks/useLifecycleStagesQuery';
+import { useAssistedFollowUps } from '@/lib/query/hooks/useActivitiesQuery';
+import { followUpAlertsByDeal } from '@/lib/whatsapp-assisted/sequence';
 
 /**
  * UI: Drop highlight should follow the stage color.
@@ -138,6 +140,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   isLoading = false,
 }) => {
   const { data: lifecycleStages = [] } = useLifecycleStages();
+  const { data: assistedFollowUps } = useAssistedFollowUps({ enabled: isProspeccaoComercial });
+  const followUpAlerts = useMemo(() => followUpAlertsByDeal(assistedFollowUps ?? []), [assistedFollowUps]);
   const [dragOverStage, setDragOverStage] = useState<string | null>(null);
   
   // State for move-to-stage modal (keyboard accessibility alternative to drag-and-drop)
@@ -320,6 +324,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                   <DealCard
                     deal={deal}
                     isProspeccaoComercial={isProspeccaoComercial}
+                    followUpAlert={followUpAlerts.get(deal.id)}
                     isRotting={
                       isDealRotting(deal) &&
                       !deal.isWon &&
