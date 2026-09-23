@@ -41,6 +41,7 @@ vi.mock('../hooks/useQuickScripts', () => ({
   }),
 }));
 vi.mock('@/context/AIContext', () => ({ useAI: () => ({ setContext: vi.fn(), clearContext: vi.fn() }) }));
+vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ profile: { first_name: 'Humberto' } }) }));
 vi.mock('@/context/ToastContext', () => ({ useToast: () => ({ addToast: mocks.addToast }) }));
 vi.mock('@/lib/ai/tasksClient', () => ({ generateSalesScript: vi.fn() }));
 vi.mock('@/lib/supabase/ai-proxy', () => ({ callAIProxy: vi.fn(), isConsentError: () => false, isRateLimitError: () => false }));
@@ -70,11 +71,11 @@ function whatsapp(id: string, event: string, extra: Partial<Activity> = {}, foll
   } as Activity;
 }
 
-function renderPanel(boardKey = 'prospeccao-comercial') {
+function renderPanel(boardKey = 'prospeccao-comercial', panelContact: Contact | null = contact) {
   const onAddActivity = vi.fn();
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <FocusContextPanel deal={deal} contact={contact} board={board(boardKey)} activities={[]}
+      <FocusContextPanel deal={deal} contact={panelContact ?? undefined} board={board(boardKey)} activities={[]}
         onMoveStage={vi.fn()} onMarkWon={vi.fn()} onMarkLost={vi.fn()} onAddActivity={onAddActivity}
         onUpdateActivity={vi.fn()} onClose={vi.fn()} isExpanded />
     </QueryClientProvider>
@@ -162,5 +163,28 @@ describe('cockpit Focus: WhatsApp assistido', () => {
     expect(screen.queryByText('Você enviou a mensagem?')).toBeNull();
     expect(mocks.record).not.toHaveBeenCalled();
     expect(onAddActivity).not.toHaveBeenCalled();
+  });
+
+  it('deal sem contato: aceita telefone digitado e só o envia na confirmação', async () => {
+    renderPanel('prospeccao-comercial', null);
+    const quickAction = screen.getAllByRole('button', { name: /^WhatsApp$/ })
+      .find((button) => button.textContent?.trim() === 'WhatsApp')!;
+    expect(quickAction).toBeEnabled();
+    fireEvent.click(quickAction);
+    const phone = await screen.findByRole('textbox', { name: /Telefone para o WhatsApp/ });
+    fireEvent.change(phone, { target: { value: '(21) 98888-7777' } });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Abrir no WhatsApp' }).at(-1)!);
+    expect(mocks.record).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Sim, marcar como enviado' }));
+    await waitFor(() => expect(mocks.record).toHaveBeenCalledOnce());
+    expect(mocks.record.mock.calls[0][2]).toMatchObject({ event: 'initial_sent', phone: '5521988887777' });
+  });
+
+  it('deal sem contato em outro board continua sem WhatsApp', () => {
+    renderPanel('vendas', null);
+    // The quick action (with visible text), not the next-best-action icon.
+    const quickAction = screen.getAllByRole('button', { name: /^WhatsApp$/ })
+      .find((button) => button.textContent?.trim() === 'WhatsApp');
+    expect(quickAction).toBeDisabled();
   });
 });

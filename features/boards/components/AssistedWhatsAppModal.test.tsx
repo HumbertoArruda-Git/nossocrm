@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Contact, DealView } from '@/types';
 import { AssistedWhatsAppModal } from './AssistedWhatsAppModal';
 
+const auth = vi.hoisted(() => ({ profile: { first_name: 'Humberto', last_name: null, nickname: null } as Record<string, unknown> | null }));
+vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ profile: auth.profile }) }));
+
 vi.mock('@/components/ui/Modal', () => ({
   Modal: ({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) =>
     isOpen ? <div role="dialog">{children}</div> : null,
@@ -22,12 +25,16 @@ const contact = {
   phone: '(11) 99999-0000',
 } as Contact;
 
-function renderModal(mode: 'initial_sent' | 'follow_up_sent' | 'replied' = 'initial_sent') {
+function renderModal(
+  mode: 'initial_sent' | 'follow_up_sent' | 'replied' = 'initial_sent',
+  overrides: { deal?: DealView; contact?: Contact | null } = {}
+) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const onClose = vi.fn();
   render(
     <QueryClientProvider client={client}>
-      <AssistedWhatsAppModal isOpen mode={mode} deal={deal} contact={contact}
+      <AssistedWhatsAppModal isOpen mode={mode} deal={overrides.deal ?? deal}
+        contact={overrides.contact === undefined ? contact : overrides.contact}
         followUpTaskId="00000000-0000-4000-8000-000000000151" onClose={onClose} />
     </QueryClientProvider>
   );
@@ -37,6 +44,7 @@ function renderModal(mode: 'initial_sent' | 'follow_up_sent' | 'replied' = 'init
 describe('WhatsApp assistido: confirmação manual', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    auth.profile = { first_name: 'Humberto', last_name: null, nickname: null };
     vi.stubGlobal('open', vi.fn());
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(
       JSON.stringify({ stage_id: '00000000-0000-4000-8000-000000000112', duplicate: false }),
@@ -111,5 +119,51 @@ describe('WhatsApp assistido: confirmação manual', () => {
     const body = JSON.parse((fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body);
     expect(body.event).toBe('replied');
     expect(body.message).toBe('Cliente pediu reunião');
+  });
+
+  it('deal sem contato: digitar telefone, abrir e desistir não grava nada', () => {
+    const { onClose } = renderModal('initial_sent', { contact: null });
+    expect(screen.getByText(/só será salvo se você confirmar/)).toBeInTheDocument();
+    fireEvent.change(screen.getByRole('textbox', { name: /Telefone/ }), { target: { value: '(21) 98888-7777' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir WhatsApp' }));
+    expect((window.open as ReturnType<typeof vi.fn>).mock.calls[0][0]).toMatch(/^https:\/\/wa\.me\/5521988887777\?/);
+    fireEvent.click(screen.getByRole('button', { name: 'Ainda não' }));
+    expect(fetch).not.toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('deal sem contato: a confirmação envia o telefone com que o WhatsApp foi aberto', async () => {
+    renderModal('initial_sent', { contact: null });
+    fireEvent.change(screen.getByRole('textbox', { name: /Telefone/ }), { target: { value: '(21) 98888-7777' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir WhatsApp' }));
+    const confirm = screen.getByRole('button', { name: 'Sim, marcar como enviado' });
+    fireEvent.click(confirm);
+    fireEvent.click(confirm);
+    await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+    const body = JSON.parse((fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body);
+    expect(body).toMatchObject({ event: 'initial_sent', phone: '5521988887777' });
+  });
+
+  it('resposta nunca envia telefone', async () => {
+    renderModal('replied');
+    fireEvent.click(screen.getByRole('button', { name: 'Marcar como respondeu' }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+    expect(JSON.parse((fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body).phone).toBeUndefined();
+  });
+
+  it('[seu nome] da mensagem do Prospector vira o nome do usuário logado', () => {
+    renderModal('initial_sent', {
+      deal: { ...deal, customFields: { mensagemInicial: 'Oi! Aqui é [Seu Nome], da HGA.' } } as DealView,
+    });
+    expect((screen.getByRole('textbox', { name: 'Mensagem' }) as HTMLTextAreaElement).value)
+      .toBe('Oi! Aqui é Humberto, da HGA.');
+  });
+
+  it('[seu nome] sem nome no perfil some da mensagem', () => {
+    auth.profile = { first_name: null, last_name: null, nickname: null };
+    renderModal('initial_sent', {
+      deal: { ...deal, customFields: { mensagemInicial: 'Oi!\nAbraço,\n[SEU NOME]' } } as DealView,
+    });
+    expect((screen.getByRole('textbox', { name: 'Mensagem' }) as HTMLTextAreaElement).value).toBe('Oi!\nAbraço,');
   });
 });

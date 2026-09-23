@@ -41,4 +41,25 @@ describe('compositor WhatsApp do cockpit', () => {
     expect(onClose).toHaveBeenCalledOnce();
     expect(onExecuted).not.toHaveBeenCalled();
   });
+
+  it('sem telefone no cadastro, o fluxo assistido aceita um número digitado e o devolve na confirmação', () => {
+    const onExecuted = vi.fn();
+    render(<MessageComposerModal isOpen onClose={vi.fn()} channel="WHATSAPP"
+      initialMessage="Olá" onExecuted={onExecuted} requireWhatsAppConfirmation />);
+    const phone = screen.getByRole('textbox', { name: /Telefone para o WhatsApp/ });
+    fireEvent.change(phone, { target: { value: '1199' } });
+    expect(screen.getAllByRole('button', { name: 'Abrir no WhatsApp' }).at(-1)).toBeDisabled();
+    fireEvent.change(phone, { target: { value: '(21) 98888-7777' } });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Abrir no WhatsApp' }).at(-1)!);
+    expect((window.open as ReturnType<typeof vi.fn>).mock.calls[0][0]).toContain('wa.me/5521988887777');
+    expect(phone).toBeDisabled();
+    expect(onExecuted).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Sim, marcar como enviado' }));
+    expect(onExecuted.mock.calls[0][0]).toMatchObject({ channel: 'WHATSAPP', phone: '5521988887777' });
+  });
+
+  it('fora do fluxo assistido não oferece campo de telefone', () => {
+    render(<MessageComposerModal isOpen onClose={vi.fn()} channel="WHATSAPP" initialMessage="Olá" />);
+    expect(screen.queryByRole('textbox', { name: /Telefone para o WhatsApp/ })).toBeNull();
+  });
 });

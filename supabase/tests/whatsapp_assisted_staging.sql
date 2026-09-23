@@ -1,8 +1,14 @@
 -- STAGING ONLY. All fixtures and assertions are rolled back.
--- Requires 20260923135915 and 20260923150000 (two-follow-up limit).
+-- Requires 20260923135915, 20260923150000 (two-follow-up limit) and
+-- 20260923180000 (contact created/filled on a confirmed send).
 BEGIN;
 SELECT set_config('request.jwt.claim.sub',
   (SELECT id::text FROM public.profiles WHERE organization_id IS NOT NULL LIMIT 1), true);
+
+-- (organization_id, key) is unique: park an existing prospecção board for this transaction.
+UPDATE public.boards SET key = 'prospeccao-comercial-parked-by-test'
+WHERE key = 'prospeccao-comercial'
+  AND organization_id = (SELECT organization_id FROM public.profiles WHERE id = auth.uid());
 
 INSERT INTO public.boards (id, organization_id, key, name)
 SELECT '00000000-0000-4000-8000-000000000101', organization_id,
@@ -23,6 +29,24 @@ SELECT ('00000000-0000-4000-8000-0000000001' || lpad(n::text, 2, '0'))::uuid,
   organization_id, 'Teste WhatsApp ' || n, '11999990000'
 FROM public.profiles,
   (VALUES (21), (22), (23), (24), (25), (27)) AS contacts(n)
+WHERE profiles.id = auth.uid();
+
+INSERT INTO public.contacts (id, organization_id, name)
+SELECT '00000000-0000-4000-8000-000000000129', organization_id, 'Contato sem telefone'
+FROM public.profiles WHERE id = auth.uid();
+
+INSERT INTO public.crm_companies (id, organization_id, name)
+SELECT '00000000-0000-4000-8000-000000000161', organization_id, 'Empresa Teste'
+FROM public.profiles WHERE id = auth.uid();
+
+INSERT INTO public.deals (id, organization_id, board_id, stage_id, contact_id, client_company_id, title)
+SELECT ('00000000-0000-4000-8000-0000000001' || n)::uuid, organization_id,
+  '00000000-0000-4000-8000-000000000101'::uuid, '00000000-0000-4000-8000-000000000111'::uuid,
+  contact_id::uuid, company_id::uuid, 'Teste ' || n
+FROM public.profiles,
+  (VALUES ('38', NULL, '00000000-0000-4000-8000-000000000161'),
+    ('39', '00000000-0000-4000-8000-000000000129', NULL),
+    ('40', NULL, NULL)) AS fixtures(n, contact_id, company_id)
 WHERE profiles.id = auth.uid();
 
 INSERT INTO public.deals (id, organization_id, board_id, stage_id, contact_id, title)
@@ -59,15 +83,20 @@ DECLARE
   result jsonb;
   task_id uuid;
   task2_id uuid;
+  new_contact uuid;
   expected_due date;
   added integer := 0;
   rejected boolean;
 BEGIN
   result := public.record_assisted_whatsapp(
     '00000000-0000-4000-8000-000000000131', 'initial_sent',
-    E'Olá!\nA&B?', '00000000-0000-4000-8000-000000000141');
+    E'Olá!\nA&B?', '00000000-0000-4000-8000-000000000141', NULL, '+5521911112222');
   IF result->>'stage_id' <> '00000000-0000-4000-8000-000000000114' THEN
     RAISE EXCEPTION 'Novo Lead não avançou';
+  END IF;
+  IF (SELECT phone FROM public.contacts WHERE id = '00000000-0000-4000-8000-000000000121') <> '11999990000'
+     OR EXISTS (SELECT 1 FROM public.contacts WHERE phone = '+5521911112222') THEN
+    RAISE EXCEPTION 'Telefone existente foi sobrescrito ou contato duplicado';
   END IF;
   IF (SELECT count(*) FROM public.activities
       WHERE deal_id = '00000000-0000-4000-8000-000000000131') <> 2 THEN
@@ -202,6 +231,79 @@ BEGIN
     RAISE EXCEPTION 'Resposta regrediu etapa avançada';
   END IF;
 
+  -- Deal without contact: the confirmed send creates exactly one contact, linked everywhere.
+  result := public.record_assisted_whatsapp(
+    '00000000-0000-4000-8000-000000000138', 'initial_sent',
+    'Sem contato', '00000000-0000-4000-8000-000000000160', NULL, '+5521988887777');
+  new_contact := (result->>'contact_id')::uuid;
+  IF new_contact IS NULL OR result->>'contact_created' <> 'true'
+     OR result->>'stage_id' <> '00000000-0000-4000-8000-000000000114'
+     OR (SELECT count(*) FROM public.contacts WHERE phone = '+5521988887777') <> 1
+     OR (SELECT contact_id FROM public.deals WHERE id = '00000000-0000-4000-8000-000000000138') <> new_contact
+     OR NOT EXISTS (SELECT 1 FROM public.contacts WHERE id = new_contact
+       AND name = '+5521988887777' AND source = 'whatsapp'
+       AND client_company_id = '00000000-0000-4000-8000-000000000161'
+       AND company_name = 'Empresa Teste')
+     OR (SELECT count(*) FROM public.activities WHERE deal_id = '00000000-0000-4000-8000-000000000138'
+       AND contact_id = new_contact) <> 2 THEN
+    RAISE EXCEPTION 'Contato novo não foi criado, vinculado ou usado na atividade e TASK';
+  END IF;
+  result := public.record_assisted_whatsapp(
+    '00000000-0000-4000-8000-000000000138', 'initial_sent',
+    'Sem contato', '00000000-0000-4000-8000-000000000160', NULL, '+5521988887777');
+  IF result->>'duplicate' <> 'true'
+     OR (SELECT count(*) FROM public.contacts WHERE phone = '+5521988887777') <> 1
+     OR (SELECT count(*) FROM public.activities WHERE deal_id = '00000000-0000-4000-8000-000000000138') <> 2 THEN
+    RAISE EXCEPTION 'Repetição criou segundo contato ou atividade';
+  END IF;
+  -- Follow-up reuses the persisted contact and keeps its number.
+  SELECT id INTO task_id FROM public.activities
+  WHERE deal_id = '00000000-0000-4000-8000-000000000138' AND type = 'TASK' AND completed = false;
+  result := public.record_assisted_whatsapp(
+    '00000000-0000-4000-8000-000000000138', 'follow_up_sent',
+    'Follow-up', '00000000-0000-4000-8000-000000000162', task_id, '+5521900001111');
+  IF EXISTS (SELECT 1 FROM public.contacts WHERE phone = '+5521900001111')
+     OR (SELECT phone FROM public.contacts WHERE id = new_contact) <> '+5521988887777'
+     OR EXISTS (SELECT 1 FROM public.activities WHERE deal_id = '00000000-0000-4000-8000-000000000138'
+       AND contact_id IS DISTINCT FROM new_contact) THEN
+    RAISE EXCEPTION 'Follow-up não reutilizou o contato e o telefone salvos';
+  END IF;
+
+  -- Deal whose contact has no phone: the same contact gets it, nothing is duplicated.
+  result := public.record_assisted_whatsapp(
+    '00000000-0000-4000-8000-000000000139', 'initial_sent',
+    'Contato sem telefone', '00000000-0000-4000-8000-000000000163', NULL, '+5521966665555');
+  IF result->>'contact_created' <> 'false'
+     OR (SELECT phone FROM public.contacts WHERE id = '00000000-0000-4000-8000-000000000129') <> '+5521966665555'
+     OR (SELECT count(*) FROM public.contacts WHERE phone = '+5521966665555') <> 1
+     OR (SELECT contact_id FROM public.deals WHERE id = '00000000-0000-4000-8000-000000000139')
+        <> '00000000-0000-4000-8000-000000000129' THEN
+    RAISE EXCEPTION 'Contato sem telefone não foi atualizado ou foi duplicado';
+  END IF;
+
+  -- No contact: a reply, a missing phone or a malformed one are refused without writing.
+  rejected := false;
+  BEGIN
+    PERFORM public.record_assisted_whatsapp('00000000-0000-4000-8000-000000000140', 'replied',
+      '', '00000000-0000-4000-8000-000000000164');
+  EXCEPTION WHEN OTHERS THEN rejected := true;
+  END;
+  IF NOT rejected THEN RAISE EXCEPTION 'Resposta aceita sem contato'; END IF;
+  rejected := false;
+  BEGIN
+    PERFORM public.record_assisted_whatsapp('00000000-0000-4000-8000-000000000140', 'initial_sent',
+      'Sem telefone', '00000000-0000-4000-8000-000000000165');
+  EXCEPTION WHEN OTHERS THEN rejected := true;
+  END;
+  IF NOT rejected THEN RAISE EXCEPTION 'Envio aceito sem contato e sem telefone'; END IF;
+  rejected := false;
+  BEGIN
+    PERFORM public.record_assisted_whatsapp('00000000-0000-4000-8000-000000000140', 'initial_sent',
+      'Telefone sem +', '00000000-0000-4000-8000-000000000166', NULL, '5521977776666');
+  EXCEPTION WHEN OTHERS THEN rejected := true;
+  END;
+  IF NOT rejected THEN RAISE EXCEPTION 'Telefone fora do formato aceito'; END IF;
+
   rejected := false;
   BEGIN
     PERFORM public.record_assisted_whatsapp(
@@ -233,6 +335,20 @@ BEGIN
   IF NOT rejected OR EXISTS (SELECT 1 FROM public.activities
     WHERE deal_id = '00000000-0000-4000-8000-000000000137') THEN
     RAISE EXCEPTION 'Falha de etapa não reverteu a atividade';
+  END IF;
+  -- Same failure after the contact was created: no contact, link, activity or task survives.
+  rejected := false;
+  BEGIN
+    PERFORM public.record_assisted_whatsapp(
+      '00000000-0000-4000-8000-000000000140', 'initial_sent',
+      'Não gravar contato', '00000000-0000-4000-8000-000000000167', NULL, '+5521977776666');
+  EXCEPTION WHEN OTHERS THEN rejected := true;
+  END;
+  IF NOT rejected
+     OR EXISTS (SELECT 1 FROM public.contacts WHERE phone = '+5521977776666')
+     OR (SELECT contact_id FROM public.deals WHERE id = '00000000-0000-4000-8000-000000000140') IS NOT NULL
+     OR EXISTS (SELECT 1 FROM public.activities WHERE deal_id = '00000000-0000-4000-8000-000000000140') THEN
+    RAISE EXCEPTION 'Falha no meio deixou contato, vínculo ou atividade';
   END IF;
 END $assert$;
 ROLLBACK;

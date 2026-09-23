@@ -13,6 +13,8 @@ export type MessageExecutedEvent = {
     subject?: string;
     message: string;
     requestId?: string;
+    /** WhatsApp number the conversation was opened with (digits, no "+"). */
+    phone?: string;
 };
 
 interface MessageComposerModalProps {
@@ -193,9 +195,14 @@ export function MessageComposerModal({
     const [isRewriting, setIsRewriting] = useState(false);
     const [rewriteError, setRewriteError] = useState<string | null>(null);
     const [aiBadge, setAiBadge] = useState(false);
-    const [openedMessage, setOpenedMessage] = useState<{ message: string; requestId: string } | null>(null);
+    const [openedMessage, setOpenedMessage] = useState<{ message: string; requestId: string; phone: string } | null>(null);
+    const [typedPhone, setTypedPhone] = useState('');
 
-    const phone = useMemo(() => formatPhoneForWhatsApp(contactPhone), [contactPhone]);
+    const contactWhatsApp = useMemo(() => formatPhoneForWhatsApp(contactPhone), [contactPhone]);
+    // Assisted flow only: a contact without a usable number can be reached by typing one; it is
+    // saved only if the user then confirms the send.
+    const allowPhoneEntry = channel === 'WHATSAPP' && requireWhatsAppConfirmation && !contactWhatsApp;
+    const phone = contactWhatsApp ?? (allowPhoneEntry ? formatPhoneForWhatsApp(typedPhone) : null);
     const contactValue = useMemo(() => {
         return channel === 'WHATSAPP' ? phone : (contactEmail ?? '');
     }, [channel, phone, contactEmail]);
@@ -210,6 +217,7 @@ export function MessageComposerModal({
         setIsRewriting(false);
         setAiBadge(false);
         setOpenedMessage(null);
+        setTypedPhone('');
         setSubject(typeof initialSubject === 'string' ? initialSubject : '');
         const nextMsg = typeof initialMessage === 'string' ? initialMessage : '';
         setMessage(channel === 'WHATSAPP' ? formatForWhatsApp(nextMsg) : formatForEmail(nextMsg));
@@ -244,7 +252,7 @@ export function MessageComposerModal({
             if (formatted && formatted !== message) setMessage(formatted);
             window.open(buildWhatsAppUrl(phone, formatted), '_blank', 'noopener,noreferrer');
             if (requireWhatsAppConfirmation) {
-                setOpenedMessage({ message: formatted, requestId: crypto.randomUUID() });
+                setOpenedMessage({ message: formatted, requestId: crypto.randomUUID(), phone });
             } else {
                 onExecuted?.({ channel, message: formatted });
             }
@@ -319,6 +327,21 @@ export function MessageComposerModal({
             initialFocus="#message-composer-textarea"
         >
             <div className="space-y-4">
+                {allowPhoneEntry && (
+                    <label className="block text-sm">
+                        <span className="text-slate-700 dark:text-slate-300">Telefone para o WhatsApp</span>
+                        <input
+                            value={typedPhone}
+                            onChange={(e) => setTypedPhone(e.target.value)}
+                            disabled={openedMessage !== null}
+                            placeholder="(11) 99999-9999"
+                            className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white text-sm disabled:opacity-60"
+                        />
+                        <span className="block mt-1 text-xs text-slate-500 dark:text-slate-400">
+                            Sem telefone no cadastro: ele só será salvo se você confirmar o envio.
+                        </span>
+                    </label>
+                )}
                 <div className="flex items-start gap-3">
                     <div
                         className={

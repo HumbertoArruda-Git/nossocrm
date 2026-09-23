@@ -88,6 +88,7 @@ describe('POST /api/deals/[dealId]/whatsapp-assisted', () => {
       p_message: '',
       p_request_id: REQUEST_ID,
       p_follow_up_task_id: null,
+      p_phone: null,
     });
   });
 
@@ -95,5 +96,30 @@ describe('POST /api/deals/[dealId]/whatsapp-assisted', () => {
     state.rpc.mockResolvedValue({ data: null, error: { code: 'P0001' } });
     vi.spyOn(console, 'error').mockImplementation(() => {});
     expect((await post({ event: 'initial_sent', message: 'Oi', requestId: REQUEST_ID })).status).toBe(409);
+  });
+
+  it('telefone inválido bloqueia antes de qualquer escrita', async () => {
+    const response = await post({ event: 'initial_sent', message: 'Oi', requestId: REQUEST_ID, phone: '1199' });
+    expect(response.status).toBe(400);
+    expect(state.rpc).not.toHaveBeenCalled();
+  });
+
+  it('deal sem contato exige telefone no envio', async () => {
+    state.rows.deals = { ...(state.rows.deals as object), contact_id: null };
+    expect((await post({ event: 'initial_sent', message: 'Oi', requestId: REQUEST_ID })).status).toBe(400);
+    expect(state.rpc).not.toHaveBeenCalled();
+  });
+
+  it('deal sem contato: repassa o telefone validado em E.164 e não consulta contato', async () => {
+    state.rows.deals = { ...(state.rows.deals as object), contact_id: null };
+    const response = await post({ event: 'initial_sent', message: 'Oi', requestId: REQUEST_ID, phone: '(21) 98888-7777' });
+    expect(response.status).toBe(200);
+    expect(state.rpc.mock.calls[0][1]).toMatchObject({ p_phone: '+5521988887777' });
+    expect(state.filters.some((f) => f.table === 'contacts')).toBe(false);
+  });
+
+  it('resposta ignora telefone', async () => {
+    await post({ event: 'replied', message: '', requestId: REQUEST_ID, phone: '(21) 98888-7777' });
+    expect(state.rpc.mock.calls[0][1]).toMatchObject({ p_phone: null });
   });
 });

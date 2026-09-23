@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Modal } from '@/components/ui/Modal';
 import { validatedWhatsAppPhone, whatsAppUrl } from '@/lib/whatsapp-assisted/phone';
-import { assistedMessage } from '@/lib/whatsapp-assisted/message';
+import { useAuth } from '@/context/AuthContext';
+import { assistedMessage, senderDisplayName } from '@/lib/whatsapp-assisted/message';
 import { recordAssistedWhatsApp, type AssistedWhatsAppEvent } from '@/lib/whatsapp-assisted/client';
 import type { Contact, Deal, DealView } from '@/types';
 
@@ -29,9 +30,13 @@ export function AssistedWhatsAppModal({
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const senderName = senderDisplayName(profile);
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const [openedMessage, setOpenedMessage] = useState<string | null>(null);
+  // The number wa.me was opened with: the one saved if the send is confirmed.
+  const [openedPhone, setOpenedPhone] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const requestId = useRef('');
@@ -42,15 +47,16 @@ export function AssistedWhatsAppModal({
   useEffect(() => {
     if (!isOpen) return;
     const source = mode === 'replied' ? '' :
-      assistedMessage(mode, deal.customFields, contact?.name || '', company, followUpNumber);
+      assistedMessage(mode, deal.customFields, contact?.name || '', company, followUpNumber, senderName);
     setPhone(contact?.phone || '');
     setMessage(source);
     setOpenedMessage(null);
+    setOpenedPhone(null);
     setError('');
     setBusy(false);
     inFlight.current = false;
     requestId.current = crypto.randomUUID();
-  }, [isOpen, mode, deal.id, contact?.id, contact?.phone, contact?.name, company, deal.customFields?.mensagemInicial, followUpNumber]);
+  }, [isOpen, mode, deal.id, contact?.id, contact?.phone, contact?.name, company, deal.customFields?.mensagemInicial, followUpNumber, senderName]);
 
   const validPhone = validatedWhatsAppPhone(phone);
   const isReply = mode === 'replied';
@@ -59,6 +65,7 @@ export function AssistedWhatsAppModal({
     const text = message.trim();
     window.open(whatsAppUrl(validPhone, text), '_blank', 'noopener,noreferrer');
     setOpenedMessage(text);
+    setOpenedPhone(validPhone);
   };
 
   const handleConfirm = async () => {
@@ -72,6 +79,7 @@ export function AssistedWhatsAppModal({
         message: isReply ? message.trim() : openedMessage ?? '',
         requestId: requestId.current,
         followUpTaskId: mode === 'follow_up_sent' ? followUpTaskId : undefined,
+        phone: isReply ? undefined : openedPhone ?? undefined,
       });
       onClose();
     } catch (cause) {
@@ -96,6 +104,11 @@ export function AssistedWhatsAppModal({
                 disabled={openedMessage !== null}
                 className={FIELD_CLASS} />
               {!validPhone && <span className="block mt-1 text-red-600 dark:text-red-400">Informe um telefone válido com DDD.</span>}
+              {!contact?.phone && (
+                <span className="block mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Sem telefone no cadastro: ele só será salvo se você confirmar o envio.
+                </span>
+              )}
             </label>
             <label className="block">
               <span>Mensagem</span>

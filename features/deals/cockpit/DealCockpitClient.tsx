@@ -1191,6 +1191,7 @@ export default function DealCockpitClient({ dealId }: { dealId?: string }) {
               ...assistedStep,
               message: msg,
               requestId: ev.requestId || crypto.randomUUID(),
+              phone: ev.phone,
             });
             pushToast('WhatsApp confirmado', 'success');
             setMessageLogContext(null);

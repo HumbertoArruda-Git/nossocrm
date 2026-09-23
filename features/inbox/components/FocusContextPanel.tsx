@@ -259,6 +259,7 @@ export const FocusContextPanel: React.FC<FocusContextPanelProps> = ({
                     ...step,
                     message,
                     requestId: event.requestId || crypto.randomUUID(),
+                    phone: event.phone,
                 });
             } else {
                 onAddActivity({
@@ -1485,7 +1486,8 @@ export const FocusContextPanel: React.FC<FocusContextPanelProps> = ({
                                                 message: buildSuggestedWhatsAppMessage('TASK', `Queria falar sobre ${deal.title}`),
                                             })
                                         }
-                                        disabled={!contact?.phone}
+                                        // Prospecção accepts a typed number when the contact has none.
+                                        disabled={!contact?.phone && !isProspectingBoard}
                                         className="px-3 py-1.5 hover:bg-green-500/10 text-slate-500 hover:text-green-400 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-medium rounded-md transition-colors flex items-center gap-2 group"
                                     >
                                         <MessageCircle size={14} className="group-hover:text-green-400 transition-colors" /> WhatsApp

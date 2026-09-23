@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validatedWhatsAppPhone, whatsAppUrl } from './phone';
-import { assistedMessage } from './message';
+import { assistedMessage, fillSenderName, senderDisplayName } from './message';
 
 describe('WhatsApp assistido: telefone e texto', () => {
   it('aceita número brasileiro válido, com máscara ou +55', () => {
@@ -49,8 +49,42 @@ describe('WhatsApp assistido: telefone e texto', () => {
     expect(assistedMessage('follow_up_sent', {}, '', 'Acme', 1)).toMatch(/^Oi\. Passando/);
   });
 
-  it('mensagem do Prospector é mostrada como veio, para o usuário revisar', () => {
-    expect(assistedMessage('initial_sent', { mensagemInicial: 'Oi! Aqui é [seu nome].' }, 'Ana', 'Acme'))
-      .toBe('Oi! Aqui é [seu nome].');
+  it('mensagem do Prospector mantém o texto; só o marcador [seu nome] é trocado', () => {
+    const prospector = 'Oi! Vi o [algo] de vocês.\nAqui é [seu nome], da HGA.';
+    expect(assistedMessage('initial_sent', { mensagemInicial: prospector }, 'Ana', 'Acme', 1, 'Humberto Arruda'))
+      .toBe('Oi! Vi o [algo] de vocês.\nAqui é Humberto Arruda, da HGA.');
+  });
+
+  it('contato criado pelo fluxo tem o telefone como nome: a saudação não usa o número', () => {
+    expect(assistedMessage('follow_up_sent', {}, '+5511999990000', 'Acme', 1)).toMatch(/^Oi\. Passando/);
+  });
+});
+
+describe('WhatsApp assistido: [seu nome]', () => {
+  it.each(['[seu nome]', '[Seu Nome]', '[Seu nome]', '[SEU NOME]', '[ seu  nome ]'])(
+    'troca %s pelo nome do usuário logado', (marker) => {
+      expect(fillSenderName(`Abraço,\n${marker}`, 'Humberto')).toBe('Abraço,\nHumberto');
+    });
+
+  it('sem nome no perfil, remove o marcador sem deixar linha vazia ou pontuação solta', () => {
+    expect(fillSenderName('Olá!\n\nAbraço,\n[Seu Nome]', '')).toBe('Olá!\n\nAbraço,');
+    expect(fillSenderName('Aqui é [seu nome], da HGA Systems.', '')).toBe('Aqui é da HGA Systems.');
+    expect(fillSenderName('Abraço, [SEU NOME]', '')).toBe('Abraço');
+  });
+
+  it('nunca deixa o marcador literal e não mexe no resto do texto', () => {
+    const text = 'Linha 1\n  recuo mantido  \n[seu nome] e [Seu Nome]';
+    for (const name of ['Ana', '']) {
+      const result = fillSenderName(text, name);
+      expect(result).not.toMatch(/seu\s+nome/i);
+      expect(result.startsWith('Linha 1\n  recuo mantido  \n')).toBe(true);
+    }
+  });
+
+  it('usa nome e sobrenome do perfil, depois o apelido; nunca o e-mail', () => {
+    expect(senderDisplayName({ first_name: 'Humberto', last_name: 'Arruda', nickname: 'Beto' })).toBe('Humberto Arruda');
+    expect(senderDisplayName({ first_name: ' ', nickname: 'Beto' })).toBe('Beto');
+    expect(senderDisplayName({ first_name: null, last_name: null, nickname: null })).toBe('');
+    expect(senderDisplayName(null)).toBe('');
   });
 });
