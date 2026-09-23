@@ -136,6 +136,8 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
 
   const deal = dealId ? dealsById.get(dealId) : undefined;
   const contact = deal ? (contactsById.get(deal.contactId) ?? null) : null;
+  // The deal view's name lags a contact created by the WhatsApp confirmation; the contact has it.
+  const contactDisplayName = deal?.contactName || contact?.name || '';
 
   // Determine the correct board for this deal
   const dealBoard = deal ? (boardsById.get(deal.boardId) ?? activeBoard) : activeBoard;
@@ -681,12 +683,12 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                     <User size={14} /> Contato Principal
                   </h3>
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">
-                      {(deal.contactName || '?').charAt(0)}
+                    <div className="w-8 h-8 shrink-0 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">
+                      {(contactDisplayName || '?').charAt(0)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-slate-900 dark:text-white font-medium text-sm flex items-center gap-2">
-                        {deal.contactName || 'Sem contato'}
+                      <p className="text-slate-900 dark:text-white font-medium text-sm flex flex-wrap items-center gap-2 break-all">
+                        {contactDisplayName || 'Sem contato'}
                         {contact?.stage &&
                           (() => {
                             const stage = lifecycleStageById.get(contact.stage);
@@ -709,22 +711,7 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                       <p className="text-slate-500 text-xs">{deal.contactEmail}</p>
                     </div>
                     {/* Send Message Button */}
-                    {dealBoard?.key === 'prospeccao-comercial' ? (
-                      <div className="flex flex-wrap gap-2">
-                        {whatsAppSequence.nextEvent && (
-                          <button type="button" onClick={() => setWhatsAppMode(whatsAppSequence.nextEvent)}
-                            className="flex items-center gap-1 rounded-lg bg-green-50 px-2.5 py-1.5 text-xs font-medium text-green-700">
-                            <MessageSquare size={14} /> Abrir WhatsApp
-                          </button>
-                        )}
-                        {whatsAppSequence.canMarkReplied && (
-                          <button type="button" onClick={() => setWhatsAppMode('replied')}
-                            className="rounded-lg border px-2.5 py-1.5 text-xs font-medium">
-                            Marcar como respondeu
-                          </button>
-                        )}
-                      </div>
-                    ) : contact?.phone && (
+                    {dealBoard?.key !== 'prospeccao-comercial' && contact?.phone && (
                       <button
                         type="button"
                         onClick={() => {
@@ -746,6 +733,24 @@ export const DealDetailModal: React.FC<DealDetailModalProps> = ({ dealId, isOpen
                       </button>
                     )}
                   </div>
+                  {/* Own row: beside the name the narrow column squeezed it under the buttons. */}
+                  {dealBoard?.key === 'prospeccao-comercial'
+                    && (whatsAppSequence.nextEvent || whatsAppSequence.canMarkReplied) && (
+                    <div className="mt-2 flex flex-wrap gap-2 pl-11">
+                      {whatsAppSequence.nextEvent && (
+                        <button type="button" onClick={() => setWhatsAppMode(whatsAppSequence.nextEvent)}
+                          className="flex items-center gap-1 rounded-lg bg-green-50 px-2.5 py-1.5 text-xs font-medium text-green-700">
+                          <MessageSquare size={14} /> Abrir WhatsApp
+                        </button>
+                      )}
+                      {whatsAppSequence.canMarkReplied && (
+                        <button type="button" onClick={() => setWhatsAppMode('replied')}
+                          className="rounded-lg border px-2.5 py-1.5 text-xs font-medium">
+                          Marcar como respondeu
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
                 {dealBoard?.key === 'prospeccao-comercial' && pendingWhatsAppTask && (
                   <div className="mt-2 text-xs font-semibold text-amber-700">

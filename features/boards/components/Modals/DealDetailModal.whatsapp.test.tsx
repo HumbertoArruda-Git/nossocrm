@@ -190,6 +190,17 @@ describe('DealDetailModal: sequência do WhatsApp assistido', () => {
     expect(screen.queryByRole('button', { name: 'Marcar como respondeu' })).toBeNull();
   });
 
+  it('contato criado na confirmação: mostra o contato mesmo sem nome na visão do deal', () => {
+    deal.contactName = '';
+    try {
+      render(<DealDetailModal dealId="deal-1" isOpen onClose={() => {}} />);
+      expect(screen.getByText('Ana')).toBeInTheDocument();
+      expect(screen.queryByText('Sem contato')).toBeNull();
+    } finally {
+      deal.contactName = 'Ana';
+    }
+  });
+
   it('"Marcar como respondeu" abre o modo de resposta', () => {
     fixtures.activities = [whatsapp('a1', 'initial_sent'), whatsapp('t1', 'follow_up_due', {}, 1)];
     render(<DealDetailModal dealId="deal-1" isOpen onClose={() => {}} />);
