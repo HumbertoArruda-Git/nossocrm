@@ -4,9 +4,12 @@ import { Modal } from '@/components/ui/Modal';
 import { validatedWhatsAppPhone, whatsAppUrl } from '@/lib/whatsapp-assisted/phone';
 import { assistedMessage } from '@/lib/whatsapp-assisted/message';
 import { recordAssistedWhatsApp, type AssistedWhatsAppEvent } from '@/lib/whatsapp-assisted/client';
-import type { Contact, DealView } from '@/types';
+import type { Contact, Deal, DealView } from '@/types';
 
 type Mode = AssistedWhatsAppEvent;
+/** What the modal reads from a deal; the cockpit panels only hold a plain Deal. */
+type AssistedDeal = Pick<Deal, 'id' | 'title' | 'status' | 'customFields'>
+  & Pick<DealView, 'companyName' | 'clientCompanyName'>;
 
 /** useDealsQuery fills a missing company with this label; it must never reach the message. */
 const NO_COMPANY_LABEL = 'Sem empresa';
@@ -19,8 +22,8 @@ export function AssistedWhatsAppModal({
 }: {
   isOpen: boolean;
   mode: Mode;
-  deal: DealView;
-  contact: Contact | null;
+  deal: AssistedDeal;
+  contact: Contact | null | undefined;
   followUpTaskId?: string;
   followUpNumber?: number;
   onClose: () => void;

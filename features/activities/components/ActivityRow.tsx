@@ -153,7 +153,7 @@ const ActivityRowComponent: React.FC<ActivityRowProps> = ({
                     <span className="p-1.5 bg-slate-100 dark:bg-white/5 rounded-lg">
                         {getActivityIcon(activity.type)}
                     </span>
-                    <h3 className={`font-medium text-slate-900 dark:text-white truncate ${activity.completed ? 'line-through text-slate-500' : ''}`}>
+                    <h3 className={`font-medium text-slate-900 dark:text-white truncate ${activity.completed && !(isAssistedWhatsApp && activity.type !== 'TASK') ? 'line-through text-slate-500' : ''}`}>
                         {formatTitle(activity.title)}
                     </h3>
                     {isOverdue && (
