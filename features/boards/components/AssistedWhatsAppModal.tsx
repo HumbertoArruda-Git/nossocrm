@@ -8,6 +8,12 @@ import type { Contact, DealView } from '@/types';
 
 type Mode = AssistedWhatsAppEvent;
 
+/** useDealsQuery fills a missing company with this label; it must never reach the message. */
+const NO_COMPANY_LABEL = 'Sem empresa';
+const FIELD_CLASS = 'mt-1 w-full rounded-lg border border-slate-200 bg-white p-2 text-slate-900 '
+  + 'dark:border-white/10 dark:bg-slate-900/50 dark:text-white disabled:opacity-60';
+const SECONDARY_BUTTON_CLASS = 'rounded-lg border border-slate-200 px-3 py-2 dark:border-white/10';
+
 export function AssistedWhatsAppModal({
   isOpen, mode, deal, contact, followUpTaskId, followUpNumber, onClose,
 }: {
@@ -27,7 +33,8 @@ export function AssistedWhatsAppModal({
   const [error, setError] = useState('');
   const requestId = useRef('');
   const inFlight = useRef(false);
-  const company = deal.clientCompanyName || deal.companyName || deal.title;
+  const company = [deal.clientCompanyName, deal.companyName]
+    .find((name) => name && name !== NO_COMPANY_LABEL) || deal.title;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -84,14 +91,14 @@ export function AssistedWhatsAppModal({
               <span>Telefone</span>
               <input value={phone} onChange={(event) => setPhone(event.target.value)}
                 disabled={openedMessage !== null}
-                className="mt-1 w-full rounded-lg border p-2 text-slate-900" />
-              {!validPhone && <span className="block mt-1 text-red-600">Informe um telefone válido com DDD.</span>}
+                className={FIELD_CLASS} />
+              {!validPhone && <span className="block mt-1 text-red-600 dark:text-red-400">Informe um telefone válido com DDD.</span>}
             </label>
             <label className="block">
               <span>Mensagem</span>
               <textarea value={message} onChange={(event) => setMessage(event.target.value)}
                 disabled={openedMessage !== null} rows={8}
-                className="mt-1 w-full rounded-lg border p-2 text-slate-900" />
+                className={FIELD_CLASS} />
             </label>
           </>
         )}
@@ -99,19 +106,19 @@ export function AssistedWhatsAppModal({
           <label className="block">
             <span>Observação sobre a resposta (opcional)</span>
             <textarea value={message} onChange={(event) => setMessage(event.target.value)}
-              rows={3} className="mt-1 w-full rounded-lg border p-2 text-slate-900" />
+              rows={3} className={FIELD_CLASS} />
           </label>
         )}
-        {error && <p role="alert" className="text-red-600">{error}</p>}
+        {error && <p role="alert" className="text-red-600 dark:text-red-400">{error}</p>}
         {!isReply && openedMessage === null && (
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => void navigator.clipboard.writeText(message)}
-              disabled={!message.trim()} className="rounded-lg border px-3 py-2">Copiar mensagem</button>
+              disabled={!message.trim()} className={SECONDARY_BUTTON_CLASS}>Copiar mensagem</button>
             <button type="button" onClick={handleOpen}
               disabled={!validPhone || !message.trim()} className="rounded-lg bg-green-600 px-3 py-2 text-white disabled:opacity-50">
               Abrir WhatsApp
             </button>
-            <button type="button" onClick={onClose} className="rounded-lg border px-3 py-2">Cancelar</button>
+            <button type="button" onClick={onClose} className={SECONDARY_BUTTON_CLASS}>Cancelar</button>
           </div>
         )}
         {!isReply && openedMessage !== null && (
@@ -123,7 +130,7 @@ export function AssistedWhatsAppModal({
                 Sim, marcar como enviado
               </button>
               <button type="button" onClick={onClose} disabled={busy}
-                className="rounded-lg border px-3 py-2">Ainda não</button>
+                className={SECONDARY_BUTTON_CLASS}>Ainda não</button>
             </div>
           </div>
         )}
@@ -134,7 +141,7 @@ export function AssistedWhatsAppModal({
               Marcar como respondeu
             </button>
             <button type="button" onClick={onClose} disabled={busy}
-              className="rounded-lg border px-3 py-2">Cancelar</button>
+              className={SECONDARY_BUTTON_CLASS}>Cancelar</button>
           </div>
         )}
       </div>

@@ -71,6 +71,18 @@ describe('WhatsApp assistido: confirmação manual', () => {
     expect(body.message).toBe('Olá, Ana!\nA&B?');
   });
 
+  it('nunca escreve o rótulo "Sem empresa" na mensagem; usa o título do deal', () => {
+    const client = new QueryClient();
+    render(
+      <QueryClientProvider client={client}>
+        <AssistedWhatsAppModal isOpen mode="initial_sent" contact={contact} onClose={vi.fn()}
+          deal={{ ...deal, companyName: 'Sem empresa', clientCompanyName: 'Sem empresa',
+            customFields: { mensagemInicial: 'Vi a [Empresa]' } } as DealView} />
+      </QueryClientProvider>
+    );
+    expect((screen.getByRole('textbox', { name: 'Mensagem' }) as HTMLTextAreaElement).value).toBe('Vi a Acme');
+  });
+
   it('não abre número inválido', () => {
     renderModal();
     fireEvent.change(screen.getByRole('textbox', { name: 'Telefone' }), { target: { value: '1199' } });
