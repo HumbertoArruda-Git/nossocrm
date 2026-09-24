@@ -11,16 +11,20 @@ const repoRoot = configDir.includes('/.claude/worktrees/')
 
 // Cabeçalhos de segurança aplicados a todas as respostas.
 //
-// O script-src continua com 'unsafe-inline' e 'unsafe-eval' porque o Next
-// injeta scripts inline de hidratação em toda página; trocar isso por nonce
-// exige gerar o nonce no proxy.ts e propagá-lo, o que é uma mudança à parte.
+// O script-src continua com 'unsafe-inline' porque o Next injeta scripts inline
+// de hidratação em toda página; trocar isso por nonce obriga toda página a ser
+// renderizada por requisição (a landing deixaria de ser estática), custo que não
+// compensa aqui. 'unsafe-eval' só existe em desenvolvimento, onde o React Refresh
+// precisa dele; o build de produção não usa eval.
 // O resto da política é fechado, e é dele que vem a maior parte do ganho:
 // 'frame-ancestors' impede que o site seja embutido em outro (clickjacking),
 // 'connect-src' limita para onde o navegador pode mandar dados, e 'form-action'
 // impede que um formulário injetado poste em outro domínio.
+const isDev = process.env.NODE_ENV !== 'production';
+
 const contentSecurityPolicy = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://*.supabase.co",
   "font-src 'self' data:",
