@@ -21,7 +21,7 @@
   "dependencies": {
     "@ai-sdk/google": "^3.0.55",
     "@ai-sdk/react": "^3.0.144",
-    "@faker-js/faker": "^10.4.0",
+    "@faker-js/faker": "^10.5.0",
     "@google/genai": "^1.49.0",
     "@hookform/resolvers": "^5.2.2",
     "@modelcontextprotocol/sdk": "^1.29.0",
@@ -88,8 +88,33 @@
     "happy-dom": "^20.8.9",
     "tailwindcss": "^4.2.2",
     "typescript": "^5",
-    "vite": "^7.3.1",
-    "vitest": "^4.1.2",
+    "vite": "^7.3.5",
+    "vitest": "^4.1.11",
     "vitest-axe": "^0.1.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "hono@<4.13.5": "^4.13.5",
+      "@hono/node-server@<1.19.15": "^1.19.15",
+      "fast-uri@<3.1.6": "^3.1.6",
+      "ip-address@<10.3.1": "^10.3.1",
+      "qs@<6.16.0": "^6.16.0",
+      "body-parser@>=2.0.0 <2.3.0": "^2.3.0",
+      "protobufjs@<7.6.5": "^7.6.5",
+      "@protobufjs/utf8@<1.1.1": "^1.1.1",
+      "dompurify@<3.4.13": "^3.4.13",
+      "fflate@<0.8.3": "^0.8.3",
+      "@ai-sdk/provider-utils@>=4.0.0 <4.0.33": "^4.0.33",
+      "ws@>=8.0.0 <8.21.0": "^8.21.0",
+      "postcss@<8.5.23": "^8.5.23",
+      "nanoid@<3.3.18": "^3.3.18",
+      "brace-expansion@<1.1.18": "^1.1.18",
+      "brace-expansion@>=5.0.0 <5.0.9": "^5.0.9",
+      "js-yaml@>=4.0.0 <4.3.2": "^4.3.2",
+      "@babel/core@<7.29.6": "^7.29.6",
+      "browserslist@<4.28.7": "^4.28.7",
+      "@humanfs/node@<0.16.8": "^0.16.8",
+      "baseline-browser-mapping@<2.11.0": "^2.11.0"
+    }
   }
 }
