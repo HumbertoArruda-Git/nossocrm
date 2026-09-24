@@ -56,6 +56,9 @@ export async function POST(req: Request) {
     password,
     email_confirm: true,
     user_metadata: {
+      name: email.split('@')[0],
+    },
+    app_metadata: {
       role: 'admin',
       organization_id: organization.id,
     },

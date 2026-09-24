@@ -94,6 +94,9 @@ export async function bootstrapInstance({
       password,
       email_confirm: true,
       user_metadata: {
+        name: emailNorm.split('@')[0] || 'Admin',
+      },
+      app_metadata: {
         role: 'admin',
         organization_id: organizationId,
       },
@@ -114,6 +117,9 @@ export async function bootstrapInstance({
       password,
       email_confirm: true,
       user_metadata: {
+        name: emailNorm.split('@')[0] || 'Admin',
+      },
+      app_metadata: {
         role: 'admin',
         organization_id: organizationId,
       },
