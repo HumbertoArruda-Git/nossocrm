@@ -66,6 +66,8 @@ export async function POST(req: Request) {
     email_confirm: true,
     user_metadata: {
       name: name || email.split('@')[0],
+    },
+    app_metadata: {
       organization_id: invite.organization_id,
       role: invite.role,
     },
