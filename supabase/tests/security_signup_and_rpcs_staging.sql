@@ -1,6 +1,7 @@
 -- STAGING ONLY. Everything is rolled back; the last SELECT returns a report.
--- Checks 20260923210000 (signup/profile role) and 20260923210100 (definer RPC grants).
--- Expected after both migrations: every line marked "(esperado: ...)" matches its outcome.
+-- Checks 20260923210000 (signup/profile role), 20260923210100 (definer RPC grants) and
+-- 20260924120000 (profiles guard trigger, survives an accidental table-wide grant).
+-- Expected after the migrations: every line marked "(esperado: ...)" matches its outcome.
 BEGIN;
 SELECT set_config('sec.report', '', true);
 SELECT set_config('sec.org', (SELECT id::text FROM public.organizations WHERE deleted_at IS NULL ORDER BY created_at LIMIT 1), true);
@@ -38,12 +39,40 @@ DECLARE
     -- Same value: measures the column privilege, not the foreign key.
     ['UPDATE public.profiles SET organization_id = organization_id WHERE id = auth.uid()', 'usuário muda a própria organização', 'NEGADO'],
     ['UPDATE public.profiles SET first_name = ''Teste'', phone = ''+5511999990000'' WHERE id = auth.uid()', 'usuário edita dados pessoais', 'ok'],
+    ['UPDATE public.profiles SET name = ''Outro'' WHERE id = auth.uid()', 'usuário edita coluna legada name', 'NEGADO'],
     ['SELECT public.get_contact_stage_counts()', 'logado: get_contact_stage_counts', 'ok'],
     ['SELECT public.log_audit_event(''SEC_TEST'', ''test'', NULL, ''{}''::jsonb, ''info'')', 'logado: log_audit_event', 'ok'],
     ['SELECT public.mark_deal_won(' || quote_literal(current_setting('sec.deal')) || '::uuid)', 'logado: mark_deal_won', 'NEGADO'],
     ['SELECT public.get_dashboard_stats()', 'logado: get_dashboard_stats', 'NEGADO'],
     ['SELECT public.cleanup_rate_limits(0)', 'logado: cleanup_rate_limits', 'NEGADO'],
     ['UPDATE public.deals SET updated_at = now() WHERE id = ' || quote_literal(current_setting('sec.deal')) || '::uuid', 'logado: UPDATE em deal dispara triggers sem EXECUTE', 'ok']
+  ];
+  i int;
+BEGIN
+  FOR i IN 1..array_length(tests, 1) LOOP
+    BEGIN
+      EXECUTE tests[i][1];
+      PERFORM set_config('sec.report', current_setting('sec.report') || tests[i][2] || ' -> ok (esperado: ' || tests[i][3] || ')' || E'\n', true);
+    EXCEPTION
+      WHEN insufficient_privilege THEN
+        PERFORM set_config('sec.report', current_setting('sec.report') || tests[i][2] || ' -> NEGADO (esperado: ' || tests[i][3] || ')' || E'\n', true);
+      WHEN OTHERS THEN
+        PERFORM set_config('sec.report', current_setting('sec.report') || tests[i][2] || ' -> ERRO ' || SQLSTATE || ' ' || SQLERRM || ' (esperado: ' || tests[i][3] || ')' || E'\n', true);
+    END;
+  END LOOP;
+END $$;
+RESET ROLE;
+
+-- Accidental table-wide grant (rolled back with everything else): the guard trigger must
+-- still refuse role/org changes.
+GRANT UPDATE ON public.profiles TO authenticated;
+SET LOCAL ROLE authenticated;
+DO $$
+DECLARE
+  tests text[][] := ARRAY[
+    ['UPDATE public.profiles SET role = ''admin'' WHERE id = auth.uid()', 'com GRANT acidental: usuário muda o próprio role', 'NEGADO'],
+    ['UPDATE public.profiles SET organization_id = gen_random_uuid() WHERE id = auth.uid()', 'com GRANT acidental: usuário muda a própria organização', 'NEGADO'],
+    ['UPDATE public.profiles SET nickname = ''Apelido'' WHERE id = auth.uid()', 'com GRANT acidental: usuário edita dados pessoais', 'ok']
   ];
   i int;
 BEGIN
