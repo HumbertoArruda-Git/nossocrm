@@ -40,8 +40,9 @@ export const config = {
          * - _next/static, _next/image
          * - _next/data (mesmo excluindo, o Next pode ainda invocar o Proxy para /_next/data por segurança)
          * - arquivos de metadata (manifest, sitemap, robots)
-         * - assets (imagens)
+         * - assets (imagens) e scripts de `public/` (`sw.js`, `lame.min.js`): sem isso o
+         *   navegador recebe um redirect para /login ao atualizar o service worker sem sessão
          */
-        '/((?!api|_next/static|_next/image|_next/data|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!api|_next/static|_next/image|_next/data|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js)$).*)',
     ],
 }
