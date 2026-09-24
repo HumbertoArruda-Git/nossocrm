@@ -1251,7 +1251,7 @@ export default function InstallWizardPage() {
     if (lower.includes('installer disabled')) {
       help.steps.push('O instalador foi desativado neste projeto.');
       help.steps.push('Se já está instalado, entre pelo /login.');
-      help.primaryAction = { label: 'Ir para Login', run: () => (window.location.href = '/login') };
+      help.primaryAction = { label: 'Ir para Login', run: () => router.push('/login') };
       return help;
     }
 
@@ -1888,6 +1888,8 @@ export default function InstallWizardPage() {
                   <button 
                     onClick={() => {
                       clearInstallerLocalData();
+                      // Full reload on purpose: drops the installer's in-memory state and loads the new instance.
+                      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
                       window.location.href = '/login';
                     }} 
                     className="px-10 py-5 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-bold text-xl shadow-2xl shadow-emerald-500/30 transition-all transform hover:scale-105"
