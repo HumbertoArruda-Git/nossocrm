@@ -1,0 +1,5 @@
+interface:
+  display_name: "Project Handoff"
+  short_description: "Create an explicit continuation handoff"
+policy:
+  allow_implicit_invocation: false

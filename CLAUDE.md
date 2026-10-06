@@ -175,3 +175,7 @@ Controladas por `instanceFlags` (operador) via `queryKeys.instanceFlags.byOrg(or
 ### Migrations
 
 Migrations em `supabase/migrations/` com timestamp `YYYYMMDDHHMMSS`. Sempre idempotentes (`IF NOT EXISTS`, `ON CONFLICT DO NOTHING`). Não deletar migrations históricas — tabelas legadas (`voice_calls`, `whatsapp_calls`) existem no banco sem código correspondente.
+
+### HGA Skills Framework V2
+
+For repository work, use the HGA skills documented in `docs/agents/HGA-SKILLS-REGISTRY.md`. The canonical provider-neutral skills are in `.agents/skills/`; `.claude/skills/` is their generated parity mirror. Choose one primary skill per task using the registry matrix; supporting skills own only their stated slice. Prefer the HGA project skill over a similarly named global/general skill and do not run both methodologies in parallel. Do not modify/install global skills as part of repository work. Keep autonomy, security, and HUMAN_GATE requirements intact.
