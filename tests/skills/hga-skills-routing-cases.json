@@ -1,0 +1,32 @@
+{
+  "kind": "routing-evaluation-cases",
+  "note": "These are small prompt contracts for trigger, negative-trigger, and conflict review. Static checks validate the cases and declarations; only runtime smoke tests assess actual provider activation.",
+  "positive": [
+    {"prompt":"Audit the Supabase RLS policies and auth posture before release.","primary":"project-security-baseline","secondary":[]},
+    {"prompt":"Should 'account' mean the company or the signed-in user? Update the glossary decision.","primary":"project-domain-modeling","secondary":[]},
+    {"prompt":"Redesign this module interface to hide complexity and improve testability.","primary":"project-codebase-design","secondary":[]},
+    {"prompt":"Implement this approved behavior using red-green-refactor.","primary":"project-tdd","secondary":[]},
+    {"prompt":"Review the changes since main against the issue and repo standards.","primary":"project-mp-code-review","secondary":[]},
+    {"prompt":"This endpoint intermittently returns the wrong result; diagnose the root cause first.","primary":"project-diagnosing-bugs","secondary":["project-code-search"]},
+    {"prompt":"Prepare a standalone handoff for another agent to resume this branch.","primary":"project-handoff","secondary":[]},
+    {"prompt":"Create a landing page; explore and compare visual directions before coding.","primary":"project-frontend-design","secondary":["project-design-system","project-tdd"]},
+    {"prompt":"The brand direction is approved; define the reusable color, type, spacing, and component rules.","primary":"project-design-system","secondary":[]},
+    {"prompt":"Find every call site and import of normalizeContact before a refactor.","primary":"project-code-search","secondary":[]},
+    {"prompt":"The active context is huge and conflicting; keep only what is needed and retrieve details later.","primary":"project-context-engineering","secondary":[]},
+    {"prompt":"Create a new HGA skill and test its triggers, non-triggers, overlaps, and examples.","primary":"project-skill-authoring","secondary":[]}
+  ],
+  "negative": [
+    {"prompt":"Read the existing glossary to learn what 'account' means; do not change it.","primary":"project-code-search","must_not":["project-domain-modeling"]},
+    {"prompt":"Implement the already-approved UI mockup without changing its visual direction.","primary":"project-tdd","must_not":["project-frontend-design","project-design-system","project-codebase-design"]},
+    {"prompt":"The function is broken; locate the root cause before proposing a fix.","primary":"project-diagnosing-bugs","must_not":["project-code-search","project-tdd"]},
+    {"prompt":"Summarize the current thread in place because context is noisy; do not create a handoff file.","primary":"project-context-engineering","must_not":["project-handoff"]},
+    {"prompt":"Create a project architecture plan for the new module boundary.","primary":"project-codebase-design","must_not":["project-frontend-design"]},
+    {"prompt":"Check whether this diff follows the issue and project standards.","primary":"project-mp-code-review","must_not":["project-tdd"]}
+  ],
+  "conflicts": [
+    {"prompt":"Find usages of this function and then refactor its interface.","primary":"project-code-search","secondary":["project-codebase-design","project-tdd"],"rule":"Search/impact inventory first; architecture and tests only own their distinct follow-up steps."},
+    {"prompt":"Find the cause of this bug and implement a regression fix.","primary":"project-diagnosing-bugs","secondary":["project-tdd"],"rule":"Diagnosis/reproduction first; transition to TDD after root cause and correct seam are known."},
+    {"prompt":"Make this new landing page consistent with our brand system.","primary":"project-frontend-design","secondary":["project-design-system","project-tdd"],"rule":"Direction discovery/approval first; system materialization and implementation follow."},
+    {"prompt":"Summarize a long session so another agent can continue tomorrow.","primary":"project-handoff","secondary":["project-context-engineering"],"rule":"The requested standalone transfer artifact belongs to handoff; context engineering contributes safe compression/retrieval principles only."}
+  ]
+}

@@ -41,7 +41,13 @@ dev_server.log
 # Other AI/dev tools (local configs)
 .jules/
 .specify/
-.claude/
+# Keep local Claude settings ignored, but track project-scoped HGA skills.
+!.claude/
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/project-*/
+!.claude/skills/project-*/**
 .mcp.json
 
 # Temporary files
@@ -82,8 +88,11 @@ docs/specs/
 docs/stories/
 docs/security/
 
-# Dev/debug scripts (not needed for app to run)
+# Dev/debug scripts (keep local except the tracked HGA skill parity tool)
 scripts/
+!scripts/
+scripts/*
+!scripts/hga-skills-parity.mjs
 
 # Test documentation (test code stays, docs are local)
 test/*.md

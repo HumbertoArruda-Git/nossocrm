@@ -28,3 +28,8 @@
 - Imports: use `@/` alias (e.g., `@/lib/utils`, `@/components/ui`)
 - Naming: camelCase for variables/functions, PascalCase for components/types
 - Tests: Vitest + happy-dom + React Testing Library; place `.test.ts(x)` files alongside source
+
+## HGA Skills Framework V2
+- Use the provider-neutral HGA skills in `.agents/skills/`; `.claude/skills/` is the generated Claude Code mirror. Registry and one-primary routing matrix: `docs/agents/HGA-SKILLS-REGISTRY.md`.
+- Prefer one primary HGA skill per task. Supporting skills own only their stated scope; prefer the HGA project skill over a similarly named global/general skill and do not run both methodologies in parallel.
+- Do not modify/install global skills as part of repository work. Preserve autonomy, security, and HUMAN_GATE requirements.
