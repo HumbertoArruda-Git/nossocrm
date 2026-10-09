@@ -9,6 +9,8 @@ import { SolutionShowcase } from '@/components/landing/SolutionShowcase'
 import { exo2 } from '@/lib/fonts/exo2'
 import { archivo, plexMono } from '@/lib/fonts/landing'
 import { getSolutionBySlug, solutions } from '@/lib/content/solutions'
+import { JsonLd } from '@/components/landing/JsonLd'
+import { breadcrumbJsonLd, organizationJsonLd, serviceJsonLd } from '@/lib/seo/jsonld'
 
 interface SolutionPageProps {
   params: Promise<{ slug: string }>
@@ -33,6 +35,7 @@ export async function generateMetadata({ params }: SolutionPageProps): Promise<M
     title,
     description: solution.metaDescription,
     manifest: null,
+    robots: { index: true, follow: true },
     icons: { icon: [{ url: '/icons/hga.svg', type: 'image/svg+xml' }] },
     alternates: { canonical: `/solucoes/${solution.slug}` },
     openGraph: {
@@ -62,6 +65,17 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
 
   return (
     <div className={`hga-site ${exo2.variable} ${archivo.variable} ${plexMono.variable}`}>
+      <JsonLd
+        nodes={[
+          organizationJsonLd(),
+          serviceJsonLd(solution),
+          breadcrumbJsonLd([
+            { name: 'Início', path: '/' },
+            { name: 'Soluções', path: '/#solucoes' },
+            { name: solution.title, path: `/solucoes/${solution.slug}` },
+          ]),
+        ]}
+      />
       <AnchorScroll />
       <SiteHeader />
 
@@ -129,7 +143,7 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
 
           <div className="hga-solution-cta">
             <Link className="hga-btn hga-btn-primary" href="/#contato">
-              Falar sobre isso <ArrowRight size={16} aria-hidden="true" />
+              Pedir diagnóstico gratuito <ArrowRight size={16} aria-hidden="true" />
             </Link>
           </div>
 

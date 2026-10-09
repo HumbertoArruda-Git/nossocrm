@@ -8,19 +8,25 @@ import { scrollToHash } from '@/components/landing/scrollToHash'
 const links = [
   ['Soluções', '/#solucoes'],
   ['Processo', '/#processo'],
-  ['Mercado', '/#mercado'],
+  ['Dúvidas', '/#duvidas'],
   ['Contato', '/#contato'],
 ]
 
 export function HgaMobileMenu() {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     if (!open) return
 
+    // O painel vira `inert` ao fechar; sem devolver o foco ao botão, quem usa
+    // teclado cairia no <body> e voltaria ao topo da página.
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setOpen(false)
+      if (event.key === 'Escape') {
+        setOpen(false)
+        buttonRef.current?.focus()
+      }
     }
 
     function handleClickOutside(event: MouseEvent) {
@@ -47,6 +53,7 @@ export function HgaMobileMenu() {
   return (
     <div className="hga-mobile-menu" ref={rootRef}>
       <button
+        ref={buttonRef}
         className="hga-menu"
         type="button"
         aria-label={open ? 'Fechar menu' : 'Abrir menu'}

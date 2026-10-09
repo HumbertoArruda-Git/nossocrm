@@ -26,7 +26,7 @@ const steps = [
 /** Um campo por etapa: o registro cresce no mesmo ritmo do fluxo. */
 const record = [
   { icon: LayoutGrid, field: 'Origem', value: 'Formulário do site' },
-  { icon: Building2, field: 'Empresa', value: 'Bandeirantes Log' },
+  { icon: Building2, field: 'Empresa', value: 'Empresa Exemplo' },
   { icon: Flag, field: 'Prioridade', value: 'Alta', accent: true },
   { icon: UserRound, field: 'Responsável', value: 'Equipe comercial' },
 ]
@@ -59,7 +59,7 @@ export function HeroPanel() {
   const completed = Math.min(frame, steps.length)
 
   return (
-    <div className="hga-panel" aria-label="Exemplo de fluxo automatizado: do formulário ao follow-up">
+    <div className="hga-panel">
       <div className="hga-panel-bar">
         <span className="hga-panel-dots" aria-hidden="true">
           <i />

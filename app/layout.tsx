@@ -13,6 +13,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: 'NossoCRM',
   description: 'CRM Inteligente para Gestão de Vendas',
+  // Telas do app (login, convite, instalação, CRM) não devem aparecer na busca do
+  // domínio da HGA. As páginas públicas (home, soluções, privacidade) reabrem
+  // a indexação explicitamente no próprio metadata.
+  robots: { index: false, follow: false },
 }
 
 /**

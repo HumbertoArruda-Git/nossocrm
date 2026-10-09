@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: 'Aviso de privacidade | HGA Systems',
   description: 'Quais dados o formulário de contato da HGA Systems coleta, para que são usados, por quanto tempo ficam guardados e como pedir acesso ou exclusão.',
   manifest: null,
+  robots: { index: true, follow: true },
   icons: { icon: [{ url: '/icons/hga.svg', type: 'image/svg+xml' }] },
   alternates: { canonical: '/privacidade' },
   openGraph: {
