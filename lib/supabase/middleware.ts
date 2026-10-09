@@ -90,7 +90,10 @@ export async function updateSession(request: NextRequest) {
     const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/auth')
     // /privacidade é parte do site público: o aviso de privacidade linkado no
     // formulário de contato não pode exigir login para ser lido.
-    const isPublicRoute = pathname === '/' || pathname.startsWith('/join') || pathname.startsWith('/solucoes') || pathname.startsWith('/privacidade') || isSetupRoute || isInstallRoute
+    // TEMPORÁRIO (protótipo de design, branch feat/lp-melhorias): remover junto
+    // com app/prototipo-a antes do merge.
+    const isDesignPrototype = pathname === '/prototipo-a'
+    const isPublicRoute = pathname === '/' || pathname.startsWith('/join') || pathname.startsWith('/solucoes') || pathname.startsWith('/privacidade') || isDesignPrototype || isSetupRoute || isInstallRoute
 
     if (!user && !isAuthRoute && !isPublicRoute) {
         const url = request.nextUrl.clone()

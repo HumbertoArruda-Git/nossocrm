@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Building2, CheckCircle2, Clock, Filter, Flag, LayoutGrid, Send, UserRound } from 'lucide-react'
 
 /**
@@ -43,6 +43,7 @@ const TICK_MS = 1700
 
 export function HeroPanel() {
   const [frame, setFrame] = useState(0)
+  const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // Sem movimento: mostra o ciclo já concluído — um estado final que faz
@@ -52,14 +53,26 @@ export function HeroPanel() {
       return
     }
 
-    const id = window.setInterval(() => setFrame((f) => (f + 1) % FRAMES), TICK_MS)
+    // data-motion="once" num ancestral: o ciclo roda uma vez e para no estado
+    // concluído, em vez de repetir para sempre.
+    const once = rootRef.current?.closest('[data-motion="once"]') != null
+
+    const id = window.setInterval(() => {
+      setFrame((f) => {
+        if (once && f >= steps.length) {
+          window.clearInterval(id)
+          return f
+        }
+        return (f + 1) % FRAMES
+      })
+    }, TICK_MS)
     return () => window.clearInterval(id)
   }, [])
 
   const completed = Math.min(frame, steps.length)
 
   return (
-    <div className="hga-panel">
+    <div className="hga-panel" ref={rootRef}>
       <div className="hga-panel-bar">
         <span className="hga-panel-dots" aria-hidden="true">
           <i />

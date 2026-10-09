@@ -1,0 +1,138 @@
+/* ==========================================================================
+   PROTÓTIPO — Direção A: "Mesma luz, menos enfeite"
+   Temporário (branch feat/lp-melhorias). Se aprovado, as regras entram em
+   landing.css sem o escopo .hga-dir-a e esta rota é removida.
+
+   O que muda em relação à página atual:
+   · hero alinhado à esquerda e H1 bem maior: a hierarquia passa a vir da
+     tipografia, não do centro da tela;
+   · fonte mono só onde há dado (números, campos, fontes citadas). Rótulos de
+     seção, categorias e tags voltam para a fonte de texto;
+   · sem bolinhas de semáforo, sem placa de ícone com degradê, sem glow;
+   · movimento com função: o painel do hero roda o ciclo uma vez e para;
+     as miniaturas dos cards só animam no hover/foco do próprio card.
+   ========================================================================== */
+
+/* ---------- tipografia e rótulos ---------- */
+.hga-dir-a .hga-eyebrow {
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--blue-lit);
+  margin-bottom: 18px;
+}
+.hga-dir-a .hga-eyebrow::before { width: 16px; }
+
+.hga-dir-a .hga-hero h1 {
+  font-size: clamp(40px, 6.2vw, 80px);
+  line-height: 1;
+  letter-spacing: -.045em;
+  max-width: 13ch;
+  margin: 0;
+}
+.hga-dir-a .hga-section h2,
+.hga-dir-a .hga-contact h2 {
+  font-size: clamp(28px, 3.4vw, 46px);
+  letter-spacing: -.035em;
+}
+
+/* ---------- hero à esquerda ----------
+   O H1 maior deixa a dobra mais alta; o horizonte desce para não cortar os
+   botões (topo do arco em ~86% da altura do hero, antes ~68%). */
+.hga-dir-a .hga-hero { padding-bottom: clamp(150px, 20vh, 230px); }
+.hga-dir-a .hga-hero-beam,
+.hga-dir-a .hga-hero-arc { height: 54%; bottom: -40%; }
+.hga-dir-a .hga-hero-inner { text-align: left; }
+.hga-dir-a .hga-hero .hga-eyebrow { justify-content: flex-start; }
+.hga-dir-a .hga-hero .hga-eyebrow::after { display: none; }
+.hga-dir-a .hga-hero .hga-lead { margin-inline: 0; max-width: 52ch; font-size: clamp(16px, 1.4vw, 19px); }
+.hga-dir-a .hga-hero .hga-actions { justify-content: flex-start; }
+
+/* ---------- sem glow ---------- */
+.hga-dir-a .hga-btn-primary,
+.hga-dir-a .hga-btn-primary:hover,
+.hga-dir-a .hga-submit,
+.hga-dir-a .hga-submit.is-ready:not(:disabled):hover { box-shadow: none; }
+.hga-dir-a .hga-panel-progress { box-shadow: none; }
+.hga-dir-a .hga-compare-after {
+  background: var(--ink-lift);
+  box-shadow: none;
+  border-color: rgba(var(--blue-rgb), .35);
+}
+
+/* ---------- painel do hero: sem cromo de "janela" ---------- */
+.hga-dir-a .hga-panel-dots { display: none; }
+.hga-dir-a .hga-panel { background: var(--ink-lift); box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
+.hga-dir-a .hga-panel-title {
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--paper);
+}
+
+/* ---------- faixa de capacidades: ícone solto, sem placa ---------- */
+.hga-dir-a .hga-band-icon {
+  width: auto;
+  height: auto;
+  justify-content: start;
+  margin-bottom: 14px;
+  border: 0;
+  background: none;
+}
+.hga-dir-a .hga-band-grid li:hover .hga-band-icon { color: var(--paper); }
+
+/* ---------- cards e etiquetas: rótulo em fonte de texto ---------- */
+.hga-dir-a .hga-visual { background: none; }
+.hga-dir-a .hga-card-cat,
+.hga-dir-a .hga-compare-tag {
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.hga-dir-a .hga-card-cat { color: var(--blue-lit); }
+
+/* ---------- processo: número grande como âncora, sem caixa de ícone ---------- */
+.hga-dir-a .hga-step-node {
+  width: 14px;
+  height: 14px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  border-color: rgba(var(--blue-rgb), .6);
+  color: transparent;
+}
+.hga-dir-a .hga-step-node svg { display: none; }
+.hga-dir-a .hga-steps::before,
+.hga-dir-a .hga-steps::after { top: 7px; }
+.hga-dir-a .hga-step-n {
+  font-size: 13px;
+  letter-spacing: .04em;
+  color: var(--blue-lit);
+}
+
+/* ---------- movimento: miniaturas paradas, animam só no hover/foco ---------- */
+.hga-dir-a .hv-flow, .hga-dir-a .hv-swap-a, .hga-dir-a .hv-swap-b, .hga-dir-a .hv-advance,
+.hga-dir-a .hv-pop, .hga-dir-a .hv-type, .hga-dir-a .hv-throb, .hga-dir-a .hv-bar,
+.hga-dir-a .hv-spark, .hga-dir-a .hv-meter, .hga-dir-a .hv-select {
+  animation-play-state: paused;
+  /* -3.4s ≈ 60% do compasso de 5.6s: parado no estado "depois" (rascunho
+     escrito, série desenhada, card já avançado), nunca num quadro vazio */
+  animation-delay: -3.4s;
+}
+@media (hover: hover) and (pointer: fine) {
+  .hga-dir-a .hga-card:hover :is(.hv-flow, .hv-swap-a, .hv-swap-b, .hv-advance, .hv-pop, .hv-type, .hv-throb, .hv-bar, .hv-spark, .hv-meter, .hv-select),
+  .hga-dir-a .hga-card:focus-visible :is(.hv-flow, .hv-swap-a, .hv-swap-b, .hv-advance, .hv-pop, .hv-type, .hv-throb, .hv-bar, .hv-spark, .hv-meter, .hv-select) {
+    animation-play-state: running;
+  }
+}
+/* a luz do hero deixa de "respirar"; continua recuando com a rolagem */
+.hga-dir-a .hga-hero-beam { animation: none; }
+.hga-dir-a .hga-panel-step[data-state="running"] .hga-panel-step-state::after { animation: none; opacity: .8; }
+
+@media (max-width: 800px) {
+  .hga-dir-a .hga-hero h1 { font-size: clamp(36px, 10vw, 48px); }
+}
