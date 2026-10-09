@@ -1,14 +1,23 @@
 'use client'
 
-import { FormEvent, useRef, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import type { LandingSubject } from '@/lib/public-landing/config'
 
-const subjectOptions = [
+/** Um assunto por página de solução, na mesma ordem dos cards da home. */
+const subjectOptions: ReadonlyArray<{ value: LandingSubject; label: string }> = [
   { value: 'crm', label: 'CRM e gestão comercial' },
   { value: 'automacao', label: 'Automação de processos' },
-  { value: 'diagnostico', label: 'Diagnóstico da operação' },
+  { value: 'ia', label: 'IA aplicada' },
+  { value: 'integracao', label: 'Integração de sistemas' },
+  { value: 'dashboards', label: 'Dashboards e BI' },
+  { value: 'sob-medida', label: 'Sistema sob medida' },
+  { value: 'diagnostico', label: 'Ainda não sei: quero um diagnóstico' },
   { value: 'outro', label: 'Outro assunto' },
-] as const
+]
+
+/** Ordem em que os campos aparecem: o foco vai para o primeiro inválido. */
+const fieldOrder: FieldName[] = ['nome', 'email', 'assunto', 'mensagem']
 
 type FormState = 'idle' | 'submitting' | 'accepted' | 'success' | 'error'
 type FieldName = 'nome' | 'email' | 'assunto' | 'mensagem'
@@ -79,7 +88,23 @@ export function ContactForm() {
   const [message, setMessage] = useState('')
   const [errors, setErrors] = useState<Errors>(() => validateValues({ nome: '', email: '', assunto: '', mensagem: '' }))
   const [touched, setTouched] = useState<FieldName[]>([])
+  // "Falta preencher" só aparece depois de uma tentativa de envio: antes
+  // disso é bronca antecipada, e a cada tecla o aria-live repetiria a lista.
+  const [attempted, setAttempted] = useState(false)
   const idempotencyKey = useRef<string | null>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+
+  // Quem chega de uma página de solução vem com ?assunto=<slug>: o assunto
+  // já fica marcado. Valor desconhecido é ignorado.
+  useEffect(() => {
+    const form = formRef.current
+    const subject = new URLSearchParams(window.location.search).get('assunto')
+    if (!form || !subject || !subjectOptions.some((option) => option.value === subject)) return
+    const radio = form.querySelector<HTMLInputElement>(`input[name="assunto"][value="${subject}"]`)
+    if (!radio) return
+    radio.checked = true
+    setErrors(validateValues(readValues(form)))
+  }, [])
 
   const isValid = Object.keys(errors).length === 0
   const missing = (Object.keys(requiredLabels) as FieldName[]).filter((field) => errors[field])
@@ -98,6 +123,20 @@ export function ContactForm() {
     event.preventDefault()
     if (state === 'submitting') return
     const form = event.currentTarget
+
+    // O botão nunca fica desabilitado (sairia da ordem do Tab). Quem barra o
+    // envio incompleto é esta checagem: marca todos os campos, mostra o que
+    // falta e leva o foco ao primeiro problema.
+    const currentErrors = validateValues(readValues(form))
+    setErrors(currentErrors)
+    const firstInvalid = fieldOrder.find((field) => currentErrors[field])
+    if (firstInvalid) {
+      setAttempted(true)
+      setTouched(fieldOrder)
+      form.querySelector<HTMLElement>(`[name="${firstInvalid}"]`)?.focus()
+      return
+    }
+
     const data = new FormData(form)
     idempotencyKey.current ??= newIdempotencyKey()
     setState('submitting')
@@ -129,6 +168,7 @@ export function ContactForm() {
         )
         form.reset()
         setTouched([])
+        setAttempted(false)
         refresh(form)
         // A chave identifica ESTA submissão, que o servidor já tem. Uma próxima
         // mensagem é outra submissão e precisa de chave nova, senão o servidor
@@ -152,6 +192,7 @@ export function ContactForm() {
 
   return (
     <form
+      ref={formRef}
       className="hga-form"
       onSubmit={handleSubmit}
       onInput={(event) => refresh(event.currentTarget)}
@@ -185,7 +226,7 @@ export function ContactForm() {
           <input type="tel" name="whatsapp" autoComplete="tel" placeholder="(00) 00000-0000" maxLength={40} />
         </label>
       </div>
-      <fieldset className="hga-form-field" aria-describedby={showError('assunto') ? 'erro-assunto' : undefined}>
+      <fieldset className="hga-form-field" role="radiogroup" aria-required="true" aria-describedby={showError('assunto') ? 'erro-assunto' : undefined}>
         <legend>Assunto <span className="hga-req" aria-hidden="true">*</span></legend>
         <div className="hga-chips">
           {subjectOptions.map((option) => (
@@ -205,12 +246,11 @@ export function ContactForm() {
         {showError('mensagem') && <span className="hga-field-error" id="erro-mensagem">{errors.mensagem}</span>}
       </label>
       <label className="hga-honeypot" aria-hidden="true">Site<input name="website" tabIndex={-1} autoComplete="off" maxLength={200} /></label>
-      <button className={`hga-submit${isValid ? ' is-ready' : ''}`} type="submit" disabled={!isValid || state === 'submitting'}>
+      <button className={`hga-submit${isValid ? ' is-ready' : ''}`} type="submit" disabled={state === 'submitting'}>
         {state === 'submitting' ? 'Enviando…' : 'Falar sobre o meu caso'}
       </button>
-      {/* Um botão desativado sem explicação é um beco: a pessoa não consegue nem
-          clicar para descobrir o que falta. Esta linha diz o que falta. */}
-      {!isValid && (
+      {/* Depois de uma tentativa, esta linha diz exatamente o que falta. */}
+      {attempted && !isValid && (
         <p className="hga-form-hint" aria-live="polite">
           Falta preencher: {missing.map((field) => requiredLabels[field]).join(', ')}.
         </p>

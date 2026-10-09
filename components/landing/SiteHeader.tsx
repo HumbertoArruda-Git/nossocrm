@@ -13,7 +13,7 @@ export function SiteHeader() {
         <nav className="hga-nav" aria-label="Navegação principal">
           <Link href="/#solucoes">Soluções</Link>
           <Link href="/#processo">Processo</Link>
-          <Link href="/#mercado">Mercado</Link>
+          <Link href="/#duvidas">Dúvidas</Link>
           <Link href="/#contato">Contato</Link>
         </nav>
         <Link className="hga-header-cta" href="/#contato">Falar com a gente</Link>

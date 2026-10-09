@@ -9,8 +9,8 @@ import { Building2, CheckCircle2, Clock, Filter, Flag, LayoutGrid, Send, UserRou
  * O ciclo é a promessa da HGA encenada em quatro tempos — o lead chega pelo
  * site, vira registro no CRM, passa pela triagem e sai com follow-up marcado.
  * À esquerda as etapas avançam; à direita o registro se preenche campo a
- * campo, no compasso de cada etapa concluída. Quando o ciclo fecha, ele
- * recomeça: é uma rotina, e rotina não tem fim.
+ * campo, no compasso de cada etapa concluída. O ciclo roda uma vez e para no
+ * estado concluído: repetir para sempre viraria ruído de fundo.
  *
  * A animação é uma máquina de estados simples (um contador de quadros) em vez
  * de keyframes CSS espalhados — assim as duas colunas nunca saem de sincronia.
@@ -26,7 +26,7 @@ const steps = [
 /** Um campo por etapa: o registro cresce no mesmo ritmo do fluxo. */
 const record = [
   { icon: LayoutGrid, field: 'Origem', value: 'Formulário do site' },
-  { icon: Building2, field: 'Empresa', value: 'Bandeirantes Log' },
+  { icon: Building2, field: 'Empresa', value: 'Empresa Exemplo' },
   { icon: Flag, field: 'Prioridade', value: 'Alta', accent: true },
   { icon: UserRound, field: 'Responsável', value: 'Equipe comercial' },
 ]
@@ -37,8 +37,6 @@ const stateLabel = {
   queued: 'na fila',
 } as const
 
-/** 4 quadros de etapa + 2 de respiro antes de reiniciar. */
-const FRAMES = steps.length + 2
 const TICK_MS = 1700
 
 export function HeroPanel() {
@@ -52,20 +50,20 @@ export function HeroPanel() {
       return
     }
 
-    const id = window.setInterval(() => setFrame((f) => (f + 1) % FRAMES), TICK_MS)
+    let current = 0
+    const id = window.setInterval(() => {
+      current += 1
+      setFrame(current)
+      if (current >= steps.length) window.clearInterval(id)
+    }, TICK_MS)
     return () => window.clearInterval(id)
   }, [])
 
   const completed = Math.min(frame, steps.length)
 
   return (
-    <div className="hga-panel" aria-label="Exemplo de fluxo automatizado: do formulário ao follow-up">
+    <div className="hga-panel">
       <div className="hga-panel-bar">
-        <span className="hga-panel-dots" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </span>
         <span className="hga-panel-title">Fluxo · Novo lead</span>
         <span className="hga-panel-status">
           <span className="hga-panel-status-dot" aria-hidden="true" />

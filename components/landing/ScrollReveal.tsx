@@ -8,6 +8,8 @@ interface ScrollRevealProps {
   className?: string
   delay?: number
   direction?: 'up' | 'left' | 'right'
+  /** Elemento renderizado; use "li" quando o reveal é filho direto de uma lista. */
+  as?: 'div' | 'li'
 }
 
 // useLayoutEffect runs before paint on the client, but warns during SSR.
@@ -21,8 +23,8 @@ const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffec
  * The hidden state is only ever applied by the client, before paint, and only for
  * elements that are still below the fold.
  */
-export function ScrollReveal({ children, className, delay = 0, direction = 'up' }: ScrollRevealProps) {
-  const ref = useRef<HTMLDivElement>(null)
+export function ScrollReveal({ children, className, delay = 0, direction = 'up', as: Tag = 'div' }: ScrollRevealProps) {
+  const ref = useRef<HTMLElement>(null)
   const [state, setState] = useState<'static' | 'armed' | 'in'>('static')
 
   useIsomorphicLayoutEffect(() => {
@@ -58,14 +60,14 @@ export function ScrollReveal({ children, className, delay = 0, direction = 'up' 
   }, [state])
 
   return (
-    <div
-      ref={ref}
+    <Tag
+      ref={ref as React.Ref<HTMLDivElement & HTMLLIElement>}
       className={className}
       data-reveal={state === 'static' ? undefined : state}
       data-reveal-dir={direction}
       style={state !== 'static' && delay ? { transitionDelay: `${delay}s` } : undefined}
     >
       {children}
-    </div>
+    </Tag>
   )
 }

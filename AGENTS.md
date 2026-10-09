@@ -8,7 +8,7 @@
 - **Tests**: `npm test` (watch) | `npm run test:run` (single run) | `npx vitest path/to/file.test.ts` (single file)
 
 ## Architecture
-- **Next.js 16 (App Router)**: routes in `app/`, protected routes under `app/(protected)/`
+- **Next.js 16 (App Router)**: routes in `app/`, protected routes under `app/(crm)/(protected)/`; public HGA site under `app/(site)/`
 - **Supabase**: Auth + Postgres + RLS. Clients in `lib/supabase/` (client/server/service-role)
 - **Proxy auth**: `proxy.ts` + `lib/supabase/middleware.ts` (not middleware.ts); excludes `/api/*`
 - **State**: TanStack Query with facades in `context/`, queries in `lib/query/`

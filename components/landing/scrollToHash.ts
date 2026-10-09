@@ -40,6 +40,14 @@ export function scrollToHash(event: MouseEvent<HTMLAnchorElement>, href: string)
   // o painel recebe `inert` e o foco sai do link clicado. Uma rolagem suave
   // iniciada antes disso é cancelada no meio do caminho pela mudança de foco.
   // Esperar o quadro seguinte garante que o DOM já assentou.
-  requestAnimationFrame(() => target.scrollIntoView())
+  //
+  // O foco vai junto com a rolagem: sem isso o próximo Tab de quem usa teclado
+  // voltaria ao botão clicado lá em cima. Foca antes de rolar (e sem rolar),
+  // porque uma mudança de foco no meio da rolagem suave a interromperia.
+  requestAnimationFrame(() => {
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1')
+    target.focus({ preventScroll: true })
+    target.scrollIntoView()
+  })
   return true
 }

@@ -31,8 +31,11 @@ Next.js 16 (App Router) · React 19 · TypeScript · Supabase (PostgreSQL + Auth
 
 ```
 app/               # Next.js App Router
-  (app)/           # Rotas autenticadas (layout principal)
-  (protected)/     # Rotas protegidas por auth
+  (site)/          # Site público da HGA (home, /solucoes, /privacidade): layout só com landing.css
+  (crm)/           # CRM: layout com globals.css (Tailwind), PWA e ícone NossoCRM
+    (app)/         # Rotas autenticadas (layout principal)
+    (protected)/   # Rotas protegidas por auth
+    login/ join/ install/ auth/
   api/             # API Routes (ai/, messaging/, contacts/, settings/, etc.)
 features/          # Módulos por domínio de negócio
   activities/ boards/ contacts/ dashboard/ deals/ inbox/

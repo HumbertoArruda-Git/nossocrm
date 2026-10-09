@@ -6,7 +6,7 @@
  * Página de teste para validar todos os modos de AI.
  * Acesse em: /test/ai-modes
  *
- * @module app/(app)/test/ai-modes/page
+ * @module app/(crm)/(app)/test/ai-modes/page
  */
 
 import { useState, useEffect } from 'react';
