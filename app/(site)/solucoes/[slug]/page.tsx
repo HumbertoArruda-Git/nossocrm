@@ -62,6 +62,8 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
   if (!solution) notFound()
 
   const others = solutions.filter((item) => item.slug !== solution.slug)
+  // o formulário da home lê ?assunto= e já marca o assunto desta página
+  const contactHref = `/?assunto=${solution.contactSubject}#contato`
 
   return (
     <div className={`hga-site ${exo2.variable} ${archivo.variable} ${plexMono.variable}`}>
@@ -139,7 +141,7 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
                     <p>{solution.scenario.after}</p>
                   </div>
                 </div>
-                <Link className="hga-solution-inline-cta" href="/#contato">
+                <Link className="hga-solution-inline-cta" href={contactHref}>
                   Tem uma rotina parecida? Peça o diagnóstico gratuito
                   <ArrowRight size={15} aria-hidden="true" />
                 </Link>
@@ -222,7 +224,7 @@ export default async function SolutionPage({ params }: SolutionPageProps) {
           </div>
 
           <div className="hga-solution-cta">
-            <Link className="hga-btn hga-btn-primary" href="/#contato">
+            <Link className="hga-btn hga-btn-primary" href={contactHref}>
               Pedir diagnóstico gratuito <ArrowRight size={16} aria-hidden="true" />
             </Link>
             <a className="hga-btn hga-btn-ghost" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">

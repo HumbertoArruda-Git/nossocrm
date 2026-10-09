@@ -1,3 +1,5 @@
+import type { LandingSubject } from '@/lib/public-landing/config'
+
 export type SolutionVisual =
   | 'automacao'
   | 'crm'
@@ -30,6 +32,8 @@ export interface Solution {
   /** <title> da página, 50–60 caracteres, com a intenção de busca. */
   seoTitle: string
   visual: SolutionVisual
+  /** Assunto pré-selecionado no formulário quando o visitante vem desta página. */
+  contactSubject: LandingSubject
   description: string
   metaDescription: string
   /** Parágrafos. */
@@ -53,6 +57,7 @@ export const solutions: Solution[] = [
     shortTitle: 'Automação',
     seoTitle: 'Automação de Processos Empresariais sob Medida | HGA',
     visual: 'automacao',
+    contactSubject: 'automacao',
     description:
       'Rotinas que hoje dependem de alguém lembrar de executar passam a rodar sozinhas, com registro de cada passo.',
     metaDescription:
@@ -123,6 +128,7 @@ export const solutions: Solution[] = [
     shortTitle: 'CRM',
     seoTitle: 'CRM sob Medida e Gestão Comercial para Empresas | HGA',
     visual: 'crm',
+    contactSubject: 'crm',
     description:
       'Um lugar único para acompanhar oportunidades, com histórico por contato e o próximo passo sempre visível.',
     metaDescription:
@@ -194,6 +200,7 @@ export const solutions: Solution[] = [
     shortTitle: 'IA aplicada',
     seoTitle: 'Inteligência Artificial Aplicada a Processos | HGA',
     visual: 'ia',
+    contactSubject: 'ia',
     description:
       'IA em pontos específicos da operação (triagem, primeira resposta, leitura de documento), com a decisão final no time.',
     metaDescription:
@@ -265,6 +272,7 @@ export const solutions: Solution[] = [
     shortTitle: 'Integrações',
     seoTitle: 'Integração de Sistemas: CRM, ERP e WhatsApp via API | HGA',
     visual: 'integracao',
+    contactSubject: 'integracao',
     description:
       'As ferramentas que a empresa já usa passam a trocar informação entre si, sem ninguém copiando dado no meio.',
     metaDescription:
@@ -337,6 +345,7 @@ export const solutions: Solution[] = [
     shortTitle: 'Dashboards',
     seoTitle: 'Dashboards e BI para Empresas: Indicadores Atualizados | HGA',
     visual: 'dashboards',
+    contactSubject: 'dashboards',
     description:
       'Os dados que já existem na operação reunidos em indicadores que respondem perguntas de decisão.',
     metaDescription:
@@ -408,6 +417,7 @@ export const solutions: Solution[] = [
     shortTitle: 'Sob medida',
     seoTitle: 'Desenvolvimento de Software e Sistemas sob Medida | HGA',
     visual: 'sistemas',
+    contactSubject: 'sob-medida',
     description:
       'Quando o processo não cabe em ferramenta de prateleira, construímos o sistema em volta de como a operação funciona.',
     metaDescription:

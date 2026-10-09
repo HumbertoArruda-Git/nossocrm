@@ -1211,7 +1211,7 @@ body:has(.hga-site) { margin: 0; background: #04060C; overflow-x: clip; }
   font-family: var(--font-hga-sans), system-ui, sans-serif;
   font-size: 15px;
   font-weight: 500;
-  cursor: not-allowed;
+  cursor: pointer;
   transition: background-color var(--fast) ease, border-color var(--fast) ease,
     color var(--fast) ease, box-shadow var(--base) ease;
 }

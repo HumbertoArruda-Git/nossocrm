@@ -171,7 +171,9 @@ describe('US-LP-001 — Formulário de contato da landing', () => {
 
     await screen.findByText('Recebemos sua mensagem e estamos processando o contato.')
     expect((screen.getByLabelText(nomeField) as HTMLInputElement).value).toBe('')
-    expect(submitButton()).toHaveProperty('disabled', true)
+    // O formulário limpo não pode anunciar "falta preencher" junto com a
+    // confirmação: a pessoa leria que o envio deu errado.
+    expect(screen.queryByText(/Falta preencher:/)).toBeNull()
 
     await fillForm(user)
     await user.click(submitButton())
@@ -234,20 +236,37 @@ describe('US-LP-001 — Formulário de contato da landing', () => {
     expect((screen.getByLabelText(nomeField) as HTMLInputElement).value).toBe('Marina')
   })
 
-  it('só habilita o envio com o formulário válido', async () => {
-    // Enquanto obrigatório estiver faltando, o botão fica travado — é o que
-    // impede uma submissão pela metade chegar ao servidor e ser rejeitada.
+  it('mantém o botão de envio alcançável e não envia formulário incompleto', async () => {
+    // Botão desabilitado sai da ordem do Tab: quem usa teclado ou leitor de
+    // tela nem encontra a ação. O botão fica sempre ativo; quem barra a
+    // submissão pela metade é a validação no clique.
     const user = userEvent.setup()
     fetchMock.mockResolvedValue(jsonResponse(201))
 
     render(<ContactForm />)
-    expect(submitButton()).toHaveProperty('disabled', true)
+    expect(submitButton()).toHaveProperty('disabled', false)
 
     await user.type(screen.getByLabelText(nomeField), 'Marina')
-    expect(submitButton()).toHaveProperty('disabled', true)
+    await user.click(submitButton())
+    expect(fetchMock).not.toHaveBeenCalled()
 
     await fillForm(user)
-    expect(submitButton()).toHaveProperty('disabled', false)
+    await user.click(submitButton())
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+  })
+
+  it('no envio incompleto aponta cada campo e leva o foco ao primeiro', async () => {
+    const user = userEvent.setup()
+    render(<ContactForm />)
+
+    await typeInto(user, emailField, 'marina@bandeirantes.com.br')
+    await user.click(submitButton())
+
+    expect(screen.getByText('Informe seu nome.')).toBeTruthy()
+    expect(screen.getByText('Escolha um assunto.')).toBeTruthy()
+    expect(screen.getByText('Conte o que está acontecendo hoje.')).toBeTruthy()
+    expect(screen.getByText(/Falta preencher: Nome, Assunto, O que está acontecendo hoje/)).toBeTruthy()
+    expect(document.activeElement).toBe(screen.getByLabelText(nomeField))
   })
 
   it('aplica os mesmos mínimos do servidor, em vez de liberar um 422', async () => {
@@ -261,12 +280,14 @@ describe('US-LP-001 — Formulário de contato da landing', () => {
     await typeInto(user, emailField, 'marina@bandeirantes.com.br')
     await user.click(screen.getByLabelText('Automação de processos'))
     await typeInto(user, mensagemField, 'Oi')
-    expect(submitButton()).toHaveProperty('disabled', true)
+    await user.click(submitButton())
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(screen.getByText('Escreva o nome com pelo menos 2 caracteres.')).toBeTruthy()
 
     await typeInto(user, nomeField, 'Marina')
     await typeInto(user, mensagemField, 'Perdemos pedidos no WhatsApp.')
-    expect(submitButton()).toHaveProperty('disabled', false)
-    expect(fetchMock).not.toHaveBeenCalled()
+    await user.click(submitButton())
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
   })
 
   it('diz qual campo está errado, e não só que algo está', async () => {
@@ -275,12 +296,55 @@ describe('US-LP-001 — Formulário de contato da landing', () => {
     const user = userEvent.setup()
     render(<ContactForm />)
 
-    expect(screen.getByText(/Falta preencher:/)).toBeTruthy()
+    // Antes de qualquer tentativa de envio não há bronca na tela.
+    expect(screen.queryByText(/Falta preencher:/)).toBeNull()
 
     await typeInto(user, emailField, 'marina@')
     await user.tab()
 
     await screen.findByText('Confira o e-mail: ele parece incompleto.')
     expect((screen.getByLabelText(emailField) as HTMLInputElement).getAttribute('aria-invalid')).toBe('true')
+  })
+
+  it('oferece um assunto para cada solução, mais diagnóstico e outro', () => {
+    render(<ContactForm />)
+    for (const label of [
+      'CRM e gestão comercial',
+      'Automação de processos',
+      'IA aplicada',
+      'Integração de sistemas',
+      'Dashboards e BI',
+      'Sistema sob medida',
+      'Ainda não sei: quero um diagnóstico',
+      'Outro assunto',
+    ]) {
+      expect(screen.getByLabelText(label)).toBeTruthy()
+    }
+  })
+
+  it('pré-seleciona o assunto vindo da página de solução', async () => {
+    // O CTA da página de Integração leva para /?assunto=integracao#contato.
+    // Sem isso, quem veio de lá chega no formulário e tem que achar de novo
+    // o próprio assunto.
+    window.history.replaceState(null, '', '/?assunto=integracao')
+    try {
+      render(<ContactForm />)
+      await waitFor(() =>
+        expect((screen.getByLabelText('Integração de sistemas') as HTMLInputElement).checked).toBe(true)
+      )
+    } finally {
+      window.history.replaceState(null, '', '/')
+    }
+  })
+
+  it('ignora assunto desconhecido na URL', () => {
+    window.history.replaceState(null, '', '/?assunto=qualquer-coisa')
+    try {
+      render(<ContactForm />)
+      const radios = screen.getAllByRole('radio') as HTMLInputElement[]
+      expect(radios.some((radio) => radio.checked)).toBe(false)
+    } finally {
+      window.history.replaceState(null, '', '/')
+    }
   })
 })

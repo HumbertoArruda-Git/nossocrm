@@ -1,6 +1,9 @@
 import { isValidUUID } from '@/lib/supabase/utils';
 
-export const LANDING_SUBJECTS = ['crm', 'automacao', 'diagnostico', 'outro'] as const;
+// Um assunto por página de solução, mais 'diagnostico' (ainda não sabe) e 'outro'.
+// Os valores viram etiqueta no CRM ('Landing: <assunto>'): renomear um deles
+// separa contatos antigos e novos do mesmo assunto. Só acrescente.
+export const LANDING_SUBJECTS = ['crm', 'automacao', 'diagnostico', 'outro', 'ia', 'integracao', 'dashboards', 'sob-medida'] as const;
 export type LandingSubject = (typeof LANDING_SUBJECTS)[number];
 
 export function getLandingConfig() {

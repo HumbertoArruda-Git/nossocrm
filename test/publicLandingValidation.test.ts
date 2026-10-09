@@ -20,6 +20,12 @@ describe('LandingPayloadSchema', () => {
     expect(LandingPayloadSchema.safeParse({ ...validPayload, honeypot: 'filled-by-bot' }).success).toBe(true);
   });
 
+  it('accepts one subject per solution page', () => {
+    for (const assunto of ['crm', 'automacao', 'ia', 'integracao', 'dashboards', 'sob-medida', 'diagnostico', 'outro']) {
+      expect(LandingPayloadSchema.safeParse({ ...validPayload, assunto }).success).toBe(true);
+    }
+  });
+
   it('rejects arbitrary subject values and unknown fields', () => {
     expect(LandingPayloadSchema.safeParse({ ...validPayload, assunto: 'free text' }).success).toBe(false);
     expect(LandingPayloadSchema.safeParse({ ...validPayload, extra: 'unexpected' }).success).toBe(false);
