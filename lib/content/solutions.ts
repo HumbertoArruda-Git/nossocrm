@@ -219,7 +219,7 @@ export const solutions: Solution[] = [
       'Regras de revisão humana para as decisões que pesam',
       'Registro do que a IA sugeriu e do que foi aprovado',
       'Ajuste das instruções com base nos casos reais',
-      'Medição do consumo real de IA no piloto, com projeção do gasto mensal',
+      'Um mês de teste com medição do consumo real e projeção do gasto mensal',
     ],
     connects: [
       'WhatsApp, e-mail e chat do site',
@@ -254,7 +254,7 @@ export const solutions: Solution[] = [
       },
       {
         q: 'Quanto custa usar IA no dia a dia?',
-        a: 'Depende do volume de mensagens ou documentos e do modelo escolhido, e só fica claro com o uso real. Por isso a IA começa em um piloto com volume controlado: o consumo é medido e, a partir dele, dá para projetar o gasto mensal antes de ampliar o uso.',
+        a: 'Depende do volume de mensagens ou documentos e do modelo escolhido, e só fica claro com o uso real. Por isso o primeiro mês funciona como teste: o consumo é medido e comparado com a demanda normal da empresa, para saber se foi um mês típico ou atípico. A partir daí dá para projetar o gasto mensal com base em uso de verdade.',
       },
     ],
   },
