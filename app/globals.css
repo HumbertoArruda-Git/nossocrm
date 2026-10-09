@@ -175,19 +175,6 @@ html, body {
   overflow-x: clip;
 }
 
-/* O header da landing é sticky com 72px (64px abaixo de 800px). Sem isto, um
- * salto para âncora (#solucoes, #contato) para com a seção EMBAIXO do header —
- * e o mesmo acontece com o foco de teclado ao navegar por Tab, que fica
- * escondido atrás dele. Os 88px param a rolagem antes.
- */
-html {
-  scroll-padding-top: 88px;
-  /* EM TESTE: anima o salto das âncoras. Não afeta a rolagem do usuário
-   * (roda, trackpad, toque) — só âncoras e scroll por script. O bloco
-   * prefers-reduced-motion mais abaixo já desliga isto sozinho. */
-  scroll-behavior: smooth;
-}
-
 .dark {
   /* Dark Mode - Deep Slate (OKLCH) */
   --color-bg: oklch(11% 0.025 260);

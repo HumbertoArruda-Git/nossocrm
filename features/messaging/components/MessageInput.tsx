@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 // lamejs is loaded as a global script (/lame.min.js) to avoid Turbopack CJS interop issues.
-// See: app/(protected)/layout.tsx — <Script src="/lame.min.js" />
+// See: app/(crm)/(protected)/layout.tsx — <Script src="/lame.min.js" />
 declare global {
   var lamejs: { Mp3Encoder: new (channels: number, sampleRate: number, bitRate: number) => {
     encodeBuffer(left: Int16Array, right?: Int16Array): Int8Array;

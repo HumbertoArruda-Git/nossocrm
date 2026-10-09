@@ -35,10 +35,7 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  manifest: null,
   robots: { index: true, follow: true },
-  // o layout raiz serve o ícone do NossoCRM; na landing quem assina é a HGA
-  icons: { icon: [{ url: '/icons/hga.svg', type: 'image/svg+xml' }] },
   alternates: { canonical: '/' },
   openGraph: {
     title: TITLE,
@@ -155,7 +152,7 @@ export default function HomePage() {
 
         {/* ---------- Capacidades ---------- */}
         <section className="hga-band" aria-labelledby="hga-band-title">
-          <h2 id="hga-band-title" className="sr-only">Como a HGA trabalha</h2>
+          <h2 id="hga-band-title" className="hga-sr-only">Como a HGA trabalha</h2>
           <ul className="hga-band-grid">
             {capabilities.map(({ icon: Icon, title, text }) => (
               <li key={title}>

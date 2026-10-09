@@ -34,9 +34,7 @@ export async function generateMetadata({ params }: SolutionPageProps): Promise<M
   return {
     title,
     description: solution.metaDescription,
-    manifest: null,
     robots: { index: true, follow: true },
-    icons: { icon: [{ url: '/icons/hga.svg', type: 'image/svg+xml' }] },
     alternates: { canonical: `/solucoes/${solution.slug}` },
     openGraph: {
       title,
