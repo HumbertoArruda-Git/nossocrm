@@ -84,8 +84,8 @@ const after = [
 const process = [
   { n: '01', icon: Search, title: 'Diagnóstico gratuito', text: 'Você conta a rotina que mais trava. A gente mapeia onde estão o tempo e o retrabalho, sem custo.' },
   { n: '02', icon: FileText, title: 'Proposta fechada', text: 'Escopo, prazo e valor definidos por escrito, antes de qualquer compromisso.' },
-  { n: '03', icon: Wrench, title: 'Construção em ciclos', text: 'Entregas curtas, integradas aos sistemas em uso: você vê funcionando cedo.' },
-  { n: '04', icon: LifeBuoy, title: 'Acompanhamento', text: 'Depois da entrega a HGA acompanha: corrige falhas e ajusta conforme a equipe usa.' },
+  { n: '03', icon: Wrench, title: 'Construção em ciclos', text: 'Entregas curtas, integradas aos sistemas em uso, com relatórios do andamento a cada etapa.' },
+  { n: '04', icon: LifeBuoy, title: 'Acompanhamento', text: '30 dias de acompanhamento próximo e 90 dias de correção de falhas sem custo após a entrega.' },
 ]
 
 /**
