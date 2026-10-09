@@ -722,6 +722,18 @@ body:has(.hga-site) { margin: 0; background: #04060C; overflow-x: clip; }
    longo é sempre 5.6s, então as seis miniaturas respiram juntas em vez de
    piscarem cada uma no seu tempo. */
 
+.hga-solution-showcase :is(.hv-flow, .hv-swap-a, .hv-swap-b, .hv-advance, .hv-pop, .hv-type,
+  .hv-throb, .hv-bar, .hv-spark, .hv-meter, .hv-select, .hs-advance, .hs-select, .hs-select-row) {
+  animation-play-state: paused;
+  animation-delay: -3.4s;
+}
+@media (hover: hover) and (pointer: fine) {
+  .hga-solution-showcase:hover :is(.hv-flow, .hv-swap-a, .hv-swap-b, .hv-advance, .hv-pop,
+    .hv-type, .hv-throb, .hv-bar, .hv-spark, .hv-meter, .hv-select, .hs-advance, .hs-select, .hs-select-row) {
+    animation-play-state: running;
+  }
+}
+
 /* As miniaturas ficam paradas por padrão, em ~60% do compasso de 5.6s
    (rascunho escrito, série desenhada, card já avançado — nunca um quadro
    vazio). Animam só enquanto o card está em hover ou foco. */
@@ -812,7 +824,6 @@ body:has(.hga-site) { margin: 0; background: #04060C; overflow-x: clip; }
    desenho é feito na escala real da página, não em 220 × 128. */
 
 .hs-chrome { fill: rgba(180, 202, 255, .035); }
-.hs-dot { fill: rgba(180, 202, 255, .22); }
 .hs-rule { stroke: var(--edge); stroke-width: 1; fill: none; }
 .hs-chip-ok { fill: rgba(var(--ok-rgb), .08); stroke: rgba(var(--ok-rgb), .28); stroke-width: 1; }
 .hs-dot-ok { fill: var(--ok); }
@@ -1312,8 +1323,8 @@ body:has(.hga-site) { margin: 0; background: #04060C; overflow-x: clip; }
   padding: clamp(14px, 2vw, 22px);
   border: 1px solid var(--edge-strong);
   border-radius: var(--r);
-  background: linear-gradient(180deg, #0C1120, #070A11);
-  box-shadow: 0 34px 80px rgba(0, 0, 0, .55);
+  background: var(--ink-lift);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .55);
   overflow: hidden;
 }
 .hga-solution-showcase svg { display: block; width: 100%; height: auto; }
@@ -1322,10 +1333,8 @@ body:has(.hga-site) { margin: 0; background: #04060C; overflow-x: clip; }
   align-items: center;
   gap: 7px;
   margin-bottom: 44px;
-  font-family: var(--font-hga-mono), ui-monospace, monospace;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: .12em;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--paper-3);
   transition: color var(--fast) ease;
 }
@@ -1335,13 +1344,11 @@ body:has(.hga-site) { margin: 0; background: #04060C; overflow-x: clip; }
   align-items: center;
   gap: 12px;
   margin: 0 0 20px;
-  font-family: var(--font-hga-mono), ui-monospace, monospace;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: .16em;
-  color: var(--paper-3);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--blue-lit);
 }
-.hga-solution-cat::before { content: ""; flex: none; width: 22px; height: 1px; background: var(--blue); }
+.hga-solution-cat::before { content: ""; flex: none; width: 16px; height: 1px; background: var(--blue); }
 .hga-solution-hero h1 {
   font-size: clamp(32px, 3.9vw, 48px);
   line-height: 1.06;
@@ -1374,13 +1381,10 @@ body:has(.hga-site) { margin: 0; background: #04060C; overflow-x: clip; }
   align-items: baseline;
   gap: 11px;
   margin: 0;
-  font-family: var(--font-hga-mono), ui-monospace, monospace;
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: .14em;
+  font-size: 13px;
+  font-weight: 500;
   line-height: 1.5;
-  text-transform: uppercase;
-  color: var(--paper-3);
+  color: var(--blue-lit);
 }
 .hga-solution-block h2::before {
   content: "";
@@ -1391,6 +1395,79 @@ body:has(.hga-site) { margin: 0; background: #04060C; overflow-x: clip; }
   background: var(--blue);
 }
 .hga-solution-body p { font-size: 15.5px; line-height: 1.7; color: var(--paper-2); margin: 0; }
+.hga-solution-prose { display: grid; gap: 16px; }
+
+/* "na prática": hoje × depois, sempre marcado como exemplo ilustrativo */
+.hga-solution-body .hga-solution-scenario-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -.015em;
+  color: var(--paper);
+}
+.hga-solution-tag {
+  padding: 3px 9px;
+  border: 1px solid var(--edge-strong);
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--paper-3);
+}
+.hga-solution-scenario { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hga-solution-scenario > div {
+  padding: 18px 20px;
+  border: 1px solid var(--edge);
+  border-radius: var(--r-sm);
+  background: var(--ink-lift);
+}
+.hga-solution-scenario > .hga-solution-scenario-after { border-color: rgba(var(--blue-rgb), .35); }
+.hga-solution-body .hga-solution-scenario-label {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--paper-3);
+}
+.hga-solution-body .hga-solution-scenario-after .hga-solution-scenario-label { color: var(--blue-lit); }
+.hga-solution-body .hga-solution-scenario p:not(.hga-solution-scenario-label) { font-size: 14.5px; line-height: 1.65; }
+.hga-site .hga-solution-inline-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--blue-lit);
+  transition: color var(--fast) ease;
+}
+.hga-site .hga-solution-inline-cta:hover { color: var(--paper); }
+
+/* "com o que conecta": etiquetas, não lista — são itens soltos, sem ordem */
+.hga-solution-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.hga-solution-chips li {
+  padding: 8px 13px;
+  border: 1px solid var(--edge-strong);
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  color: var(--paper-2);
+}
+
+/* "como começa": as quatro etapas da home, em lista numerada */
+.hga-solution-steps { display: grid; gap: 18px; }
+.hga-solution-steps li { display: grid; grid-template-columns: 34px 1fr; gap: 6px; }
+.hga-solution-step-n {
+  font-family: var(--font-hga-mono), ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--blue-lit);
+}
+.hga-solution-steps h3 { margin: 0 0 4px; font-size: 15.5px; letter-spacing: -.01em; color: var(--paper); }
+.hga-solution-body .hga-solution-steps p { font-size: 14.5px; line-height: 1.6; }
+
 .hga-solution-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .hga-solution-list li {
   font-size: 15px;
@@ -1422,15 +1499,17 @@ body:has(.hga-site) { margin: 0; background: #04060C; overflow-x: clip; }
   margin-top: clamp(36px, 5vw, 56px);
   padding-top: clamp(30px, 4.5vw, 44px);
   border-top: 1px solid var(--edge);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
+.hga-solution-cta .hga-btn svg { flex: none; }
 
 .hga-solution-others { position: relative; z-index: 1; max-width: 900px; margin: clamp(56px, 7vw, 76px) 0 0; padding-top: 34px; border-top: 1px solid var(--edge); }
 .hga-solution-others-label {
   margin: 0 0 18px;
-  font-family: var(--font-hga-mono), ui-monospace, monospace;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: .14em;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--paper-3);
 }
 .hga-solution-others-list { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -1570,6 +1649,7 @@ body:has(.hga-site) { margin: 0; background: #04060C; overflow-x: clip; }
   .hga-band-grid li:nth-child(even) { padding-right: 0; }
 
   /* página de solução: a ficha técnica empilha */
+  .hga-solution-scenario { grid-template-columns: 1fr; }
   .hga-solution-hero { max-width: none; }
   .hga-solution-block { grid-template-columns: 1fr; gap: 14px; }
   .hga-solution-block h2 { margin-bottom: 2px; }

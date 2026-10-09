@@ -17,7 +17,8 @@ import type { SolutionVisual as VisualKey } from '@/lib/content/solutions'
  */
 
 /**
- * Barra de janela comum a todas as peças.
+ * Barra de título comum a todas as peças (sem as bolinhas de "janela":
+ * a direção visual dispensa cromo decorativo).
  *
  * A pastilha de status se dimensiona pelo texto (a monoespaçada tem avanço
  * fixo, então dá para calcular): com largura fixa, "SINCRONIZANDO" vazava.
@@ -30,10 +31,7 @@ function Chrome({ title, status }: { title: string; status: string }) {
   return (
     <>
       <rect x="0" y="0" width="720" height="42" className="hs-chrome" />
-      <circle cx="20" cy="21" r="4" className="hs-dot" />
-      <circle cx="34" cy="21" r="4" className="hs-dot" />
-      <circle cx="48" cy="21" r="4" className="hs-dot" />
-      <text x="68" y="26" className="hs-title">{title}</text>
+      <text x="20" y="26" className="hs-title">{title}</text>
       <g className="hs-status">
         <rect x={chipX} y="11" width={chipWidth} height="22" rx="11" className="hs-chip-ok" />
         <circle cx={chipX + 14} cy="22" r="3.5" className="hs-dot-ok" />
