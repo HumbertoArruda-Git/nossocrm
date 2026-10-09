@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Building2, CheckCircle2, Clock, Filter, Flag, LayoutGrid, Send, UserRound } from 'lucide-react'
 
 /**
@@ -9,8 +9,8 @@ import { Building2, CheckCircle2, Clock, Filter, Flag, LayoutGrid, Send, UserRou
  * O ciclo é a promessa da HGA encenada em quatro tempos — o lead chega pelo
  * site, vira registro no CRM, passa pela triagem e sai com follow-up marcado.
  * À esquerda as etapas avançam; à direita o registro se preenche campo a
- * campo, no compasso de cada etapa concluída. Quando o ciclo fecha, ele
- * recomeça: é uma rotina, e rotina não tem fim.
+ * campo, no compasso de cada etapa concluída. O ciclo roda uma vez e para no
+ * estado concluído: repetir para sempre viraria ruído de fundo.
  *
  * A animação é uma máquina de estados simples (um contador de quadros) em vez
  * de keyframes CSS espalhados — assim as duas colunas nunca saem de sincronia.
@@ -37,13 +37,10 @@ const stateLabel = {
   queued: 'na fila',
 } as const
 
-/** 4 quadros de etapa + 2 de respiro antes de reiniciar. */
-const FRAMES = steps.length + 2
 const TICK_MS = 1700
 
 export function HeroPanel() {
   const [frame, setFrame] = useState(0)
-  const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // Sem movimento: mostra o ciclo já concluído — um estado final que faz
@@ -53,18 +50,11 @@ export function HeroPanel() {
       return
     }
 
-    // data-motion="once" num ancestral: o ciclo roda uma vez e para no estado
-    // concluído, em vez de repetir para sempre.
-    const once = rootRef.current?.closest('[data-motion="once"]') != null
-
+    let current = 0
     const id = window.setInterval(() => {
-      setFrame((f) => {
-        if (once && f >= steps.length) {
-          window.clearInterval(id)
-          return f
-        }
-        return (f + 1) % FRAMES
-      })
+      current += 1
+      setFrame(current)
+      if (current >= steps.length) window.clearInterval(id)
     }, TICK_MS)
     return () => window.clearInterval(id)
   }, [])
@@ -72,13 +62,8 @@ export function HeroPanel() {
   const completed = Math.min(frame, steps.length)
 
   return (
-    <div className="hga-panel" ref={rootRef}>
+    <div className="hga-panel">
       <div className="hga-panel-bar">
-        <span className="hga-panel-dots" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </span>
         <span className="hga-panel-title">Fluxo · Novo lead</span>
         <span className="hga-panel-status">
           <span className="hga-panel-status-dot" aria-hidden="true" />

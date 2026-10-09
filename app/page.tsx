@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight, Blocks, FileText, LifeBuoy, Mail, MapPin, MessageCircle, Route, ScanText, Search, Timer, Wrench } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Blocks, Mail, MapPin, MessageCircle, Route, ScanText, Timer } from 'lucide-react'
 import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
 import { HeroPanel } from '@/components/landing/HeroPanel'
@@ -82,10 +82,10 @@ const after = [
 
 /** O processo já é o "como começa": a primeira etapa é o diagnóstico sem custo. */
 const process = [
-  { n: '01', icon: Search, title: 'Diagnóstico gratuito', text: 'Você conta a rotina que mais trava. A gente mapeia onde estão o tempo e o retrabalho, sem custo.' },
-  { n: '02', icon: FileText, title: 'Proposta fechada', text: 'Escopo, prazo e valor definidos por escrito, antes de qualquer compromisso.' },
-  { n: '03', icon: Wrench, title: 'Construção em ciclos', text: 'Entregas curtas, integradas aos sistemas em uso, com relatórios do andamento a cada etapa.' },
-  { n: '04', icon: LifeBuoy, title: 'Acompanhamento', text: '30 dias de acompanhamento próximo e 90 dias de correção de falhas sem custo após a entrega.' },
+  { n: '01', title: 'Diagnóstico gratuito', text: 'Você conta a rotina que mais trava. A gente mapeia onde estão o tempo e o retrabalho, sem custo.' },
+  { n: '02', title: 'Proposta fechada', text: 'Escopo, prazo e valor definidos por escrito, antes de qualquer compromisso.' },
+  { n: '03', title: 'Construção em ciclos', text: 'Entregas curtas, integradas aos sistemas em uso, com relatórios do andamento a cada etapa.' },
+  { n: '04', title: 'Acompanhamento', text: '30 dias de acompanhamento próximo e 90 dias de correção de falhas sem custo após a entrega.' },
 ]
 
 /**
@@ -258,11 +258,9 @@ export default function HomePage() {
               entra em cena. Sem ScrollReveal por etapa: o trilho avançando já
               é a revelação, e quatro fades soltos brigariam com ele. */}
           <ol className="hga-steps">
-            {process.map(({ n, icon: Icon, title, text }) => (
+            {process.map(({ n, title, text }) => (
               <li className="hga-step" key={n}>
-                <span className="hga-step-node" aria-hidden="true">
-                  <Icon size={17} strokeWidth={1.6} />
-                </span>
+                <span className="hga-step-node" aria-hidden="true" />
                 <span className="hga-step-n">{n}</span>
                 <h3>{title}</h3>
                 <p>{text}</p>

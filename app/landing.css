@@ -9,7 +9,14 @@
    fundo parecer construído, não filtrado. Fora desses dois pontos, breu.
 
    Nada de malha, orbe flutuante, borda em degradê ou título com gradiente:
-   a identidade vem da tipografia e da estrutura, não de efeito.
+   a identidade vem da tipografia e da estrutura, não de efeito. Também nada
+   de glow em botão, placa de ícone com degradê ou cromo de "janela".
+
+   Fonte mono só onde há dado (números, campos, valores de sistema). Rótulos
+   de seção, categorias e etiquetas usam a fonte de texto.
+
+   Movimento com função: o painel do hero roda o ciclo uma vez e para; as
+   miniaturas dos cards só animam no hover/foco do próprio card.
 
    Estrutura como informação — cada tipo de conteúdo tem seu próprio device:
      · soluções   → cartões (são objetos navegáveis, cada um com sua página)
@@ -92,43 +99,42 @@
 
 /* ===================== tipografia ===================== */
 
-/* rótulo de seção: monoespaçado com um traço azul na frente.
+/* rótulo de seção: traço azul na frente, na fonte de texto.
    É a marca-d'água do sistema — aparece em toda seção, sempre igual. */
 .hga-eyebrow {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 0 0 26px;
-  font-family: var(--font-hga-mono), ui-monospace, monospace;
-  font-size: 11px;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: .16em;
-  color: var(--paper-3);
+  margin: 0 0 18px;
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--blue-lit);
 }
 .hga-eyebrow::before {
   content: "";
   flex: none;
-  width: 22px;
+  width: 16px;
   height: 1px;
   background: var(--blue);
 }
 
+/* A hierarquia vem do tamanho: o H1 é a maior coisa da página, com folga. */
 .hga-hero h1 {
-  font-size: clamp(27px, 3.3vw, 45px);
-  line-height: 1.08;
-  letter-spacing: -.032em;
-  margin: 0 auto;
-  max-width: 21ch;
+  font-size: clamp(40px, 6.2vw, 80px);
+  line-height: 1;
+  letter-spacing: -.045em;
+  margin: 0;
+  max-width: 13ch;
   color: var(--paper);
   text-wrap: balance;
 }
 
 .hga-section h2,
 .hga-contact h2 {
-  font-size: clamp(27px, 3.1vw, 41px);
+  font-size: clamp(28px, 3.4vw, 46px);
   line-height: 1.1;
-  letter-spacing: -.032em;
+  letter-spacing: -.035em;
   margin: 0;
   color: var(--paper);
   text-wrap: balance;
@@ -244,9 +250,8 @@
 .hga-btn-primary {
   background: var(--blue);
   color: #fff;
-  box-shadow: 0 6px 28px rgba(var(--blue-rgb), .30);
 }
-.hga-btn-primary:hover { background: #2459E0; box-shadow: 0 8px 34px rgba(var(--blue-rgb), .44); }
+.hga-btn-primary:hover { background: #2459E0; }
 .hga-btn-primary svg { transition: transform var(--base) var(--ease); }
 .hga-btn-primary:hover svg { transform: translateX(3px); }
 .hga-btn-ghost { border: 1px solid var(--edge-strong); color: var(--paper); }
@@ -269,22 +274,14 @@
   display: grid;
   align-items: center;
   min-height: min(72svh, 680px);
-  padding: clamp(52px, 7vh, 92px) 0 clamp(112px, 17vh, 200px);
+  /* o H1 grande deixa a dobra mais alta; o fundo maior mantém o horizonte
+     abaixo dos botões */
+  padding: clamp(52px, 7vh, 92px) 0 clamp(150px, 20vh, 230px);
 }
-/* A dobra é centralizada: o eixo vertical do hero, do horizonte e do painel
-   logo abaixo é o mesmo, então tudo cai na mesma prumada. */
-.hga-hero-inner { position: relative; z-index: 1; width: 100%; text-align: center; }
-.hga-hero .hga-eyebrow { justify-content: center; }
-/* centralizado, o traço do eyebrow vira um par simétrico em volta do rótulo */
-.hga-hero .hga-eyebrow::after {
-  content: "";
-  flex: none;
-  width: 22px;
-  height: 1px;
-  background: var(--blue);
-}
-.hga-hero .hga-lead { margin-inline: auto; max-width: 46ch; }
-.hga-hero .hga-actions { justify-content: center; }
+/* A dobra é alinhada à esquerda, no mesmo eixo das seções abaixo. A luz e o
+   painel continuam centrados: são o palco, o texto é quem fala. */
+.hga-hero-inner { position: relative; z-index: 1; width: 100%; text-align: left; }
+.hga-hero .hga-lead { max-width: 52ch; font-size: clamp(16px, 1.4vw, 19px); }
 
 /* --- a luz ---
    Uma elipse de luz nascendo abaixo da dobra, com temperatura de verdade:
@@ -301,9 +298,9 @@
 .hga-hero-beam {
   position: absolute;
   left: 50%;
-  bottom: -46%;
+  bottom: -40%;
   width: 132%;
-  height: 78%;
+  height: 54%;
   transform: translateX(-50%);
   border-radius: 50%;
   background: radial-gradient(closest-side,
@@ -314,25 +311,21 @@
     rgba(11, 32, 118, .07) 63%,
     transparent 80%);
   filter: blur(14px);
-  animation: hga-breathe 16s ease-in-out infinite;
+  opacity: .92;
 }
 /* o horizonte: mesma geometria da elipse, só a borda de cima.
    É o corte nítido que impede a luz de virar borrão decorativo. */
 .hga-hero-arc {
   position: absolute;
   left: 50%;
-  bottom: -46%;
+  bottom: -40%;
   width: 132%;
-  height: 78%;
+  height: 54%;
   transform: translateX(-50%);
   border-radius: 50%;
   border-top: 1px solid rgba(178, 208, 255, .40);
   -webkit-mask-image: linear-gradient(90deg, transparent 3%, #000 24%, #000 76%, transparent 97%);
   mask-image: linear-gradient(90deg, transparent 3%, #000 24%, #000 76%, transparent 97%);
-}
-@keyframes hga-breathe {
-  0%, 100% { opacity: .88; }
-  50% { opacity: 1; }
 }
 
 .hga-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 38px; }
@@ -360,8 +353,8 @@
   position: relative;
   border: 1px solid var(--edge-strong);
   border-radius: var(--r);
-  background: linear-gradient(180deg, #0C1120, #070A11);
-  box-shadow: 0 40px 100px rgba(0, 0, 0, .65), inset 0 1px 0 rgba(255, 255, 255, .04);
+  background: var(--ink-lift);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .55);
   overflow: hidden;
 }
 .hga-panel-bar {
@@ -380,16 +373,13 @@
   width: var(--hga-p, 0%);
   height: 1px;
   background: var(--blue-lit);
-  box-shadow: 0 0 10px rgba(var(--blue-rgb), .8);
   transition: width 640ms var(--ease);
 }
-.hga-panel-dots { display: inline-flex; gap: 6px; }
-.hga-panel-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(150, 178, 255, .22); }
 .hga-panel-title {
-  font-family: var(--font-hga-mono), ui-monospace, monospace;
-  font-size: 11.5px;
-  letter-spacing: .06em;
-  color: var(--paper-2);
+  font-family: var(--font-hga-sans), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--paper);
 }
 .hga-panel-status {
   margin-left: auto;
@@ -484,9 +474,8 @@
   vertical-align: middle;
   border-radius: 50%;
   background: currentColor;
-  animation: hga-blink 1.9s ease-in-out infinite;
+  opacity: .8;
 }
-@keyframes hga-blink { 0%, 100% { opacity: .2 } 50% { opacity: 1 } }
 
 /* ---- o registro que o fluxo produz ----
    As linhas já existem antes de serem preenchidas: o traço vazio vira valor.
@@ -573,23 +562,15 @@
 .hga-band-grid li:first-child { padding-left: 0; border-left: 0; }
 .hga-band-grid li:last-child { padding-right: 0; }
 
-/* A régua sozinha deixava a faixa parecendo texto derramado. A placa do
-   ícone dá um ponto de entrada visual a cada coluna e amarra a faixa ao
-   resto do sistema — mesma caixa, mesmo raio, mesmo azul das outras peças. */
+/* O ícone solto, em azul, é o ponto de entrada de cada coluna — sem placa. */
 .hga-band-icon {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  margin-bottom: 18px;
-  border: 1px solid var(--edge-strong);
-  border-radius: 10px;
-  background: linear-gradient(160deg, rgba(var(--blue-rgb), .14), rgba(var(--blue-rgb), .02));
+  display: block;
+  margin-bottom: 14px;
   color: var(--blue-lit);
-  transition: border-color var(--base) ease, background-color var(--base) ease, color var(--base) ease;
+  transition: color var(--base) ease;
 }
 @media (hover: hover) and (pointer: fine) {
-  .hga-band-grid li:hover .hga-band-icon { border-color: rgba(var(--blue-rgb), .55); color: #fff; }
+  .hga-band-grid li:hover .hga-band-icon { color: var(--paper); }
 }
 
 .hga-band-title {
@@ -621,16 +602,13 @@
 .hga-visual {
   padding: 26px 26px 0;
   border-bottom: 1px solid var(--edge);
-  background: linear-gradient(180deg, rgba(var(--blue-rgb), .07), transparent 70%);
 }
 .hga-visual svg { display: block; width: 100%; height: auto; }
 .hga-card-body { padding: 22px 24px 24px; display: flex; flex-direction: column; flex: 1; }
 .hga-card-cat {
-  font-family: var(--font-hga-mono), ui-monospace, monospace;
-  font-size: 10.5px;
-  text-transform: uppercase;
-  letter-spacing: .14em;
-  color: var(--paper-3);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--blue-lit);
   margin: 0 0 12px;
 }
 .hga-card h3 { font-size: 17px; letter-spacing: -.02em; margin: 0 0 9px; color: var(--paper); }
@@ -682,6 +660,21 @@
    Cada card tem um laço só, e o laço conta o que a solução faz. O compasso
    longo é sempre 5.6s, então as seis miniaturas respiram juntas em vez de
    piscarem cada uma no seu tempo. */
+
+/* As miniaturas ficam paradas por padrão, em ~60% do compasso de 5.6s
+   (rascunho escrito, série desenhada, card já avançado — nunca um quadro
+   vazio). Animam só enquanto o card está em hover ou foco. */
+.hga-visual :is(.hv-flow, .hv-swap-a, .hv-swap-b, .hv-advance, .hv-pop, .hv-type,
+  .hv-throb, .hv-bar, .hv-spark, .hv-meter, .hv-select) {
+  animation-play-state: paused;
+  animation-delay: -3.4s;
+}
+@media (hover: hover) and (pointer: fine) {
+  .hga-card:is(:hover, :focus-visible) .hga-visual :is(.hv-flow, .hv-swap-a, .hv-swap-b,
+    .hv-advance, .hv-pop, .hv-type, .hv-throb, .hv-bar, .hv-spark, .hv-meter, .hv-select) {
+    animation-play-state: running;
+  }
+}
 
 /* dado percorrendo os fios */
 .hv-flow { stroke-dasharray: 4 6; animation: hv-flow-move 1.6s linear infinite; }
@@ -837,18 +830,10 @@
   border-radius: var(--r);
   background: var(--ink-lift);
 }
-.hga-compare-after {
-  border-color: rgba(var(--blue-rgb), .3);
-  background:
-    radial-gradient(120% 90% at 0% 0%, rgba(var(--blue-rgb), .13), transparent 62%),
-    var(--ink-lift);
-  box-shadow: 0 0 60px rgba(var(--blue-rgb), .07);
-}
+.hga-compare-after { border-color: rgba(var(--blue-rgb), .35); }
 .hga-compare-tag {
-  font-family: var(--font-hga-mono), ui-monospace, monospace;
-  font-size: 10.5px;
-  text-transform: uppercase;
-  letter-spacing: .14em;
+  font-size: 12.5px;
+  font-weight: 500;
   color: var(--paper-3);
   margin: 0 0 22px;
 }
@@ -885,7 +870,7 @@
 .hga-steps::before {
   content: "";
   position: absolute;
-  top: 21px;
+  top: 7px;
   left: 0;
   right: 0;
   height: 1px;
@@ -898,7 +883,7 @@
 .hga-steps::after {
   content: "";
   position: absolute;
-  top: 21px;
+  top: 7px;
   left: 0;
   width: 100%;
   height: 1px;
@@ -911,13 +896,12 @@
 .hga-step-node {
   position: relative;
   z-index: 1;
-  display: grid;
-  place-items: center;
-  width: 43px;
-  height: 43px;
-  margin-bottom: 20px;
-  border: 1px solid var(--edge-strong);
-  border-radius: 12px;
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin-bottom: 22px;
+  border: 1px solid rgba(var(--blue-rgb), .6);
+  border-radius: 50%;
   /* opaco de propósito: é o que corta o trilho e cria a estação */
   background: var(--ink);
   color: var(--blue-lit);
@@ -927,9 +911,9 @@
   display: block;
   margin-bottom: 11px;
   font-family: var(--font-hga-mono), ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: .18em;
-  color: var(--paper-3);
+  font-size: 13px;
+  letter-spacing: .04em;
+  color: var(--blue-lit);
 }
 .hga-step h3 { font-size: 17px; letter-spacing: -.02em; margin: 0 0 9px; color: var(--paper); }
 .hga-step p { margin: 0; font-size: 13.5px; line-height: 1.62; color: var(--paper-2); }
@@ -1164,10 +1148,9 @@
   background: var(--blue);
   color: #fff;
   cursor: pointer;
-  box-shadow: 0 6px 28px rgba(var(--blue-rgb), .30);
 }
 @media (hover: hover) and (pointer: fine) {
-  .hga-submit.is-ready:not(:disabled):hover { background: #4A80FF; box-shadow: 0 8px 34px rgba(var(--blue-rgb), .44); }
+  .hga-submit.is-ready:not(:disabled):hover { background: #2459E0; }
 }
 .hga-form-note { font-size: 13px; line-height: 1.6; color: var(--paper-3); margin: 0; }
 .hga-form-note a { color: var(--paper-2); text-decoration: underline; text-underline-offset: 3px; }
@@ -1485,7 +1468,6 @@
 @media (prefers-reduced-motion: reduce) {
   [data-reveal] { transition: none; opacity: 1; transform: none; }
   .hga-hero-inner > * { animation: none; }
-  .hga-hero-beam { animation: none; opacity: .92; }
   .hga-panel-progress { transition: none; }
   .hga-panel-step[data-state="running"] .hga-panel-step-state::after { animation: none; opacity: .8; }
 
@@ -1518,7 +1500,7 @@
   .hga-steps { grid-template-columns: repeat(2, 1fr); gap: 32px 24px; }
   .hga-steps::before,
   .hga-steps::after { display: none; }
-  .hga-step-node { width: 38px; height: 38px; margin-bottom: 16px; }
+  .hga-step-node { margin-bottom: 16px; }
   .hga-stats { grid-template-columns: repeat(2, 1fr); gap: 28px 24px; }
   .hga-contact-grid { grid-template-columns: 1fr; }
   .hga-contact-copy { max-width: none; position: static; }
@@ -1534,7 +1516,8 @@
 
 @media (max-width: 800px) {
   .hga-hero { min-height: min(78svh, 640px); padding-bottom: clamp(120px, 20vh, 200px); }
-  .hga-hero-beam, .hga-hero-arc { width: 200%; height: 62%; bottom: -34%; }
+  /* com os botões empilhados a dobra fica alta: o horizonte desce para baixo deles */
+  .hga-hero-beam, .hga-hero-arc { width: 200%; height: 48%; bottom: -30%; }
   .hga-showcase { margin-top: clamp(-110px, -12vh, -60px); }
   .hga-compare { grid-template-columns: 1fr; }
   .hga-header { height: 64px; }
@@ -1545,7 +1528,7 @@
   .hga-cards { gap: 10px; }
   .hga-visual { padding: 14px 12px 0; }
   .hga-card-body { padding: 14px 15px 16px; }
-  .hga-card-cat { font-size: 10.5px; letter-spacing: .1em; margin-bottom: 7px; }
+  .hga-card-cat { font-size: 11.5px; margin-bottom: 7px; }
   .hga-card h3 { font-size: 14.5px; line-height: 1.25; margin-bottom: 6px; letter-spacing: -.015em; }
   .hga-card-desc {
     font-size: 12.5px;
@@ -1594,13 +1577,13 @@
    transforma a página num documento que se rola de cima a baixo; em pares,
    cada seção volta a ser uma composição que se lê de uma vez. */
 @media (max-width: 560px) {
-  .hga-hero h1 { max-width: none; }
+  .hga-hero h1 { max-width: none; font-size: clamp(36px, 10vw, 48px); }
   .hga-actions { gap: 10px; }
   .hga-actions .hga-btn { width: 100%; justify-content: center; }
 
   .hga-band-grid { gap: 26px 0; padding-block: 30px; }
   .hga-band-grid li { padding-inline: 14px; }
-  .hga-band-icon { width: 32px; height: 32px; margin-bottom: 14px; }
+  .hga-band-icon { margin-bottom: 12px; }
   .hga-band-title { font-size: 14px; }
   .hga-band-grid p { font-size: 12.5px; line-height: 1.55; }
 
